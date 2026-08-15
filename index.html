@@ -124,6 +124,7 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
   <div class="hrow">
     <h1>DailyLog</h1>
     <div>
+      <span class="pill" id="verPill">…</span>
       <span class="pill" id="netPill">…</span>
       <span class="pill" id="queuePill">صف ۰</span>
     </div>
@@ -175,12 +176,6 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
       <label class="lb">ساعت بیداری</label>
       <div id="mBid"></div>
-
-      <label class="lb">چرت داشتم؟</label>
-      <div class="seg">
-        <input type="radio" name="mb_nap" id="mb_nap_y" value="1"/><label for="mb_nap_y">آره</label>
-        <input type="radio" class="no" name="mb_nap" id="mb_nap_n" value="0"/><label for="mb_nap_n">نه</label>
-      </div>
 
       <div id="metaBools"></div>
 
@@ -237,6 +232,15 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
         <button type="button" id="btnSaveCfg">ذخیره</button>
         <button type="button" id="btnSyncNow">همگام‌سازی الان</button>
         <button type="button" id="btnWipe">پاک‌کردن همه</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>نسخه و کش</h2>
+      <p class="hint">اگر تغییری که گفتم را نمی‌بینی، اول اینجا را نگاه کن. اگر شمارهٔ نسخه قدیمی است، دکمهٔ پایین را بزن.</p>
+      <div class="sum" id="verBox">—</div>
+      <div class="chips">
+        <button type="button" id="btnHardReload">پاک‌کردن کش و بارگذاری دوباره</button>
       </div>
     </div>
 

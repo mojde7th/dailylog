@@ -1,6 +1,14 @@
-/* Service worker: cache the app shell so it opens with zero network. */
+﻿/* Service worker.
+   Strategy: network-first for our own files, cache only as a fallback.
 
-const CACHE = 'dailylog-v2';
+   The obvious choice is cache-first, and that is what bit you: once app.js
+   was in the cache the browser kept serving the old build forever, so new
+   defaults and the today-date fix never appeared. Network-first means you
+   always get the newest file when there is a connection, and the cache is
+   only there for the aeroplane case. */
+
+const CACHE = 'dailylog-v4';
+
 const SHELL = [
   './',
   './index.html',
@@ -26,16 +34,22 @@ self.addEventListener('activate', ev => {
   );
 });
 
+self.addEventListener('message', ev => {
+  if (ev.data === 'skipWaiting') self.skipWaiting();
+});
+
 self.addEventListener('fetch', ev => {
   const req = ev.request;
-  if (req.method !== 'GET') return;                 // never cache the sync POST
-  if (!req.url.startsWith(self.location.origin)) return;  // let Apps Script pass through
+  if (req.method !== 'GET') return;                        // never touch the sync POST
+  if (!req.url.startsWith(self.location.origin)) return;   // let Apps Script pass through
 
   ev.respondWith(
-    caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
-      return res;
-    }).catch(() => caches.match('./index.html')))
+    fetch(req)
+      .then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+        return res;
+      })
+      .catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
   );
 });

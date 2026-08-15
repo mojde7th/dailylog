@@ -1,73 +1,108 @@
 /* ============================================================================
-   DailyLog — offline-first logger with wheel pickers and per-activity metrics
-   Storage : IndexedDB (device local)
-   Sync    : optional POST to a Google Apps Script Web App
-   No framework. No build step. Works from a plain folder.
+   DailyLog — offline-first day logger
+   ----------------------------------------------------------------------------
+   Language : plain JavaScript (ES2017). No framework, no build step, no npm.
+   Storage  : IndexedDB for records, localStorage for settings.
+   Sync     : optional HTTP POST to a Google Apps Script Web App.
+   Runs from : a folder, a local http server, or GitHub Pages. Same code.
    ============================================================================ */
 
 'use strict';
 
-/* ═══════════════ 1. ACTIVITY TABLE ═══════════════
-   metric decides which inputs appear:
-     dur    = duration wheel (hours + minutes)  -> minutes
-     clock  = time of day wheel                 -> startClock
-     count  = how many times                    -> count
-     sec    = seconds                           -> reactSec
-     reps   = N times x M minutes               -> reps, perRep, minutes
-   eff  : also ask for effort units (your 30/50 scale)
-   qual : also ask 1..5 quality
-   Edit this list freely — the whole UI rebuilds from it.                    */
+/* Bump this whenever you change anything. It is printed in the header, so a
+   glance tells you whether the browser is running the new build or a stale
+   cached one. */
+const APP_VERSION = 'v4 · 12:55';
+
+/* ═════════════════════════════ 1. ACTIVITY TABLE ═════════════════════════════
+   Every activity declares how it is measured, so the form can show only the
+   input that activity actually needs.
+
+     metric 'dur'   → duration wheel (hours + minutes)   fills minutes + hm
+     metric 'clock' → time-of-day wheel                  fills startClock
+     metric 'sec'   → seconds number                     fills reactSec
+     metric 'count' → plain count                        fills count
+     metric 'reps'  → N times x M minutes                fills reps, perRep, minutes
+
+     eff  : true → also ask for effort units (your own 30 / 50 scale)
+     qual : true → also ask quality 1..5
+
+   def : where every wheel and box opens before you touch it. Typing should
+         only ever be a correction, never data entry from zero.
+           h, m  → duration wheel
+           ch, cm→ clock wheel
+           eff   → effort box
+           q     → quality 1..5
+           n     → count / seconds box
+           r, pr → reps x minutes
+   ========================================================================== */
 
 const CODES = [
-  { cat:'کار و آی‌تی',    code:'itpr',        label:'ITpr',            metric:'dur',   eff:true, qual:true },
-  { cat:'کار و آی‌تی',    code:'azkesh',      label:'azkesh',          metric:'dur',   eff:true },
-  { cat:'کار و آی‌تی',    code:'do',          label:'Do',              metric:'dur' },
-  { cat:'کار و آی‌تی',    code:'sumtakhmoj',  label:'sumtakhmojmotn',  metric:'dur' },
+  { cat:'کار و آی‌تی',    code:'itpr',        label:'ITpr',                  metric:'dur',   eff:true, qual:true, def:{h:2,m:40,eff:40,q:3} },
+  { cat:'کار و آی‌تی',    code:'azkesh',      label:'azkesh',                metric:'dur',   eff:true,            def:{h:1,m:0, eff:20} },
+  { cat:'کار و آی‌تی',    code:'do',          label:'Do',                    metric:'dur',                        def:{h:0,m:30} },
+  { cat:'کار و آی‌تی',    code:'sumtakhmoj',  label:'sumtakhmojmotn',        metric:'dur',                        def:{h:0,m:20} },
 
-  { cat:'تخصیص و تمرکز', code:'takhkho',     label:'Takhkho',         metric:'dur',   eff:true },
-  { cat:'تخصیص و تمرکز', code:'takhshose',   label:'Takhshose',       metric:'dur',   eff:true },
-  { cat:'تخصیص و تمرکز', code:'arasmotakh',  label:'arasmotakhshose', metric:'dur' },
-  { cat:'تخصیص و تمرکز', code:'arasmor',     label:'arasmor',         metric:'dur' },
-  { cat:'تخصیص و تمرکز', code:'rout',        label:'rout',            metric:'dur' },
-  { cat:'تخصیص و تمرکز', code:'mintakhir',   label:'تأخیر واکنش',      metric:'sec' },
-  { cat:'تخصیص و تمرکز', code:'checkin',     label:'چک‌این',           metric:'count' },
+  { cat:'تخصیص و تمرکز', code:'takhkho',     label:'Takhkho',               metric:'dur',   eff:true,            def:{h:0,m:30, eff:30} },
+  { cat:'تخصیص و تمرکز', code:'takhshose',   label:'Takhshose',             metric:'dur',   eff:true,            def:{h:0,m:40, eff:30} },
+  { cat:'تخصیص و تمرکز', code:'arasmotakh',  label:'arasmotakhshose',       metric:'dur',                        def:{h:0,m:30} },
+  { cat:'تخصیص و تمرکز', code:'arasmor',     label:'arasmor',               metric:'dur',                        def:{h:0,m:25} },
+  { cat:'تخصیص و تمرکز', code:'rout',        label:'rout',                  metric:'dur',                        def:{h:0,m:40} },
+  { cat:'تخصیص و تمرکز', code:'mintakhir',   label:'تأخیر واکنش (ثانیه)',    metric:'sec',                        def:{n:2} },
+  { cat:'تخصیص و تمرکز', code:'checkin',     label:'چک‌این (تعداد)',         metric:'count',                      def:{n:3} },
 
-  { cat:'بدن و سلامت',   code:'openfast',    label:'openfast (ساعت)',  metric:'clock' },
-  { cat:'بدن و سلامت',   code:'ab',          label:'ab',              metric:'dur' },
-  { cat:'بدن و سلامت',   code:'dand',        label:'dand (تکرار)',     metric:'reps' },
-  { cat:'بدن و سلامت',   code:'drazmayesh',  label:'dr / azmayesh',   metric:'dur' },
-  { cat:'بدن و سلامت',   code:'salad',       label:'salad',           metric:'dur' },
-  { cat:'بدن و سلامت',   code:'ghorsqat',    label:'ghors / qat',     metric:'count' },
-  { cat:'بدن و سلامت',   code:'shosmort',    label:'ShosMort',        metric:'dur' },
+  { cat:'بدن و سلامت',   code:'openfast',    label:'openfast (ساعت دقیق)',   metric:'clock',                      def:{ch:15,cm:0} },
+  { cat:'بدن و سلامت',   code:'ab',          label:'ab',                    metric:'dur',                        def:{h:0,m:20} },
+  { cat:'بدن و سلامت',   code:'dand',        label:'dand (تکرار × دقیقه)',   metric:'reps',                       def:{r:3,pr:2} },
+  { cat:'بدن و سلامت',   code:'drazmayesh',  label:'dr / azmayesh',         metric:'dur',                        def:{h:2,m:30} },
+  { cat:'بدن و سلامت',   code:'salad',       label:'salad',                 metric:'dur',                        def:{h:0,m:20} },
+  { cat:'بدن و سلامت',   code:'ghorsqat',    label:'ghors / qat (تعداد)',    metric:'count',                      def:{n:1} },
+  { cat:'بدن و سلامت',   code:'shosmort',    label:'ShosMort',              metric:'dur',                        def:{h:0,m:20} },
 
-  { cat:'خانه و شخصی',   code:'otu',         label:'Otu',             metric:'dur' },
-  { cat:'خانه و شخصی',   code:'moshv',       label:'Moshv',           metric:'dur' },
-  { cat:'خانه و شخصی',   code:'ket',         label:'Ket',             metric:'dur' },
-  { cat:'خانه و شخصی',   code:'sabtturkela', label:'Sabtturkela',     metric:'dur' },
+  { cat:'خانه و شخصی',   code:'otu',         label:'Otu',                   metric:'dur',                        def:{h:0,m:20} },
+  { cat:'خانه و شخصی',   code:'moshv',       label:'Moshv',                 metric:'dur',                        def:{h:0,m:20} },
+  { cat:'خانه و شخصی',   code:'ket',         label:'Ket',                   metric:'dur',                        def:{h:0,m:15} },
+  { cat:'خانه و شخصی',   code:'sabtturkela', label:'Sabtturkela',           metric:'dur',                        def:{h:0,m:15} },
 
-  { cat:'مالی و اداری',  code:'bargozbime',  label:'bime / mali / kharid', metric:'dur' },
-  { cat:'مالی و اداری',  code:'banki',       label:'banki / sarmayegozari', metric:'dur' },
+  { cat:'مالی و اداری',  code:'bargozbime',  label:'bime / mali / kharid',  metric:'dur',                        def:{h:0,m:25} },
+  { cat:'مالی و اداری',  code:'banki',       label:'banki / sarmayegozari', metric:'dur',                        def:{h:0,m:45} },
 
-  { cat:'یادگیری',       code:'reswch',      label:'reswch',          metric:'dur',   eff:true, qual:true }
+  { cat:'یادگیری',       code:'reswch',      label:'reswch',                metric:'dur',   eff:true, qual:true, def:{h:1,m:50,eff:30,q:3} }
 ];
 
+/* id, label, polarity. polarity 'neg' means "نه" is the good answer and
+   therefore the green one. */
 const META_BOOLS = [
-  ['planTomorrow',  'برنامه فردا ایجاد شده'],
-  ['ruleFollowed',  'قانون فرای من رعایت شد'],
-  ['noSugar',       'هیچ قند و کرب و شیرین‌کننده نخوردم'],
-  ['sachetProtein', 'ساشه پروتئین'],
+  ['nap',           'چرت داشتم',                        'neg'],
+  ['planTomorrow',  'برنامه فردا ایجاد شده',             'pos'],
+  ['ruleFollowed',  'قانون فرای من رعایت شد',            'pos'],
+  ['noSugar',       'هیچ قند و کرب و شیرین‌کننده نخوردم', 'pos'],
+  ['sachetProtein', 'ساشه پروتئین بعد از ساعت ۳',        'pos'],
 ];
 
+/* Column order in the sheet. Keep uid first: the script matches on it. */
 const SESSION_FIELDS = ['uid','createdAt','dateShamsi','category','code','metric',
                         'minutes','hm','effort','quality','reactSec','count',
                         'reps','perRep','startClock','note'];
 
-const META_FIELDS = ['uid','createdAt','dateShamsi','bid','nap','checkin1h',
+const META_FIELDS = ['uid','createdAt','dateShamsi','bid','checkin1h',
                      'moodToFlowMin','moodToFlowHM','bigharariMin','bigharariHM',
                      'bandShadidMin','bandShadidHM','openfastMin','openfastHM',
                      ...META_BOOLS.map(b => b[0]), 'note'];
 
-/* ═══════════════ 2. JALALI CALENDAR ═══════════════ */
+const DEFAULT_BID_H = 3;      // ساعت پیش‌فرض بیداری
+const DEFAULT_BID_M = 30;
+
+/* Opening values for the daily meta wheels: [hours, minutes] */
+const META_DEF = {
+  mood:    [5, 10],
+  bigh:    [3, 15],
+  band:    [4, 0],
+  opfa:    [4, 0],
+  checkin: 3
+};
+
+/* ═════════════════════════════ 2. JALALI CALENDAR ═══════════════════════════ */
 
 const J_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور',
                   'مهر','آبان','آذر','دی','بهمن','اسفند'];
@@ -79,7 +114,7 @@ function jIsLeap(jy) {
 }
 
 function jMonthLen(jy, jm) {
-  if (jm <= 6) return 31;
+  if (jm <= 6)  return 31;
   if (jm <= 11) return 30;
   return jIsLeap(jy) ? 30 : 29;
 }
@@ -106,18 +141,28 @@ function todayJ() {
   return toJalali(d.getFullYear(), d.getMonth()+1, d.getDate());
 }
 
-const pad2 = n => String(n).padStart(2, '0');
-const fmtJ = (y, m, d) => y + '/' + pad2(m) + '/' + pad2(d);
-const fmtHM = min => {
-  const n = Number(min) || 0;
-  return Math.floor(n / 60) + ':' + pad2(n % 60);
-};
+const pad2  = n => String(n).padStart(2, '0');
+const fmtJ  = (y, m, d) => y + '/' + pad2(m) + '/' + pad2(d);
+const fmtHM = min => { const n = Number(min) || 0; return Math.floor(n/60) + ':' + pad2(n%60); };
 
-/* ═══════════════ 3. WHEEL PICKER ═══════════════ */
+/* ═════════════════════════════ 3. WHEEL PICKER ══════════════════════════════
+   A wheel is a scrollable column with CSS scroll snapping. Reading it is just
+   scrollTop / itemHeight.
+
+   The one trap: a column inside display:none has no layout, so the browser
+   throws its scrollTop away. Every wheel therefore registers itself here and
+   re-applies its position whenever its pane becomes visible again. Without
+   this the date wheel silently reads back as the first item, which is how you
+   ended up with 1403/01/01 rows.
+   ========================================================================== */
 
 const ITEM_H = 40;
+const WHEELS = new Set();
 
-/** Builds one scrollable column. Returns { get, set, el }. */
+function refreshWheels() {
+  WHEELS.forEach(w => w.apply());
+}
+
 function wheelColumn(items, initial, onChange) {
   const col = document.createElement('div');
   col.className = 'wcol';
@@ -132,21 +177,26 @@ function wheelColumn(items, initial, onChange) {
   col.appendChild(sc);
   col.appendChild(band);
 
-  const nodes = () => sc.querySelectorAll('.it');
   let idx = Math.max(0, Math.min(items.length - 1, initial | 0));
 
-  function paint(i) {
-    nodes().forEach((n, k) => n.classList.toggle('sel', k === i));
+  const paint = i => sc.querySelectorAll('.it').forEach((n, k) => n.classList.toggle('sel', k === i));
+
+  /** Puts the column back where it belongs. Cheap, safe to call often. */
+  function apply() {
+    if (!col.isConnected || col.offsetParent === null) return;
+    if (Math.abs(sc.scrollTop - idx * ITEM_H) > 2) sc.scrollTop = idx * ITEM_H;
+    paint(idx);
   }
 
-  function set(i, animate) {
+  function set(i, smooth) {
     idx = Math.max(0, Math.min(items.length - 1, i | 0));
-    sc.scrollTo({ top: idx * ITEM_H, behavior: animate ? 'smooth' : 'auto' });
+    sc.scrollTo({ top: idx * ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
     paint(idx);
   }
 
   let t = null;
   sc.addEventListener('scroll', () => {
+    if (col.offsetParent === null) return;                 // ignore ghost scrolls while hidden
     const live = Math.round(sc.scrollTop / ITEM_H);
     if (live !== idx && live >= 0 && live < items.length) { idx = live; paint(idx); }
     clearTimeout(t);
@@ -156,10 +206,10 @@ function wheelColumn(items, initial, onChange) {
     }, 110);
   }, { passive: true });
 
-  /* first layout happens after the node is in the DOM */
-  requestAnimationFrame(() => set(idx, false));
-
-  return { el: col, get: () => idx, set, count: items.length };
+  const api = { el: col, get: () => idx, set, apply,
+                destroy: () => WHEELS.delete(api) };
+  WHEELS.add(api);
+  return api;
 }
 
 function wheelGroup(host, cols, captions) {
@@ -174,60 +224,72 @@ function wheelGroup(host, cols, captions) {
     cap.innerHTML = captions.map(c => `<span>${c}</span>`).join('');
     host.appendChild(cap);
   }
+  requestAnimationFrame(() => cols.forEach(c => c.apply()));
 }
 
-/* --- Shamsi date wheel: year / month / day --- */
+/* --- Shamsi date: year / month / day, always opening on today --- */
 function makeDateWheel(host) {
   const [cy, cm, cd] = todayJ();
   const years = [];
   for (let y = cy - 2; y <= cy + 1; y++) years.push(String(y));
 
+  const dayItems = (y, m) => {
+    const a = [];
+    for (let i = 1; i <= jMonthLen(y, m); i++) a.push(pad2(i));
+    return a;
+  };
+
   let wy, wm, wd;
 
-  function dayItems(y, m) {
-    const n = jMonthLen(y, m);
-    const a = [];
-    for (let i = 1; i <= n; i++) a.push(pad2(i));
-    return a;
-  }
-
   function rebuildDays() {
+    if (!wd) return;
     const y = Number(years[wy.get()]);
     const m = wm.get() + 1;
-    const keep = wd ? wd.get() : cd - 1;
+    const keep = wd.get();
     const items = dayItems(y, m);
+    if (items.length === wd.count) { wd.apply(); return; }
     const nd = wheelColumn(items, Math.min(keep, items.length - 1));
+    nd.count = items.length;
+    wd.destroy();
     wd.el.replaceWith(nd.el);
     wd = nd;
+    requestAnimationFrame(() => nd.apply());
   }
 
-  wy = wheelColumn(years, years.indexOf(String(cy)), () => rebuildDays());
-  wm = wheelColumn(J_MONTHS, cm - 1, () => rebuildDays());
+  wy = wheelColumn(years, years.indexOf(String(cy)), rebuildDays);
+  wm = wheelColumn(J_MONTHS, cm - 1, rebuildDays);
   wd = wheelColumn(dayItems(cy, cm), cd - 1);
+  wd.count = jMonthLen(cy, cm);
 
   wheelGroup(host, [wy, wm, wd], ['سال', 'ماه', 'روز']);
 
   return {
     value: () => fmtJ(Number(years[wy.get()]), wm.get() + 1, wd.get() + 1),
-    reset: () => { const [y,m,d] = todayJ(); wy.set(years.indexOf(String(y))); wm.set(m-1); rebuildDays(); wd.set(d-1); }
+    today: () => {
+      const [y, m, d] = todayJ();
+      wy.set(years.indexOf(String(y)));
+      wm.set(m - 1);
+      rebuildDays();
+      setTimeout(() => wd.set(d - 1), 30);
+    }
   };
 }
 
-/* --- clock wheel: hour / minute (step 5) --- */
+/* --- time of day: hour / minute in steps of 5 --- */
 function makeClockWheel(host, defH, defM) {
   const hh = [], mm = [];
   for (let i = 0; i < 24; i++) hh.push(pad2(i));
   for (let i = 0; i < 60; i += 5) mm.push(pad2(i));
-  const wh = wheelColumn(hh, defH === undefined ? 7 : defH);
-  const wm = wheelColumn(mm, defM === undefined ? 0 : Math.round(defM / 5));
+  const wh = wheelColumn(hh, defH || 0);
+  const wm = wheelColumn(mm, Math.round((defM || 0) / 5));
   wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه']);
-  return { value: () => hh[wh.get()] + ':' + mm[wm.get()], clear: () => { wh.set(0); wm.set(0); } };
+  return { value: () => hh[wh.get()] + ':' + mm[wm.get()] };
 }
 
-/* --- duration wheel: hours / minutes (step 5) -> total minutes --- */
+/* --- duration: hours / minutes in steps of 5, returned as total minutes --- */
 function makeDurWheel(host, defH, defM) {
   const hh = [], mm = [];
-  for (let i = 0; i <= 12; i++) hh.push(String(i));
+  for (let i = 0; i <= 14; i++) hh.push(String(i));
   for (let i = 0; i < 60; i += 5) mm.push(pad2(i));
   const wh = wheelColumn(hh, defH || 0);
   const wm = wheelColumn(mm, Math.round((defM || 0) / 5));
@@ -235,11 +297,12 @@ function makeDurWheel(host, defH, defM) {
   return {
     minutes: () => wh.get() * 60 + wm.get() * 5,
     hm: () => hh[wh.get()] + ':' + mm[wm.get()],
-    clear: () => { wh.set(0); wm.set(0); }
+    setMinutes: m => { wh.set(Math.floor(m / 60), true); wm.set(Math.round((m % 60) / 5), true); },
+    reset: () => { wh.set(0); wm.set(0); }
   };
 }
 
-/* ═══════════════ 4. INDEXEDDB ═══════════════ */
+/* ═════════════════════════════ 4. STORAGE ═══════════════════════════════════ */
 
 const DB_NAME = 'dailylog', DB_VER = 1;
 let _db = null;
@@ -250,9 +313,9 @@ function openDB() {
     const req = indexedDB.open(DB_NAME, DB_VER);
     req.onupgradeneeded = ev => {
       const db = ev.target.result;
-      if (!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath: 'uid' });
-      if (!db.objectStoreNames.contains('meta'))     db.createObjectStore('meta',     { keyPath: 'uid' });
-      if (!db.objectStoreNames.contains('config'))   db.createObjectStore('config',   { keyPath: 'k' });
+      if (!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath:'uid' });
+      if (!db.objectStoreNames.contains('meta'))     db.createObjectStore('meta',     { keyPath:'uid' });
+      if (!db.objectStoreNames.contains('config'))   db.createObjectStore('config',   { keyPath:'k' });
     };
     req.onsuccess = () => { _db = req.result; resolve(_db); };
     req.onerror   = () => reject(req.error);
@@ -261,33 +324,30 @@ function openDB() {
 
 const store = (n, m) => openDB().then(db => db.transaction(n, m).objectStore(n));
 
-function put(n, o) {
-  return store(n, 'readwrite').then(s => new Promise((res, rej) => {
-    const r = s.put(o); r.onsuccess = () => res(o); r.onerror = () => rej(r.error);
-  }));
-}
-function getAll(n) {
-  return store(n, 'readonly').then(s => new Promise((res, rej) => {
-    const r = s.getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error);
-  }));
-}
-function clearStore(n) {
-  return store(n, 'readwrite').then(s => new Promise((res, rej) => {
-    const r = s.clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error);
-  }));
-}
-function cfgGet(k) {
-  return store('config', 'readonly').then(s => new Promise(res => {
-    const r = s.get(k); r.onsuccess = () => res(r.result ? r.result.v : ''); r.onerror = () => res('');
-  }));
-}
-const cfgSet = (k, v) => put('config', { k, v });
+const put = (n, o) => store(n, 'readwrite').then(s => new Promise((res, rej) => {
+  const r = s.put(o); r.onsuccess = () => res(o); r.onerror = () => rej(r.error);
+}));
 
-/* ═══════════════ 5. HELPERS ═══════════════ */
+const getAll = n => store(n, 'readonly').then(s => new Promise((res, rej) => {
+  const r = s.getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error);
+}));
+
+const clearStore = n => store(n, 'readwrite').then(s => new Promise((res, rej) => {
+  const r = s.clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error);
+}));
+
+/* Settings live in localStorage, which iOS keeps for an installed home-screen
+   app and which survives even if IndexedDB is evicted. That is why the URL and
+   the key stopped sticking on the phone. */
+const cfgGet = k => { try { return localStorage.getItem('dl_' + k) || ''; } catch (e) { return ''; } };
+const cfgSet = (k, v) => { try { localStorage.setItem('dl_' + k, v); } catch (e) {} };
+
+/* ═════════════════════════════ 5. SMALL HELPERS ═════════════════════════════ */
 
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 const num = v => (v === '' || v == null || isNaN(Number(v))) ? '' : Number(v);
+const vibrate = ms => { if (navigator.vibrate) navigator.vibrate(ms); };
 
 function toast(msg, isErr) {
   const t = $('toast');
@@ -297,23 +357,19 @@ function toast(msg, isErr) {
   t._h = setTimeout(() => { t.className = ''; }, 2100);
 }
 
-function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
-
-/* ═══════════════ 6. SESSION FORM ═══════════════ */
+/* ═════════════════════════════ 6. SESSION FORM ══════════════════════════════ */
 
 let sDate = null, dyn = {};
 
-function currentCode() {
-  return CODES.find(c => c.code === $('s_code').value) || CODES[0];
-}
+const currentCode = () => CODES.find(c => c.code === $('s_code').value) || CODES[0];
 
 function buildCodeSelects() {
   const cats = [...new Set(CODES.map(c => c.cat))];
   $('s_cat').innerHTML = '<option value="">همه</option>' + cats.map(c => `<option>${c}</option>`).join('');
 
   function fill() {
-    const c = $('s_cat').value;
-    const list = c ? cats.filter(x => x === c) : cats;
+    const chosen = $('s_cat').value;
+    const list = chosen ? [chosen] : cats;
     $('s_code').innerHTML = list.map(cat =>
       `<optgroup label="${cat}">` +
       CODES.filter(x => x.cat === cat).map(x => `<option value="${x.code}">${x.label}</option>`).join('') +
@@ -325,71 +381,69 @@ function buildCodeSelects() {
   fill();
 }
 
-/** Rebuilds only the inputs that this activity actually needs. */
+/** Throws away the old inputs and builds only the ones this activity needs. */
 function buildDynamic() {
   const c = currentCode();
-  const host = $('dynFields');
+  const d = c.def || {};
+  const host  = $('dynFields');
   const extra = $('extraFields');
-  host.innerHTML = '';
+
+  /* wheels inside the replaced markup must leave the registry */
+  WHEELS.forEach(w => { if (!w.el.isConnected) w.destroy(); });
+
+  host.innerHTML  = '';
   extra.innerHTML = '';
   dyn = {};
 
-  const add = (parent, labelText, id) => {
+  const add = (parent, text) => {
     const l = document.createElement('label');
     l.className = 'lb';
-    l.textContent = labelText;
+    l.textContent = text;
     const box = document.createElement('div');
-    box.id = id;
     parent.appendChild(l);
     parent.appendChild(box);
     return box;
   };
 
   if (c.metric === 'dur') {
-    dyn.dur = makeDurWheel(add(host, 'مدت', 'dw'));
-    quickChips(host, [10,15,20,25,30,40,45,60,90], m => {
-      dyn.dur.clear();
-      const h = Math.floor(m/60), mi = m % 60;
-      const cols = host.querySelectorAll('.wcol .sc');
-      cols[0].scrollTo({ top: h*ITEM_H, behavior:'smooth' });
-      cols[1].scrollTo({ top: (mi/5)*ITEM_H, behavior:'smooth' });
-    });
+    dyn.dur = makeDurWheel(add(host, 'مدت'), d.h || 0, d.m || 0);
+    quickChips(host, [10,15,20,25,30,40,45,60,90], m => dyn.dur.setMinutes(m));
   }
 
   if (c.metric === 'clock') {
-    dyn.clock = makeClockWheel(add(host, 'ساعت دقیق', 'cw'), 15, 0);
+    dyn.clock = makeClockWheel(add(host, 'ساعت دقیق'), d.ch || 0, d.cm || 0);
   }
 
   if (c.metric === 'count') {
-    const box = add(host, 'تعداد', 'cnt');
-    box.innerHTML = '<input id="f_count" class="ltr" type="number" inputmode="numeric" min="0" placeholder="3"/>';
+    const box = add(host, 'تعداد');
+    box.innerHTML = `<input id="f_count" class="ltr" type="number" inputmode="numeric" min="0" value="${d.n || ''}"/>`;
     quickChips(box, [1,2,3,4,5,6,8,10], v => { $('f_count').value = v; });
   }
 
   if (c.metric === 'sec') {
-    const box = add(host, 'ثانیه', 'sec');
-    box.innerHTML = '<input id="f_sec" class="ltr" type="number" inputmode="numeric" min="0" placeholder="2"/>';
-    quickChips(box, [1,2,3,5,10,20,30], v => { $('f_sec').value = v; });
+    const box = add(host, 'ثانیه');
+    box.innerHTML = `<input id="f_sec" class="ltr" type="number" inputmode="numeric" min="0" value="${d.n || ''}"/>`;
+    quickChips(box, [1,2,3,5,10,20,30,60], v => { $('f_sec').value = v; });
   }
 
   if (c.metric === 'reps') {
-    const box = add(host, 'تعداد × دقیقهٔ هر بار', 'reps');
+    const box = add(host, 'تعداد × دقیقهٔ هر بار');
     box.innerHTML =
       '<div class="grid2">' +
-      '<input id="f_reps" class="ltr" type="number" inputmode="numeric" min="0" placeholder="3"/>' +
-      '<input id="f_perrep" class="ltr" type="number" inputmode="numeric" min="0" placeholder="2"/>' +
+      `<input id="f_reps"   class="ltr" type="number" inputmode="numeric" min="0" value="${d.r  || ''}"/>` +
+      `<input id="f_perrep" class="ltr" type="number" inputmode="numeric" min="0" value="${d.pr || ''}"/>` +
       '</div>';
   }
 
   if (c.eff) {
-    const box = add(host, 'تلاش (واحد خودت، نه ساعت)', 'eff');
-    box.innerHTML = '<input id="f_eff" class="ltr" type="number" inputmode="numeric" min="0" placeholder="30"/>';
+    const box = add(host, 'تلاش (واحد خودت، نه ساعت)');
+    box.innerHTML = `<input id="f_eff" class="ltr" type="number" inputmode="numeric" min="0" value="${d.eff || ''}"/>`;
     quickChips(box, [10,15,20,25,30,40,50], v => { $('f_eff').value = v; });
   }
 
   if (c.qual) {
-    const box = add(host, 'کیفیت', 'qual');
-    box.innerHTML = '<div class="stars" id="qualBtns">' +
+    const box = add(host, 'کیفیت');
+    box.innerHTML = '<div class="stars">' +
       [1,2,3,4,5].map(n => `<button type="button" data-q="${n}">${n}</button>`).join('') + '</div>';
     box.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => {
       box.querySelectorAll('[data-q]').forEach(x => x.classList.remove('on'));
@@ -397,14 +451,16 @@ function buildDynamic() {
       dyn.quality = Number(b.dataset.q);
       vibrate(8);
     }));
+    if (d.q) {
+      dyn.quality = d.q;
+      const pre = box.querySelector(`[data-q="${d.q}"]`);
+      if (pre) pre.classList.add('on');
+    }
   }
 
-  /* always available, hidden under the details block */
-  if (c.metric !== 'clock') {
-    dyn.clockExtra = makeClockWheel(add(extra, 'ساعت روز (اختیاری)', 'cwx'), 0, 0);
-  }
+  /* one optional extra, only a duration. no stray clock any more. */
   if (c.metric !== 'dur') {
-    dyn.durExtra = makeDurWheel(add(extra, 'مدت (اختیاری)', 'dwx'));
+    dyn.durExtra = makeDurWheel(add(extra, 'مدت (اختیاری)'));
   }
 }
 
@@ -426,15 +482,15 @@ function collectSession() {
     category: c.cat,
     code: c.code,
     metric: c.metric,
-    minutes: '', hm: '', effort: '', quality: '', reactSec: '',
-    count: '', reps: '', perRep: '', startClock: '',
+    minutes:'', hm:'', effort:'', quality:'', reactSec:'',
+    count:'', reps:'', perRep:'', startClock:'',
     note: $('s_note').value.trim(),
     synced: 0
   };
 
   if (c.metric === 'dur')   { rec.minutes = dyn.dur.minutes(); rec.hm = dyn.dur.hm(); }
   if (c.metric === 'clock') { rec.startClock = dyn.clock.value(); }
-  if (c.metric === 'count') { rec.count = num($('f_count').value); }
+  if (c.metric === 'count') { rec.count    = num($('f_count').value); }
   if (c.metric === 'sec')   { rec.reactSec = num($('f_sec').value); }
   if (c.metric === 'reps') {
     rec.reps   = num($('f_reps').value);
@@ -451,34 +507,40 @@ function collectSession() {
     const m = dyn.durExtra.minutes();
     if (m > 0 && rec.minutes === '') { rec.minutes = m; rec.hm = dyn.durExtra.hm(); }
   }
-  if (dyn.clockExtra) {
-    const v = dyn.clockExtra.value();
-    if (v !== '00:00' && !rec.startClock) rec.startClock = v;
-  }
 
-  const hasValue = [rec.minutes, rec.count, rec.reactSec, rec.startClock].some(v => v !== '' && v !== 0);
-  if (!hasValue) { toast('مقدار خالی است', true); return null; }
+  const filled = [rec.minutes, rec.count, rec.reactSec, rec.startClock].some(v => v !== '' && v !== 0);
+  if (!filled) { toast('مقدار خالی است', true); return null; }
   return rec;
 }
 
-/* ═══════════════ 7. META FORM ═══════════════ */
+/* ═════════════════════════════ 7. META FORM ═════════════════════════════════ */
 
 let mDate = null, mBid = null, mMood = null, mBigh = null, mBand = null, mOpfa = null;
 
 function buildMeta() {
   mDate = makeDateWheel($('mDate'));
-  mBid  = makeClockWheel($('mBid'), 7, 0);
-  mMood = makeDurWheel($('mMood'));
-  mBigh = makeDurWheel($('mBigh'));
-  mBand = makeDurWheel($('mBand'));
-  mOpfa = makeDurWheel($('mOpfa'));
+  mBid  = makeClockWheel($('mBid'), DEFAULT_BID_H, DEFAULT_BID_M);
+  mMood = makeDurWheel($('mMood'), META_DEF.mood[0], META_DEF.mood[1]);
+  mBigh = makeDurWheel($('mBigh'), META_DEF.bigh[0], META_DEF.bigh[1]);
+  mBand = makeDurWheel($('mBand'), META_DEF.band[0], META_DEF.band[1]);
+  mOpfa = makeDurWheel($('mOpfa'), META_DEF.opfa[0], META_DEF.opfa[1]);
+  if (!$('m_checkin').value) $('m_checkin').value = META_DEF.checkin;
 
-  $('metaBools').innerHTML = META_BOOLS.map(([id, label]) => `
+  /* Each question is pre-answered with its good outcome, so a normal day
+     needs no taps at all and you only touch the exceptions. */
+  $('metaBools').innerHTML = META_BOOLS.map(([id, label, pol]) => {
+    const neg    = pol === 'neg';
+    const yesCls = neg ? ' class="no"' : '';
+    const noCls  = neg ? '' : ' class="no"';
+    const yesChk = neg ? '' : ' checked';
+    const noChk  = neg ? ' checked' : '';
+    return `
     <label class="lb">${label}</label>
     <div class="seg">
-      <input type="radio" name="mb_${id}" id="mb_${id}_y" value="1"/><label for="mb_${id}_y">آره</label>
-      <input type="radio" class="no" name="mb_${id}" id="mb_${id}_n" value="0"/><label for="mb_${id}_n">نه</label>
-    </div>`).join('');
+      <input type="radio" name="mb_${id}" id="mb_${id}_y" value="1"${yesCls}${yesChk}/><label for="mb_${id}_y">آره</label>
+      <input type="radio" name="mb_${id}" id="mb_${id}_n" value="0"${noCls}${noChk}/><label for="mb_${id}_n">نه</label>
+    </div>`;
+  }).join('');
 }
 
 function radioVal(name) {
@@ -492,7 +554,6 @@ function collectMeta() {
     createdAt: new Date().toISOString(),
     dateShamsi: mDate.value(),
     bid: mBid.value(),
-    nap: radioVal('mb_nap'),
     checkin1h: num($('m_checkin').value),
     moodToFlowMin: mMood.minutes(), moodToFlowHM: mMood.hm(),
     bigharariMin:  mBigh.minutes(), bigharariHM:  mBigh.hm(),
@@ -505,7 +566,7 @@ function collectMeta() {
   return o;
 }
 
-/* ═══════════════ 8. TABS + SAVE ═══════════════ */
+/* ═════════════════════════════ 8. TABS AND SAVE ═════════════════════════════ */
 
 let activeTab = 'session';
 
@@ -519,6 +580,7 @@ function showTab(name) {
   $('tabData').classList.toggle('active',    name === 'data');
   $('btnSave').disabled  = (name === 'data');
   $('btnAgain').disabled = (name !== 'session');
+  requestAnimationFrame(refreshWheels);          // panes that were hidden lost their scroll
   if (name === 'data') refreshData();
 }
 
@@ -530,11 +592,9 @@ async function doSave(again) {
     vibrate(25);
     toast('ثبت شد · ' + (rec.hm || rec.startClock || rec.count || rec.reactSec));
     $('s_note').value = '';
-    if (!again) buildDynamic();
-    else buildDynamic();
+    buildDynamic();
   } else if (activeTab === 'meta') {
-    const rec = collectMeta();
-    await put('meta', rec);
+    await put('meta', collectMeta());
     vibrate(25);
     toast('متای روز ثبت شد');
   }
@@ -542,11 +602,10 @@ async function doSave(again) {
   trySync();
 }
 
-/* ═══════════════ 9. SYNC ═══════════════ */
+/* ═════════════════════════════ 9. SYNC ══════════════════════════════════════ */
 
 async function trySync(loud) {
-  const url = await cfgGet('url');
-  const secret = await cfgGet('secret');
+  const url = cfgGet('url'), secret = cfgGet('secret');
   if (!url) { if (loud) toast('آدرس وب‌اپ خالی است', true); return; }
   if (!navigator.onLine) { if (loud) toast('آفلاین هستی', true); return; }
 
@@ -567,15 +626,15 @@ async function trySync(loud) {
 
 async function pushBatch(url, secret, type, rows, fields) {
   const payload = { secret, type, fields, rows: rows.map(r => fields.map(f => r[f] === undefined ? '' : r[f])) };
-  /* text/plain keeps this a "simple request" so the browser skips the CORS
-     preflight that Apps Script cannot answer. */
+  /* text/plain keeps this a "simple request", so the browser skips the CORS
+     preflight that Apps Script is unable to answer. */
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(payload)
   });
-  const out = await res.json();
-  if (!out.ok) throw new Error(out.error || 'server');
+  const outp = await res.json();
+  if (!outp.ok) throw new Error(outp.error || 'server');
   const st = (type === 'meta') ? 'meta' : 'sessions';
   for (const r of rows) { r.synced = 1; await put(st, r); }
 }
@@ -594,26 +653,30 @@ function updateNetPill() {
   p.className = 'pill ' + (navigator.onLine ? 'on' : 'off');
 }
 
-/* ═══════════════ 10. DATA PANE ═══════════════ */
+/* ═════════════════════════════ 10. DATA PANE ════════════════════════════════ */
 
 async function refreshData() {
   const s = await getAll('sessions');
   const m = await getAll('meta');
   $('cntS').textContent = s.length;
   $('cntM').textContent = m.length;
-  $('cntQ').textContent = s.filter(r=>!r.synced).length + m.filter(r=>!r.synced).length;
+  $('cntQ').textContent = s.filter(r => !r.synced).length + m.filter(r => !r.synced).length;
 
   const [y, mo, d] = todayJ();
   const today = fmtJ(y, mo, d);
   const rows = s.filter(r => r.dateShamsi === today);
 
+  $('verBox').innerHTML =
+    `نسخهٔ اپ: <b>${APP_VERSION}</b><br/>` +
+    `امروز به شمسی: <b>${today}</b><br/>` +
+    `آدرس فعلی: <span class="ltr">${location.origin + location.pathname}</span>`;
+
   const byCat = {};
   let totalMin = 0, totalEff = 0;
   rows.forEach(r => {
-    const mi = Number(r.minutes) || 0;
-    const ef = Number(r.effort)  || 0;
+    const mi = Number(r.minutes) || 0, ef = Number(r.effort) || 0;
     totalMin += mi; totalEff += ef;
-    if (!byCat[r.category]) byCat[r.category] = { min: 0, eff: 0, n: 0 };
+    if (!byCat[r.category]) byCat[r.category] = { min:0, eff:0, n:0 };
     byCat[r.category].min += mi;
     byCat[r.category].eff += ef;
     byCat[r.category].n++;
@@ -622,29 +685,28 @@ async function refreshData() {
   let html = `<b>${today}</b> — جمع کل: <b>${fmtHM(totalMin)}</b> (${totalMin} دقیقه) · تلاش: <b>${totalEff}</b> · نوبت: <b>${rows.length}</b>`;
   const cats = Object.keys(byCat);
   if (cats.length) {
-    html += '<div style="margin-top:8px">' + cats.map(c =>
-      `${c}: <b>${fmtHM(byCat[c].min)}</b> · تلاش ${byCat[c].eff} · ${byCat[c].n} نوبت`
-    ).join('<br/>') + '</div>';
+    html += '<div style="margin-top:8px">' +
+      cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b> · تلاش ${byCat[c].eff} · ${byCat[c].n} نوبت`).join('<br/>') +
+      '</div>';
   }
   $('todaySum').innerHTML = html;
 
-  const body = document.querySelector('#tblRecent tbody');
-  body.innerHTML = s.slice(-20).reverse().map(r => `
+  document.querySelector('#tblRecent tbody').innerHTML = s.slice(-20).reverse().map(r => `
     <tr>
       <td class="ltr">${r.dateShamsi}</td>
-      <td>${(CODES.find(c=>c.code===r.code)||{}).label || r.code}</td>
+      <td>${(CODES.find(c => c.code === r.code) || {}).label || r.code}</td>
       <td class="ltr">${r.hm || r.startClock || r.count || (r.reactSec !== '' ? r.reactSec + 's' : '')}</td>
       <td class="ltr">${r.effort}</td>
-      <td><span class="tag ${r.synced?'sent':'pending'}">${r.synced?'رفت':'صف'}</span></td>
+      <td><span class="tag ${r.synced ? 'sent' : 'pending'}">${r.synced ? 'رفت' : 'صف'}</span></td>
     </tr>`).join('');
 }
 
-/* ═══════════════ 11. CSV ═══════════════ */
+/* ═════════════════════════════ 11. CSV EXPORT ═══════════════════════════════ */
 
-function csvEscape(v) {
+const csvEscape = v => {
   const s = String(v == null ? '' : v);
   return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-}
+};
 
 async function buildCsv(storeName, fields) {
   const rows = await getAll(storeName);
@@ -655,11 +717,10 @@ async function buildCsv(storeName, fields) {
 async function exportCsv(storeName, fields, name) {
   const text = await buildCsv(storeName, fields);
   const [y, m, d] = todayJ();
-  const file = `${name}_${y}-${pad2(m)}-${pad2(d)}.csv`;
   const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = file;
+  a.download = `${name}_${y}-${pad2(m)}-${pad2(d)}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -667,26 +728,52 @@ async function exportCsv(storeName, fields, name) {
   toast('فایل ساخته شد');
 }
 
-/** iPhone-friendly: hands the file to the iOS share sheet. */
 async function shareCsv() {
   const text = await buildCsv('sessions', SESSION_FIELDS);
   const [y, m, d] = todayJ();
   const file = new File([text], `sessions_${y}-${pad2(m)}-${pad2(d)}.csv`, { type: 'text/csv' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: 'DailyLog' }); return; } catch (e) { return; }
+    try { await navigator.share({ files: [file], title: 'DailyLog' }); } catch (e) {}
+    return;
   }
   exportCsv('sessions', SESSION_FIELDS, 'sessions');
 }
 
-/* ═══════════════ 12. BOOT ═══════════════ */
+/* ═════════════════════════════ 12. VERSION / CACHE ══════════════════════════ */
+
+/** Nukes every cache and the service worker, then reloads from the network. */
+async function hardReload() {
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (e) {}
+  location.replace(location.pathname + '?v=' + Date.now());
+}
+
+/* ═════════════════════════════ 13. BOOT ═════════════════════════════════════ */
 
 async function boot() {
+  $('verPill').textContent = APP_VERSION;
+  $('verPill').className = 'pill on';
+
+  /* Ask the browser not to evict our data. On iOS this is what keeps the
+     settings and the log alive between visits. */
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(() => {});
+  }
+
   sDate = makeDateWheel($('sDate'));
   buildCodeSelects();
   buildMeta();
 
-  $('cfg_url').value    = await cfgGet('url');
-  $('cfg_secret').value = await cfgGet('secret');
+  $('cfg_url').value    = cfgGet('url');
+  $('cfg_secret').value = cfgGet('secret');
 
   $('tabSession').addEventListener('click', () => showTab('session'));
   $('tabMeta').addEventListener('click',    () => showTab('meta'));
@@ -695,32 +782,52 @@ async function boot() {
   $('btnSave').addEventListener('click',  () => doSave(false));
   $('btnAgain').addEventListener('click', () => doSave(true));
 
-  $('btnSaveCfg').addEventListener('click', async () => {
-    await cfgSet('url', $('cfg_url').value.trim());
-    await cfgSet('secret', $('cfg_secret').value.trim());
-    toast('ذخیره شد');
+  $('btnSaveCfg').addEventListener('click', () => {
+    cfgSet('url', $('cfg_url').value.trim());
+    cfgSet('secret', $('cfg_secret').value.trim());
+    toast('ذخیره شد و دیگر پرسیده نمی‌شود');
   });
   $('btnSyncNow').addEventListener('click', () => trySync(true));
   $('btnCsvS').addEventListener('click', () => exportCsv('sessions', SESSION_FIELDS, 'sessions'));
   $('btnCsvM').addEventListener('click', () => exportCsv('meta', META_FIELDS, 'meta'));
   $('btnShare').addEventListener('click', shareCsv);
+  $('btnHardReload').addEventListener('click', hardReload);
   $('btnWipe').addEventListener('click', async () => {
     if (!confirm('همه دادهٔ این دستگاه پاک شود؟')) return;
     await clearStore('sessions');
     await clearStore('meta');
-    refreshData(); updateQueueBadge();
+    refreshData();
+    updateQueueBadge();
     toast('پاک شد');
   });
 
   window.addEventListener('online',  () => { updateNetPill(); trySync(); });
   window.addEventListener('offline', updateNetPill);
+  window.addEventListener('pageshow', () => requestAnimationFrame(refreshWheels));
+  window.addEventListener('resize',  () => requestAnimationFrame(refreshWheels));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      requestAnimationFrame(refreshWheels);
+      sDate.today();                              // a new day should open on the new day
+    }
+  });
 
   updateNetPill();
   updateQueueBadge();
   trySync();
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.update();
+      /* When a newer worker takes over, reload once so the page is running
+         the same build as the worker that is serving it. */
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded) return;
+        reloaded = true;
+        location.reload();
+      });
+    }).catch(() => {});
   }
 }
 
