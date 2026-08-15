@@ -53,11 +53,19 @@ textarea{min-height:60px;resize:vertical}
 
 /* ---------- wheel picker ---------- */
 .wheels{display:flex;gap:8px;align-items:stretch}
-.wcol{flex:1;position:relative;height:150px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.wcol .sc{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;padding:55px 0;
+/* 152 = 150 inner box + the 1px borders, so the inner box is exactly
+   55 + 40 + 55 and item i sits under the band at scrollTop = i * 40 with no
+   remainder, which is what the picker code assumes.
+
+   No scroll-snap-type here, on purpose. Chrome re-snaps to the FIRST item
+   whenever the snap style is recalculated, which silently dragged every wheel
+   back to 1403/01/01 and 0:00. The picker snaps in JavaScript once the finger
+   stops, so the CSS version bought nothing and cost correctness. */
+.wcol{flex:1;position:relative;height:152px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.wcol .sc{height:100%;overflow-y:scroll;padding:55px 0;
   scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
 .wcol .sc::-webkit-scrollbar{display:none}
-.wcol .it{height:40px;line-height:40px;text-align:center;scroll-snap-align:center;
+.wcol .it{height:40px;line-height:40px;text-align:center;
   font-size:1.02rem;color:#5f7186;transition:color .12s,transform .12s;direction:ltr}
 .wcol .it.sel{color:var(--ink);font-weight:bold;transform:scale(1.12)}
 .wcol .band{position:absolute;top:55px;height:40px;left:0;right:0;pointer-events:none;
@@ -263,6 +271,6 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
 <!-- The ?v= is bumped with every release. An old cached app.js can never be
      served in place of a new one, because the URL itself changes. -->
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

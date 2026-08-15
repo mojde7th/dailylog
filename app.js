@@ -12,7 +12,7 @@
 /* Bump this whenever you change anything. It is printed in the header, so a
    glance tells you whether the browser is running the new build or a stale
    cached one. */
-const APP_VERSION = 'v5 · wheels';
+const APP_VERSION = 'v6 · fixed';
 
 /* ═════════════════════════════ 1. ACTIVITY TABLE ═════════════════════════════
    Every activity declares how it is measured, so the form can show only the
@@ -163,6 +163,18 @@ function refreshWheels() {
   WHEELS.forEach(w => w.apply());
 }
 
+/* A pane that was display:none has no layout, so a wheel inside it refuses to
+   position itself and stays on its first item. Waiting for one animation
+   frame after revealing the pane is not enough, because that frame can be
+   skipped entirely when the page is in the background. Run once immediately,
+   then again as layout settles. */
+function settleWheels() {
+  refreshWheels();
+  requestAnimationFrame(refreshWheels);
+  setTimeout(refreshWheels, 60);
+  setTimeout(refreshWheels, 250);
+}
+
 function wheelColumn(items, initial, onChange) {
   const col = document.createElement('div');
   col.className = 'wcol';
@@ -182,17 +194,7 @@ function wheelColumn(items, initial, onChange) {
 
   const paint = i => sc.querySelectorAll('.it').forEach((n, k) => n.classList.toggle('sel', k === i));
 
-  /* Mandatory snapping re-snaps the container on every layout pass, and it
-     does that after our assignment, so the scrollTop we just wrote gets
-     thrown away and the wheel opens on item zero. Switching snapping off for
-     the assignment and back on straight after makes the position stick. */
-  function place(target) {
-    const prev = sc.style.scrollSnapType;
-    sc.style.scrollSnapType = 'none';
-    sc.scrollTop = target;
-    void sc.offsetHeight;                                  // force the reflow
-    sc.style.scrollSnapType = prev || '';
-  }
+  const place = target => { sc.scrollTop = target; };
 
   /** Puts the column back where it belongs. Cheap, safe to call often. */
   function apply() {
@@ -247,6 +249,7 @@ function wheelGroup(host, cols, captions) {
      the final layout settle, and on iOS the snap engine gets one more say
      after that. Re-applying is idempotent, so this is free insurance. */
   const settle = () => cols.forEach(c => c.apply());
+  settle();
   requestAnimationFrame(settle);
   setTimeout(settle, 60);
   setTimeout(settle, 300);
@@ -606,7 +609,7 @@ function showTab(name) {
   $('tabData').classList.toggle('active',    name === 'data');
   $('btnSave').disabled  = (name === 'data');
   $('btnAgain').disabled = (name !== 'session');
-  requestAnimationFrame(refreshWheels);          // panes that were hidden lost their scroll
+  settleWheels();                                // panes that were hidden lost their scroll
   if (name === 'data') refreshData();
 }
 
@@ -767,6 +770,33 @@ async function shareCsv() {
 
 /* ═════════════════════════════ 12. VERSION / CACHE ══════════════════════════ */
 
+/* Append ?diag=1 (or ?diag=meta) to dump every wheel's geometry into the page.
+   Worth keeping: wheel positioning depends on layout timing, and reading the
+   real numbers is the only way to tell a wrong default apart from a wheel
+   that never got the chance to position itself. */
+function diagDump() {
+  const lines = [];
+  document.querySelectorAll('.wcol').forEach((col, i) => {
+    const sc  = col.querySelector('.sc');
+    const its = col.querySelectorAll('.it');
+    let sel = -1;
+    its.forEach((n, k) => { if (n.classList.contains('sel')) sel = k; });
+    lines.push(
+      `col${i} n=${its.length} top=${sc.scrollTop} scrollH=${sc.scrollHeight} ` +
+      `clientH=${sc.clientHeight} itH=${its[0] ? its[0].offsetHeight : '?'} ` +
+      `sel=${sel} offParent=${col.offsetParent ? 'yes' : 'NULL'} ` +
+      `snap=${getComputedStyle(sc).scrollSnapType}`
+    );
+  });
+  lines.push('sDate.value=' + (sDate ? sDate.value() : 'n/a'));
+  lines.push('dyn.dur='     + (dyn.dur ? dyn.dur.hm() : 'n/a'));
+  lines.push('todayJ='      + todayJ().join('/'));
+  const pre = document.createElement('pre');
+  pre.id = 'diag';
+  pre.textContent = lines.join('\n');
+  document.body.insertBefore(pre, document.body.firstChild);
+}
+
 /** Nukes every cache and the service worker, then reloads from the network. */
 async function hardReload() {
   try {
@@ -829,18 +859,25 @@ async function boot() {
 
   window.addEventListener('online',  () => { updateNetPill(); trySync(); });
   window.addEventListener('offline', updateNetPill);
-  window.addEventListener('pageshow', () => requestAnimationFrame(refreshWheels));
-  window.addEventListener('resize',  () => requestAnimationFrame(refreshWheels));
+  window.addEventListener('pageshow', settleWheels);
+  window.addEventListener('resize',  settleWheels);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
-      requestAnimationFrame(refreshWheels);
       sDate.today();                              // a new day should open on the new day
+      settleWheels();
     }
   });
 
   updateNetPill();
   updateQueueBadge();
   trySync();
+
+  if (location.search.indexOf('diag=meta') >= 0) {
+    setTimeout(() => showTab('meta'), 1200);
+    setTimeout(diagDump, 2600);
+  } else if (location.search.indexOf('diag=1') >= 0) {
+    setTimeout(diagDump, 2000);
+  }
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').then(reg => {
