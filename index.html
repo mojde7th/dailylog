@@ -261,6 +261,8 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
 <div id="toast"></div>
 
-<script src="app.js"></script>
+<!-- The ?v= is bumped with every release. An old cached app.js can never be
+     served in place of a new one, because the URL itself changes. -->
+<script src="app.js?v=4"></script>
 </body>
 </html>
