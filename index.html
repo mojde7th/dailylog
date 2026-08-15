@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#0f1419"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="DailyLog"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>DailyLog</title>
+<style>
+:root{
+  --bg:#0f1419;--panel:#171d25;--panel2:#1d242e;--ink:#e8eef5;--muted:#93a4b8;
+  --line:#2a3542;--accent:#6db3f2;--good:#3ecf8e;--warn:#f0b429;--bad:#f07178;--r:14px
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;overscroll-behavior-y:contain}
+body{
+  font-family:Tahoma,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  line-height:1.8;padding-bottom:100px;-webkit-text-size-adjust:100%
+}
+header{
+  position:sticky;top:0;z-index:20;background:#131922;border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px
+}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:1.05rem;margin:0}
+.pill{font-size:.72rem;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--muted)}
+.pill.on{border-color:var(--good);color:var(--good)}
+.pill.off{border-color:var(--warn);color:var(--warn)}
+.tabs{display:flex;gap:6px;margin-top:10px}
+.tabs button{
+  flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:9px 6px;font-size:.86rem;font-family:inherit;cursor:pointer
+}
+.tabs button.active{background:#1e2b3c;border-color:var(--accent);color:var(--ink)}
+main{max-width:720px;margin:0 auto;padding:12px 14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 14px}
+.card h2{margin:0 0 4px;font-size:.98rem}
+.hint{color:var(--muted);font-size:.79rem;margin:0 0 10px}
+label.lb{display:block;font-size:.84rem;margin:14px 0 6px;color:#cfdcea}
+label.lb .req{color:var(--bad)}
+input,select,textarea{
+  width:100%;background:#0b1016;border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:11px 12px;font-family:inherit;font-size:16px
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{min-height:60px;resize:vertical}
+.ltr{direction:ltr;text-align:left}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ---------- wheel picker ---------- */
+.wheels{display:flex;gap:8px;align-items:stretch}
+.wcol{flex:1;position:relative;height:150px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.wcol .sc{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;padding:55px 0;
+  scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+.wcol .sc::-webkit-scrollbar{display:none}
+.wcol .it{height:40px;line-height:40px;text-align:center;scroll-snap-align:center;
+  font-size:1.02rem;color:#5f7186;transition:color .12s,transform .12s;direction:ltr}
+.wcol .it.sel{color:var(--ink);font-weight:bold;transform:scale(1.12)}
+.wcol .band{position:absolute;top:55px;height:40px;left:0;right:0;pointer-events:none;
+  border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);background:rgba(109,179,242,.08)}
+.wcap{display:flex;gap:8px;margin-top:4px}
+.wcap span{flex:1;text-align:center;font-size:.72rem;color:var(--muted)}
+
+.seg{display:flex;gap:6px;margin-top:5px}
+.seg input{display:none}
+.seg label{
+  flex:1;margin:0;text-align:center;background:#0b1016;border:1px solid var(--line);
+  border-radius:10px;padding:10px 4px;font-size:.88rem;cursor:pointer;color:var(--muted)
+}
+.seg input:checked + label{background:#12312a;border-color:var(--good);color:var(--good)}
+.seg input.no:checked + label{background:#2a1618;border-color:var(--bad);color:var(--bad)}
+.stars{display:flex;gap:6px}
+.stars button{flex:1;background:#0b1016;border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:10px 0;font-size:.9rem;font-family:inherit;cursor:pointer}
+.stars button.on{background:#2a2414;border-color:var(--warn);color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.chips button{
+  background:#0b1016;border:1px solid var(--line);color:var(--muted);border-radius:999px;
+  padding:7px 12px;font-size:.8rem;font-family:inherit;cursor:pointer
+}
+.chips button:active{border-color:var(--accent);color:var(--ink)}
+.bar{
+  position:fixed;bottom:0;left:0;right:0;background:#131922;border-top:1px solid var(--line);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:20
+}
+.bar .inner{max-width:720px;margin:0 auto;display:flex;gap:8px;width:100%}
+button.primary{
+  flex:2;background:#1c6fb8;border:1px solid #2f8ad8;color:#fff;border-radius:12px;
+  padding:14px;font-size:.95rem;font-family:inherit;font-weight:bold;cursor:pointer
+}
+button.ghost{
+  flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+  border-radius:12px;padding:14px;font-size:.9rem;font-family:inherit;cursor:pointer
+}
+button:disabled{opacity:.45}
+table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px}
+th,td{border-bottom:1px solid var(--line);padding:7px 5px;text-align:right}
+th{color:var(--muted);font-weight:normal}
+.tag{font-size:.7rem;border-radius:6px;padding:1px 6px;border:1px solid var(--line);color:var(--muted)}
+.tag.pending{border-color:var(--warn);color:var(--warn)}
+.tag.sent{border-color:var(--good);color:var(--good)}
+#toast{
+  position:fixed;bottom:100px;right:50%;transform:translateX(50%);background:#12312a;
+  border:1px solid var(--good);color:#bff0dc;padding:10px 18px;border-radius:10px;
+  font-size:.87rem;opacity:0;transition:opacity .22s;pointer-events:none;z-index:40;white-space:nowrap
+}
+#toast.show{opacity:1}
+#toast.err{background:#2a1618;border-color:var(--bad);color:#f8c9cd}
+.hide{display:none}
+.stat{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
+.stat b{color:var(--ink)}
+.sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem}
+details{border:1px solid var(--line);border-radius:10px;padding:8px 11px;margin-top:12px;background:#0b1016}
+summary{cursor:pointer;color:var(--muted);font-size:.83rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <h1>DailyLog</h1>
+    <div>
+      <span class="pill" id="netPill">…</span>
+      <span class="pill" id="queuePill">صف ۰</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <button id="tabSession" class="active" type="button">ثبت نوبت</button>
+    <button id="tabMeta" type="button">متای روز</button>
+    <button id="tabData" type="button">داده‌ها</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════ نوبت ══════════ -->
+  <section id="paneSession">
+    <div class="card">
+      <h2>ثبت یک نوبت</h2>
+      <p class="hint">فقط چیزی که همین الان تمام شد. فیلدها بر اساس نوع فعالیت عوض می‌شوند.</p>
+
+      <label class="lb">تاریخ</label>
+      <div id="sDate"></div>
+
+      <label class="lb">دسته</label>
+      <select id="s_cat"></select>
+
+      <label class="lb">فعالیت <span class="req">*</span></label>
+      <select id="s_code"></select>
+
+      <div id="dynFields"></div>
+
+      <details>
+        <summary>فیلدهای بیشتر</summary>
+        <div id="extraFields"></div>
+      </details>
+
+      <label class="lb">یادداشت</label>
+      <textarea id="s_note" placeholder="اختیاری"></textarea>
+    </div>
+  </section>
+
+  <!-- ══════════ متا ══════════ -->
+  <section id="paneMeta" class="hide">
+    <div class="card">
+      <h2>متای روز</h2>
+      <p class="hint">یک بار در شبانه‌روز. آخر شب پر کن.</p>
+
+      <label class="lb">تاریخ</label>
+      <div id="mDate"></div>
+
+      <label class="lb">ساعت بیداری</label>
+      <div id="mBid"></div>
+
+      <label class="lb">چرت داشتم؟</label>
+      <div class="seg">
+        <input type="radio" name="mb_nap" id="mb_nap_y" value="1"/><label for="mb_nap_y">آره</label>
+        <input type="radio" class="no" name="mb_nap" id="mb_nap_n" value="0"/><label for="mb_nap_n">نه</label>
+      </div>
+
+      <div id="metaBools"></div>
+
+      <label class="lb">تعداد چک‌این داخل یک ساعت</label>
+      <input id="m_checkin" class="ltr" type="number" inputmode="numeric" min="0" placeholder="3"/>
+
+      <label class="lb">بازه مود تا فلو</label>
+      <div id="mMood"></div>
+
+      <label class="lb">بی‌قراری و تاب‌آوری</label>
+      <div id="mBigh"></div>
+
+      <label class="lb">فشار و درد و زجر شدید</label>
+      <div id="mBand"></div>
+
+      <label class="lb">بازه اوپن‌فست</label>
+      <div id="mOpfa"></div>
+
+      <label class="lb">یادداشت روز</label>
+      <textarea id="m_note" placeholder="اختیاری"></textarea>
+    </div>
+  </section>
+
+  <!-- ══════════ داده ══════════ -->
+  <section id="paneData" class="hide">
+    <div class="card">
+      <h2>جمع امروز</h2>
+      <div class="stat">
+        <span>نوبت‌ها: <b id="cntS">0</b></span>
+        <span>متاها: <b id="cntM">0</b></span>
+        <span>در صف: <b id="cntQ">0</b></span>
+      </div>
+      <div class="sum" id="todaySum">—</div>
+    </div>
+
+    <div class="card">
+      <h2>خروجی و پشتیبان</h2>
+      <p class="hint">اگر گوگل‌شیت نمی‌خواهی، همین کافی است. فایل را به خودت ایمیل یا در فایل‌ها ذخیره کن.</p>
+      <div class="chips">
+        <button type="button" id="btnCsvS">خروجی نوبت‌ها</button>
+        <button type="button" id="btnCsvM">خروجی متاها</button>
+        <button type="button" id="btnShare">اشتراک‌گذاری فایل</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>همگام‌سازی با گوگل‌شیت</h2>
+      <p class="hint">اختیاری. اگر خالی بگذاری، اپ کامل کار می‌کند و فقط آفلاین می‌ماند.</p>
+      <label class="lb">آدرس وب‌اپ</label>
+      <input id="cfg_url" class="ltr" placeholder="https://script.google.com/macros/s/..../exec"/>
+      <label class="lb">کلید مشترک</label>
+      <input id="cfg_secret" class="ltr" placeholder="یک رشته که خودت می‌سازی"/>
+      <div class="chips">
+        <button type="button" id="btnSaveCfg">ذخیره</button>
+        <button type="button" id="btnSyncNow">همگام‌سازی الان</button>
+        <button type="button" id="btnWipe">پاک‌کردن همه</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>۲۰ نوبت آخر</h2>
+      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>فعالیت</th><th>مقدار</th><th>تلاش</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+</main>
+
+<div class="bar">
+  <div class="inner">
+    <button class="primary" id="btnSave" type="button">ذخیره</button>
+    <button class="ghost" id="btnAgain" type="button">ذخیره و بعدی</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
