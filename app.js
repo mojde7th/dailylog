@@ -12,7 +12,7 @@
 /* Bump this whenever you change anything. It is printed in the header, so a
    glance tells you whether the browser is running the new build or a stale
    cached one. */
-const APP_VERSION = 'v4 · 12:55';
+const APP_VERSION = 'v5 · wheels';
 
 /* ═════════════════════════════ 1. ACTIVITY TABLE ═════════════════════════════
    Every activity declares how it is measured, so the form can show only the
@@ -177,26 +177,45 @@ function wheelColumn(items, initial, onChange) {
   col.appendChild(sc);
   col.appendChild(band);
 
-  let idx = Math.max(0, Math.min(items.length - 1, initial | 0));
+  let idx   = Math.max(0, Math.min(items.length - 1, initial | 0));
+  let quiet = false;   // true while we are the ones moving the wheel
 
   const paint = i => sc.querySelectorAll('.it').forEach((n, k) => n.classList.toggle('sel', k === i));
+
+  /* Mandatory snapping re-snaps the container on every layout pass, and it
+     does that after our assignment, so the scrollTop we just wrote gets
+     thrown away and the wheel opens on item zero. Switching snapping off for
+     the assignment and back on straight after makes the position stick. */
+  function place(target) {
+    const prev = sc.style.scrollSnapType;
+    sc.style.scrollSnapType = 'none';
+    sc.scrollTop = target;
+    void sc.offsetHeight;                                  // force the reflow
+    sc.style.scrollSnapType = prev || '';
+  }
 
   /** Puts the column back where it belongs. Cheap, safe to call often. */
   function apply() {
     if (!col.isConnected || col.offsetParent === null) return;
-    if (Math.abs(sc.scrollTop - idx * ITEM_H) > 2) sc.scrollTop = idx * ITEM_H;
+    quiet = true;
+    if (Math.abs(sc.scrollTop - idx * ITEM_H) > 2) place(idx * ITEM_H);
     paint(idx);
+    setTimeout(() => { quiet = false; }, 80);
   }
 
   function set(i, smooth) {
     idx = Math.max(0, Math.min(items.length - 1, i | 0));
-    sc.scrollTo({ top: idx * ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
+    quiet = true;
+    if (smooth) sc.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
+    else        place(idx * ITEM_H);
     paint(idx);
+    setTimeout(() => { quiet = false; }, smooth ? 400 : 80);
   }
 
   let t = null;
   sc.addEventListener('scroll', () => {
-    if (col.offsetParent === null) return;                 // ignore ghost scrolls while hidden
+    if (quiet) return;                                     // our own move, not the finger
+    if (col.offsetParent === null) return;                 // ghost scroll while hidden
     const live = Math.round(sc.scrollTop / ITEM_H);
     if (live !== idx && live >= 0 && live < items.length) { idx = live; paint(idx); }
     clearTimeout(t);
@@ -224,7 +243,13 @@ function wheelGroup(host, cols, captions) {
     cap.innerHTML = captions.map(c => `<span>${c}</span>`).join('');
     host.appendChild(cap);
   }
-  requestAnimationFrame(() => cols.forEach(c => c.apply()));
+  /* Three passes on purpose. The first frame is often before the fonts and
+     the final layout settle, and on iOS the snap engine gets one more say
+     after that. Re-applying is idempotent, so this is free insurance. */
+  const settle = () => cols.forEach(c => c.apply());
+  requestAnimationFrame(settle);
+  setTimeout(settle, 60);
+  setTimeout(settle, 300);
 }
 
 /* --- Shamsi date: year / month / day, always opening on today --- */
@@ -254,6 +279,7 @@ function makeDateWheel(host) {
     wd.el.replaceWith(nd.el);
     wd = nd;
     requestAnimationFrame(() => nd.apply());
+    setTimeout(() => nd.apply(), 60);
   }
 
   wy = wheelColumn(years, years.indexOf(String(cy)), rebuildDays);
