@@ -12,95 +12,102 @@
 /* Bump this whenever you change anything. It is printed in the header, so a
    glance tells you whether the browser is running the new build or a stale
    cached one. */
-const APP_VERSION = 'v6 · fixed';
+const APP_VERSION = 'v7 · parts';
 
 /* ═════════════════════════════ 1. ACTIVITY TABLE ═════════════════════════════
-   Every activity declares how it is measured, so the form can show only the
-   input that activity actually needs.
+   Every activity declares how it is measured and from which day-part it first
+   becomes legal. A later part always inherits everything from earlier parts.
 
-     metric 'dur'   → duration wheel (hours + minutes)   fills minutes + hm
-     metric 'clock' → time-of-day wheel                  fills startClock
-     metric 'sec'   → seconds number                     fills reactSec
-     metric 'count' → plain count                        fills count
-     metric 'reps'  → N times x M minutes                fills reps, perRep, minutes
+     metric 'dur'   → duration wheel                     minutes + hm
+     metric 'sec'   → seconds, floor of 2                reactSec
+     metric 'reps'  → N times × M minutes                reps, perRep, minutes
+     metric 'accum' → +N on today's running total        count
+     metric 'tick'  → one occurrence                     count = 1
 
-     eff  : true → also ask for effort units (your own 30 / 50 scale)
-     qual : true → also ask quality 1..5
-
-   def : where every wheel and box opens before you touch it. Typing should
-         only ever be a correction, never data entry from zero.
-           h, m  → duration wheel
-           ch, cm→ clock wheel
-           eff   → effort box
-           q     → quality 1..5
-           n     → count / seconds box
-           r, pr → reps x minutes
+     from : 0 تا ۱۲   1 دوازده تا دو   2 دو تا شش   3 شش به بعد
+     kind : optional تهیه / خوردن radio (pills)
    ========================================================================== */
 
+const PARTS = [
+  { id: 0, label: 'تا ۱۲',    hint: 'صبح تا ظهر' },
+  { id: 1, label: '۱۲ تا ۲',  hint: 'ظهر' },
+  { id: 2, label: '۲ تا ۶',   hint: 'بعدازظهر' },
+  { id: 3, label: '۶ به بعد', hint: 'بعد از اوپن‌فست' }
+];
+
 const CODES = [
-  { cat:'کار و آی‌تی',    code:'itpr',        label:'ITpr',                  metric:'dur',   eff:true, qual:true, def:{h:2,m:40,eff:40,q:3} },
-  { cat:'کار و آی‌تی',    code:'azkesh',      label:'azkesh',                metric:'dur',   eff:true,            def:{h:1,m:0, eff:20} },
-  { cat:'کار و آی‌تی',    code:'do',          label:'Do',                    metric:'dur',                        def:{h:0,m:30} },
-  { cat:'کار و آی‌تی',    code:'sumtakhmoj',  label:'sumtakhmojmotn',        metric:'dur',                        def:{h:0,m:20} },
+  { cat:'کار و آی‌تی',     code:'itpr',         label:'آی‌تی حرفه‌ای',              metric:'dur',   from:0, def:{h:2,m:40} },
 
-  { cat:'تخصیص و تمرکز', code:'takhkho',     label:'Takhkho',               metric:'dur',   eff:true,            def:{h:0,m:30, eff:30} },
-  { cat:'تخصیص و تمرکز', code:'takhshose',   label:'Takhshose',             metric:'dur',   eff:true,            def:{h:0,m:40, eff:30} },
-  { cat:'تخصیص و تمرکز', code:'arasmotakh',  label:'arasmotakhshose',       metric:'dur',                        def:{h:0,m:30} },
-  { cat:'تخصیص و تمرکز', code:'arasmor',     label:'arasmor',               metric:'dur',                        def:{h:0,m:25} },
-  { cat:'تخصیص و تمرکز', code:'rout',        label:'rout',                  metric:'dur',                        def:{h:0,m:40} },
-  { cat:'تخصیص و تمرکز', code:'mintakhir',   label:'تأخیر واکنش (ثانیه)',    metric:'sec',                        def:{n:2} },
-  { cat:'تخصیص و تمرکز', code:'checkin',     label:'چک‌این (تعداد)',         metric:'count',                      def:{n:3} },
+  { cat:'تخصیص',          code:'takhkhod',     label:'تخصیص خودم',                metric:'dur',   from:0, def:{h:0,m:30} },
+  { cat:'تخصیص',          code:'takhshose',    label:'تخصیص مجاز',                metric:'dur',   from:0, def:{h:0,m:40} },
 
-  { cat:'بدن و سلامت',   code:'openfast',    label:'openfast (ساعت دقیق)',   metric:'clock',                      def:{ch:15,cm:0} },
-  { cat:'بدن و سلامت',   code:'ab',          label:'ab',                    metric:'dur',                        def:{h:0,m:20} },
-  { cat:'بدن و سلامت',   code:'dand',        label:'dand (تکرار × دقیقه)',   metric:'reps',                       def:{r:3,pr:2} },
-  { cat:'بدن و سلامت',   code:'drazmayesh',  label:'dr / azmayesh',         metric:'dur',                        def:{h:2,m:30} },
-  { cat:'بدن و سلامت',   code:'salad',       label:'salad',                 metric:'dur',                        def:{h:0,m:20} },
-  { cat:'بدن و سلامت',   code:'ghorsqat',    label:'ghors / qat (تعداد)',    metric:'count',                      def:{n:1} },
-  { cat:'بدن و سلامت',   code:'shosmort',    label:'ShosMort',              metric:'dur',                        def:{h:0,m:20} },
+  { cat:'آراستگی',        code:'arasmotakh',   label:'آراستگی شویسی',             metric:'dur',   from:0, def:{h:0,m:30} },
+  { cat:'آراستگی',        code:'arasmor',      label:'آراستگی خودم',              metric:'dur',   from:0, def:{h:0,m:25} },
 
-  { cat:'خانه و شخصی',   code:'otu',         label:'Otu',                   metric:'dur',                        def:{h:0,m:20} },
-  { cat:'خانه و شخصی',   code:'moshv',       label:'Moshv',                 metric:'dur',                        def:{h:0,m:20} },
-  { cat:'خانه و شخصی',   code:'ket',         label:'Ket',                   metric:'dur',                        def:{h:0,m:15} },
-  { cat:'خانه و شخصی',   code:'sabtturkela', label:'Sabtturkela',           metric:'dur',                        def:{h:0,m:15} },
+  { cat:'ورزش',           code:'azkesh',       label:'ازکش / باشگاه',             metric:'dur',   from:2, def:{h:1,m:0} },
+  { cat:'ورزش',           code:'do',           label:'دو',                        metric:'dur',   from:2, def:{h:0,m:30} },
 
-  { cat:'مالی و اداری',  code:'bargozbime',  label:'bime / mali / kharid',  metric:'dur',                        def:{h:0,m:25} },
-  { cat:'مالی و اداری',  code:'banki',       label:'banki / sarmayegozari', metric:'dur',                        def:{h:0,m:45} },
+  { cat:'روتین',          code:'rout',         label:'روتین پرت',                 metric:'dur',   from:0, def:{h:0,m:40} },
 
-  { cat:'یادگیری',       code:'reswch',      label:'reswch',                metric:'dur',   eff:true, qual:true, def:{h:1,m:50,eff:30,q:3} }
+  { cat:'واکنش',          code:'mintakhir',    label:'تأخیر واکنش',               metric:'sec',   from:0, def:{n:2} },
+  { cat:'واکنش',          code:'checkin',      label:'چک‌این روز',                metric:'accum', from:0, def:{n:1} },
+  { cat:'واکنش',          code:'ghanoon',      label:'قانون فرای من',             metric:'tick',  from:0 },
+
+  { cat:'سلامت',          code:'ab',           label:'آب (مدت نوشیدن)',           metric:'dur',   from:0, def:{h:0,m:20} },
+  { cat:'سلامت',          code:'dand1',        label:'دندان ۱ مسواک',             metric:'reps',  from:3, def:{r:1,pr:5} },
+  { cat:'سلامت',          code:'dand2',        label:'دندان ۲ نخ',                metric:'reps',  from:3, def:{r:1,pr:5} },
+  { cat:'سلامت',          code:'dand3',        label:'دندان ۳ دهان‌شویه',          metric:'reps',  from:3, def:{r:1,pr:5} },
+  { cat:'سلامت',          code:'drazmayesh',   label:'دکتر / آزمایش',             metric:'dur',   from:0, def:{h:2,m:30} },
+  { cat:'سلامت',          code:'ghors_sonti',  label:'قرص سنتی',                  metric:'reps',  from:0, def:{r:1,pr:5}, kind:true },
+  { cat:'سلامت',          code:'ghors_kaj',    label:'قرص کاج',                   metric:'reps',  from:0, def:{r:1,pr:5}, kind:true },
+  { cat:'سلامت',          code:'qat',          label:'قطره',                      metric:'reps',  from:3, def:{r:1,pr:5} },
+  { cat:'سلامت',          code:'ker',          label:'کرم',                       metric:'reps',  from:3, def:{r:1,pr:5} },
+
+  { cat:'خانه',           code:'shosmort',     label:'شست مرتب',                  metric:'dur',   from:1, def:{h:0,m:20} },
+  { cat:'خانه',           code:'otu',          label:'اتو',                       metric:'dur',   from:0, def:{h:0,m:20} },
+
+  { cat:'یادگیری',        code:'ket',          label:'کتاب',                      metric:'dur',   from:3, def:{h:0,m:15} },
+  { cat:'یادگیری',        code:'reswch',       label:'پژوهش',                     metric:'dur',   from:3, def:{h:1,m:50} },
+
+  { cat:'مالی و ضروری',   code:'zaruri',       label:'ضروری صبح',                 metric:'dur',   from:0, def:{h:0,m:20} },
+  { cat:'مالی و ضروری',   code:'banki',        label:'بانکی / سرمایه‌گذاری',       metric:'dur',   from:0, def:{h:0,m:45} },
+  { cat:'مالی و ضروری',   code:'bargozbime',   label:'بیمه / پیگیری / خرید',      metric:'dur',   from:1, def:{h:0,m:25} },
+
+  { cat:'ارتباط',         code:'sabtturkela',  label:'ثبت‌نام تور و کلاس',         metric:'dur',   from:3, def:{h:0,m:15} },
+  { cat:'ارتباط',         code:'moshv',        label:'مشاوره / کارگاه روان',      metric:'dur',   from:2, def:{h:0,m:20} }
 ];
 
-/* id, label, polarity. polarity 'neg' means "نه" is the good answer and
-   therefore the green one. */
+/* Layers clocked on every session, not once a day. Zero means "skip". */
+const LAYERS = [
+  ['mood',  'مود تا فلو',   5, 10],
+  ['bigh',  'بی‌قراری',      0,  0],
+  ['tabav', 'تاب‌آوری',      0,  0],
+  ['fesh',  'فشار شدید',     0,  0],
+  ['dard',  'درد شدید',      0,  0],
+  ['zajr',  'زجر شدید',      0,  0]
+];
+
+/* polarity 'neg' → "نه" is the good (green) answer. */
 const META_BOOLS = [
-  ['nap',           'چرت داشتم',                        'neg'],
-  ['planTomorrow',  'برنامه فردا ایجاد شده',             'pos'],
-  ['ruleFollowed',  'قانون فرای من رعایت شد',            'pos'],
-  ['noSugar',       'هیچ قند و کرب و شیرین‌کننده نخوردم', 'pos'],
-  ['sachetProtein', 'ساشه پروتئین بعد از ساعت ۳',        'pos'],
+  ['nap',            'چرت داشتم',                              'neg'],
+  ['planTomorrow',   'برنامه فردا ایجاد شده',                   'pos'],
+  ['sachetProtein',  'ساشه پروتئین بعد از ساعت ۳',              'pos'],
+  ['noSugar',        'هیچ قند و کرب و شیرین‌کننده نخوردم',       'pos'],
+  ['afterOpfaClean', 'بعد از اوپن‌فست چیز اشتباهی نخوردم',       'pos']
 ];
 
-/* Column order in the sheet. Keep uid first: the script matches on it. */
-const SESSION_FIELDS = ['uid','createdAt','dateShamsi','category','code','metric',
-                        'minutes','hm','effort','quality','reactSec','count',
-                        'reps','perRep','startClock','note'];
+const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','category','code','metric',
+                        'minutes','hm','reactSec','count','reps','perRep','kind',
+                        'moodMin','moodHM','bighMin','bighHM','tabavMin','tabavHM',
+                        'feshMin','feshHM','dardMin','dardHM','zajrMin','zajrHM','note'];
 
-const META_FIELDS = ['uid','createdAt','dateShamsi','bid','checkin1h',
-                     'moodToFlowMin','moodToFlowHM','bigharariMin','bigharariHM',
-                     'bandShadidMin','bandShadidHM','openfastMin','openfastHM',
+const META_FIELDS = ['uid','createdAt','dateShamsi','bid',
+                     'openfastMin','openfastHM',
                      ...META_BOOLS.map(b => b[0]), 'note'];
 
-const DEFAULT_BID_H = 3;      // ساعت پیش‌فرض بیداری
+const DEFAULT_BID_H = 3;
 const DEFAULT_BID_M = 30;
-
-/* Opening values for the daily meta wheels: [hours, minutes] */
-const META_DEF = {
-  mood:    [5, 10],
-  bigh:    [3, 15],
-  band:    [4, 0],
-  opfa:    [4, 0],
-  checkin: 3
-};
+const MIN_REACT_SEC = 2;
 
 /* ═════════════════════════════ 2. JALALI CALENDAR ═══════════════════════════ */
 
@@ -175,13 +182,24 @@ function settleWheels() {
   setTimeout(refreshWheels, 250);
 }
 
-function wheelColumn(items, initial, onChange) {
+function wheelColumn(items, initial, onChange, opts) {
+  opts = opts || {};
+  const N      = items.length;
+  const loop   = !!opts.loop && N > 1;
+  const COPIES = loop ? 5 : 1;
+  const mid    = loop ? 2 * N : 0;
+
+  const shown = [];
+  for (let c = 0; c < COPIES; c++) {
+    for (let i = 0; i < N; i++) shown.push(items[i]);
+  }
+
   const col = document.createElement('div');
   col.className = 'wcol';
 
   const sc = document.createElement('div');
   sc.className = 'sc';
-  sc.innerHTML = items.map(t => `<div class="it">${t}</div>`).join('');
+  sc.innerHTML = shown.map(t => `<div class="it">${t}</div>`).join('');
 
   const band = document.createElement('div');
   band.className = 'band';
@@ -189,65 +207,85 @@ function wheelColumn(items, initial, onChange) {
   col.appendChild(sc);
   col.appendChild(band);
 
-  let idx   = Math.max(0, Math.min(items.length - 1, initial | 0));
-  let quiet = false;   // true while we are the ones moving the wheel
+  const clampLog = i => Math.max(0, Math.min(N - 1, i | 0));
+  let idx   = mid + clampLog(initial);
+  let quiet = false;
 
-  const paint = i => sc.querySelectorAll('.it').forEach((n, k) => n.classList.toggle('sel', k === i));
+  const logical = () => ((idx % N) + N) % N;
+
+  const paint = () => {
+    const log = logical();
+    sc.querySelectorAll('.it').forEach((n, k) => n.classList.toggle('sel', (k % N) === log));
+  };
 
   const place = target => { sc.scrollTop = target; };
 
-  /** Puts the column back where it belongs. Cheap, safe to call often. */
+  function recenter() {
+    if (!loop) return;
+    const next = mid + logical();
+    if (next !== idx) {
+      idx = next;
+      place(idx * ITEM_H);
+    }
+  }
+
   function apply() {
     if (!col.isConnected || col.offsetParent === null) return;
     quiet = true;
+    recenter();
     if (Math.abs(sc.scrollTop - idx * ITEM_H) > 2) place(idx * ITEM_H);
-    paint(idx);
+    paint();
     setTimeout(() => { quiet = false; }, 80);
   }
 
   function set(i, smooth) {
-    idx = Math.max(0, Math.min(items.length - 1, i | 0));
+    idx = mid + clampLog(i);
     quiet = true;
     if (smooth) sc.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
     else        place(idx * ITEM_H);
-    paint(idx);
-    setTimeout(() => { quiet = false; }, smooth ? 400 : 80);
+    paint();
+    setTimeout(() => { quiet = false; }, smooth ? 280 : 80);
   }
 
   let t = null;
   sc.addEventListener('scroll', () => {
-    if (quiet) return;                                     // our own move, not the finger
-    if (col.offsetParent === null) return;                 // ghost scroll while hidden
+    if (quiet) return;
+    if (col.offsetParent === null) return;
     const live = Math.round(sc.scrollTop / ITEM_H);
-    if (live !== idx && live >= 0 && live < items.length) { idx = live; paint(idx); }
+    if (live >= 0 && live < shown.length) {
+      idx = live;
+      paint();
+    }
     clearTimeout(t);
     t = setTimeout(() => {
+      quiet = true;
       sc.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
-      if (onChange) onChange(idx);
-    }, 110);
+      setTimeout(() => {
+        recenter();
+        quiet = false;
+        if (onChange) onChange(logical());
+      }, 180);
+    }, 80);
   }, { passive: true });
 
-  const api = { el: col, get: () => idx, set, apply,
+  const api = { el: col, get: logical, set, apply,
                 destroy: () => WHEELS.delete(api) };
   WHEELS.add(api);
   return api;
 }
 
-function wheelGroup(host, cols, captions) {
+function wheelGroup(host, cols, captions, ltr) {
   host.innerHTML = '';
   const row = document.createElement('div');
-  row.className = 'wheels';
+  row.className = 'wheels' + (ltr ? ' ltr' : '');
   cols.forEach(c => row.appendChild(c.el));
   host.appendChild(row);
   if (captions) {
     const cap = document.createElement('div');
-    cap.className = 'wcap';
+    cap.className = 'wcap' + (ltr ? ' ltr' : '');
     cap.innerHTML = captions.map(c => `<span>${c}</span>`).join('');
     host.appendChild(cap);
   }
-  /* Three passes on purpose. The first frame is often before the fonts and
-     the final layout settle, and on iOS the snap engine gets one more say
-     after that. Re-applying is idempotent, so this is free insurance. */
   const settle = () => cols.forEach(c => c.apply());
   settle();
   requestAnimationFrame(settle);
@@ -276,7 +314,7 @@ function makeDateWheel(host) {
     const keep = wd.get();
     const items = dayItems(y, m);
     if (items.length === wd.count) { wd.apply(); return; }
-    const nd = wheelColumn(items, Math.min(keep, items.length - 1));
+    const nd = wheelColumn(items, Math.min(keep, items.length - 1), null, { loop: true });
     nd.count = items.length;
     wd.destroy();
     wd.el.replaceWith(nd.el);
@@ -286,8 +324,8 @@ function makeDateWheel(host) {
   }
 
   wy = wheelColumn(years, years.indexOf(String(cy)), rebuildDays);
-  wm = wheelColumn(J_MONTHS, cm - 1, rebuildDays);
-  wd = wheelColumn(dayItems(cy, cm), cd - 1);
+  wm = wheelColumn(J_MONTHS, cm - 1, rebuildDays, { loop: true });
+  wd = wheelColumn(dayItems(cy, cm), cd - 1, null, { loop: true });
   wd.count = jMonthLen(cy, cm);
 
   wheelGroup(host, [wy, wm, wd], ['سال', 'ماه', 'روز']);
@@ -304,29 +342,47 @@ function makeDateWheel(host) {
   };
 }
 
-/* --- time of day: hour / minute in steps of 5 --- */
+function minuteItems() {
+  const mm = [];
+  for (let i = 0; i <= 60; i += 5) mm.push(pad2(i));
+  return mm;
+}
+
+function minuteIndex(m) {
+  const snapped = Math.round((m || 0) / 5) * 5;
+  return Math.max(0, Math.min(12, snapped / 5));
+}
+
+/* Hour on the LEFT, minute on the RIGHT. Minutes go 00 … 60 and the column
+   loops, so scrolling up from 00 lands on 60 instead of dying at the top. */
 function makeClockWheel(host, defH, defM) {
-  const hh = [], mm = [];
+  const hh = [];
   for (let i = 0; i < 24; i++) hh.push(pad2(i));
-  for (let i = 0; i < 60; i += 5) mm.push(pad2(i));
-  const wh = wheelColumn(hh, defH || 0);
-  const wm = wheelColumn(mm, Math.round((defM || 0) / 5));
-  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه']);
+  const mm = minuteItems();
+  const wh = wheelColumn(hh, defH || 0, null, { loop: true });
+  const wm = wheelColumn(mm, minuteIndex(defM), null, { loop: true });
+  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
   return { value: () => hh[wh.get()] + ':' + mm[wm.get()] };
 }
 
-/* --- duration: hours / minutes in steps of 5, returned as total minutes --- */
 function makeDurWheel(host, defH, defM) {
-  const hh = [], mm = [];
+  const hh = [];
   for (let i = 0; i <= 14; i++) hh.push(String(i));
-  for (let i = 0; i < 60; i += 5) mm.push(pad2(i));
-  const wh = wheelColumn(hh, defH || 0);
-  const wm = wheelColumn(mm, Math.round((defM || 0) / 5));
-  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه']);
+  const mm = minuteItems();
+  const wh = wheelColumn(hh, defH || 0, null, { loop: true });
+  const wm = wheelColumn(mm, minuteIndex(defM), null, { loop: true });
+  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
   return {
-    minutes: () => wh.get() * 60 + wm.get() * 5,
-    hm: () => hh[wh.get()] + ':' + mm[wm.get()],
-    setMinutes: m => { wh.set(Math.floor(m / 60), true); wm.set(Math.round((m % 60) / 5), true); },
+    minutes: () => wh.get() * 60 + Number(mm[wm.get()]),
+    hm: () => {
+      const total = wh.get() * 60 + Number(mm[wm.get()]);
+      return Math.floor(total / 60) + ':' + pad2(total % 60);
+    },
+    setMinutes: m => {
+      const n = Number(m) || 0;
+      wh.set(Math.floor(n / 60), true);
+      wm.set(minuteIndex(n % 60), true);
+    },
     reset: () => { wh.set(0); wm.set(0); }
   };
 }
@@ -388,109 +444,149 @@ function toast(msg, isErr) {
 
 /* ═════════════════════════════ 6. SESSION FORM ══════════════════════════════ */
 
-let sDate = null, dyn = {};
+let sDate = null, dyn = {}, layers = {}, activePart = 0;
 
-const currentCode = () => CODES.find(c => c.code === $('s_code').value) || CODES[0];
+const currentCode = () => CODES.find(c => c.code === $('s_code').value) || codesForPart(activePart)[0];
+const codesForPart = p => CODES.filter(c => (c.from || 0) <= p);
+
+function partFromClock() {
+  const h = new Date().getHours();
+  if (h < 12) return 0;
+  if (h < 14) return 1;
+  if (h < 18) return 2;
+  return 3;
+}
+
+function buildParts() {
+  activePart = partFromClock();
+  const host = $('sParts');
+  host.innerHTML = PARTS.map(p =>
+    `<button type="button" data-p="${p.id}">${p.label}</button>`).join('');
+  const paint = () => host.querySelectorAll('button').forEach(b =>
+    b.classList.toggle('on', Number(b.dataset.p) === activePart));
+  host.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    activePart = Number(b.dataset.p);
+    paint();
+    fillCodes();
+    vibrate(8);
+  }));
+  paint();
+}
+
+function fillCodes() {
+  const list = codesForPart(activePart);
+  const cats = [...new Set(list.map(c => c.cat))];
+  const keep = $('s_code').value;
+  $('s_code').innerHTML = cats.map(cat =>
+    `<optgroup label="${cat}">` +
+    list.filter(x => x.cat === cat).map(x => `<option value="${x.code}">${x.label}</option>`).join('') +
+    `</optgroup>`).join('');
+  if (keep && list.some(c => c.code === keep)) $('s_code').value = keep;
+  buildDynamic();
+}
 
 function buildCodeSelects() {
-  const cats = [...new Set(CODES.map(c => c.cat))];
-  $('s_cat').innerHTML = '<option value="">همه</option>' + cats.map(c => `<option>${c}</option>`).join('');
-
-  function fill() {
-    const chosen = $('s_cat').value;
-    const list = chosen ? [chosen] : cats;
-    $('s_code').innerHTML = list.map(cat =>
-      `<optgroup label="${cat}">` +
-      CODES.filter(x => x.cat === cat).map(x => `<option value="${x.code}">${x.label}</option>`).join('') +
-      `</optgroup>`).join('');
-    buildDynamic();
-  }
-  $('s_cat').addEventListener('change', fill);
+  buildParts();
   $('s_code').addEventListener('change', buildDynamic);
-  fill();
+  fillCodes();
+}
+
+function addField(parent, text) {
+  const l = document.createElement('label');
+  l.className = 'lb';
+  l.textContent = text;
+  const box = document.createElement('div');
+  parent.appendChild(l);
+  parent.appendChild(box);
+  return box;
 }
 
 /** Throws away the old inputs and builds only the ones this activity needs. */
 function buildDynamic() {
   const c = currentCode();
   const d = c.def || {};
-  const host  = $('dynFields');
-  const extra = $('extraFields');
+  const host = $('dynFields');
 
-  /* wheels inside the replaced markup must leave the registry */
   WHEELS.forEach(w => { if (!w.el.isConnected) w.destroy(); });
 
-  host.innerHTML  = '';
-  extra.innerHTML = '';
+  host.innerHTML = '';
   dyn = {};
 
-  const add = (parent, text) => {
-    const l = document.createElement('label');
-    l.className = 'lb';
-    l.textContent = text;
-    const box = document.createElement('div');
-    parent.appendChild(l);
-    parent.appendChild(box);
-    return box;
-  };
-
   if (c.metric === 'dur') {
-    dyn.dur = makeDurWheel(add(host, 'مدت'), d.h || 0, d.m || 0);
+    dyn.dur = makeDurWheel(addField(host, 'مدت'), d.h || 0, d.m || 0);
     quickChips(host, [10,15,20,25,30,40,45,60,90], m => dyn.dur.setMinutes(m));
   }
 
-  if (c.metric === 'clock') {
-    dyn.clock = makeClockWheel(add(host, 'ساعت دقیق'), d.ch || 0, d.cm || 0);
-  }
-
-  if (c.metric === 'count') {
-    const box = add(host, 'تعداد');
-    box.innerHTML = `<input id="f_count" class="ltr" type="number" inputmode="numeric" min="0" value="${d.n || ''}"/>`;
-    quickChips(box, [1,2,3,4,5,6,8,10], v => { $('f_count').value = v; });
-  }
-
   if (c.metric === 'sec') {
-    const box = add(host, 'ثانیه');
-    box.innerHTML = `<input id="f_sec" class="ltr" type="number" inputmode="numeric" min="0" value="${d.n || ''}"/>`;
-    quickChips(box, [1,2,3,5,10,20,30,60], v => { $('f_sec').value = v; });
+    const box = addField(host, 'ثانیه — حداقل ' + MIN_REACT_SEC);
+    box.innerHTML = `<input id="f_sec" class="ltr" type="number" inputmode="numeric" min="${MIN_REACT_SEC}" value="${d.n || MIN_REACT_SEC}"/>`;
+    quickChips(box, [2,3,5,10,20,30,60], v => { $('f_sec').value = v; });
   }
 
   if (c.metric === 'reps') {
-    const box = add(host, 'تعداد × دقیقهٔ هر بار');
+    const box = addField(host, 'تعداد × دقیقهٔ هر بار');
     box.innerHTML =
       '<div class="grid2">' +
-      `<input id="f_reps"   class="ltr" type="number" inputmode="numeric" min="0" value="${d.r  || ''}"/>` +
-      `<input id="f_perrep" class="ltr" type="number" inputmode="numeric" min="0" value="${d.pr || ''}"/>` +
+      `<input id="f_reps"   class="ltr" type="number" inputmode="numeric" min="1" value="${d.r  || 1}"/>` +
+      `<input id="f_perrep" class="ltr" type="number" inputmode="numeric" min="1" value="${d.pr || 5}"/>` +
       '</div>';
   }
 
-  if (c.eff) {
-    const box = add(host, 'تلاش (واحد خودت، نه ساعت)');
-    box.innerHTML = `<input id="f_eff" class="ltr" type="number" inputmode="numeric" min="0" value="${d.eff || ''}"/>`;
-    quickChips(box, [10,15,20,25,30,40,50], v => { $('f_eff').value = v; });
+  if (c.kind) {
+    const box = addField(host, 'تهیه یا خوردن');
+    box.innerHTML =
+      '<div class="seg">' +
+      '<input type="radio" name="f_kind" id="f_kind_p" value="تهیه"/><label for="f_kind_p">تهیه</label>' +
+      '<input type="radio" name="f_kind" id="f_kind_e" value="خوردن" checked/><label for="f_kind_e">خوردن</label>' +
+      '</div>';
   }
 
-  if (c.qual) {
-    const box = add(host, 'کیفیت');
-    box.innerHTML = '<div class="stars">' +
-      [1,2,3,4,5].map(n => `<button type="button" data-q="${n}">${n}</button>`).join('') + '</div>';
-    box.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => {
-      box.querySelectorAll('[data-q]').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-      dyn.quality = Number(b.dataset.q);
+  if (c.metric === 'accum') {
+    const box = addField(host, 'چند تا به جمع امروز اضافه شود');
+    box.innerHTML =
+      `<div class="accum"><span>امروز تا الان: <b id="accumNow">…</b></span>` +
+      `<button type="button" class="plus" id="btnPlus">+۱</button></div>` +
+      `<input id="f_count" class="ltr" type="number" inputmode="numeric" min="1" value="${d.n || 1}"/>`;
+    $('btnPlus').addEventListener('click', () => {
+      $('f_count').value = (Number($('f_count').value) || 0) + 1;
       vibrate(8);
-    }));
-    if (d.q) {
-      dyn.quality = d.q;
-      const pre = box.querySelector(`[data-q="${d.q}"]`);
-      if (pre) pre.classList.add('on');
-    }
+    });
+    quickChips(box, [1,2,3,5,8,10], v => { $('f_count').value = v; });
+    paintAccum(c.code);
   }
 
-  /* one optional extra, only a duration. no stray clock any more. */
-  if (c.metric !== 'dur') {
-    dyn.durExtra = makeDurWheel(add(extra, 'مدت (اختیاری)'));
+  if (c.metric === 'tick') {
+    const box = addField(host, 'یک بار انجام شد');
+    box.innerHTML = `<div class="accum"><span>امروز تا الان: <b id="accumNow">…</b></span><span>ذخیره = یک بار</span></div>`;
+    paintAccum(c.code);
   }
+}
+
+async function paintAccum(code) {
+  const el = $('accumNow');
+  if (!el) return;
+  const n = await todaySum(code);
+  el.textContent = n;
+  dyn.accumNow = n;
+}
+
+async function todaySum(code) {
+  const rows = await getAll('sessions');
+  const day = sDate ? sDate.value() : '';
+  return rows.filter(r => r.dateShamsi === day && r.code === code)
+             .reduce((a, r) => a + (Number(r.count) || 1), 0);
+}
+
+function buildLayers() {
+  const host = $('sLayers');
+  host.innerHTML = '';
+  layers = {};
+  LAYERS.forEach(([id, label, h, m]) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    host.appendChild(cell);
+    layers[id] = makeDurWheel(addField(cell, label), h, m);
+  });
 }
 
 function quickChips(parent, values, cb) {
@@ -508,19 +604,28 @@ function collectSession() {
     uid: uid(),
     createdAt: new Date().toISOString(),
     dateShamsi: sDate.value(),
+    part: PARTS[activePart].label,
     category: c.cat,
     code: c.code,
     metric: c.metric,
-    minutes:'', hm:'', effort:'', quality:'', reactSec:'',
-    count:'', reps:'', perRep:'', startClock:'',
+    minutes:'', hm:'', reactSec:'', count:'', reps:'', perRep:'', kind:'',
+    moodMin:'', moodHM:'', bighMin:'', bighHM:'', tabavMin:'', tabavHM:'',
+    feshMin:'', feshHM:'', dardMin:'', dardHM:'', zajrMin:'', zajrHM:'',
     note: $('s_note').value.trim(),
     synced: 0
   };
 
-  if (c.metric === 'dur')   { rec.minutes = dyn.dur.minutes(); rec.hm = dyn.dur.hm(); }
-  if (c.metric === 'clock') { rec.startClock = dyn.clock.value(); }
-  if (c.metric === 'count') { rec.count    = num($('f_count').value); }
-  if (c.metric === 'sec')   { rec.reactSec = num($('f_sec').value); }
+  if (c.metric === 'dur') {
+    rec.minutes = dyn.dur.minutes();
+    rec.hm = dyn.dur.hm();
+  }
+  if (c.metric === 'sec') {
+    rec.reactSec = num($('f_sec').value);
+    if (rec.reactSec === '' || rec.reactSec < MIN_REACT_SEC) {
+      toast('تأخیر واکنش حداقل ' + MIN_REACT_SEC + ' ثانیه', true);
+      return null;
+    }
+  }
   if (c.metric === 'reps') {
     rec.reps   = num($('f_reps').value);
     rec.perRep = num($('f_perrep').value);
@@ -529,31 +634,37 @@ function collectSession() {
       rec.hm = fmtHM(rec.minutes);
     }
   }
-  if (c.eff)  rec.effort  = num(($('f_eff') || {}).value);
-  if (c.qual) rec.quality = dyn.quality || '';
-
-  if (dyn.durExtra) {
-    const m = dyn.durExtra.minutes();
-    if (m > 0 && rec.minutes === '') { rec.minutes = m; rec.hm = dyn.durExtra.hm(); }
+  if (c.metric === 'accum') {
+    rec.count = num($('f_count').value) || 1;
   }
+  if (c.metric === 'tick') {
+    rec.count = 1;
+  }
+  if (c.kind) rec.kind = radioText('f_kind') || 'خوردن';
 
-  const filled = [rec.minutes, rec.count, rec.reactSec, rec.startClock].some(v => v !== '' && v !== 0);
+  LAYERS.forEach(([id]) => {
+    const w = layers[id];
+    if (!w) return;
+    const m = w.minutes();
+    if (m > 0) {
+      rec[id + 'Min'] = m;
+      rec[id + 'HM']  = w.hm();
+    }
+  });
+
+  const filled = [rec.minutes, rec.count, rec.reactSec].some(v => v !== '' && v !== 0);
   if (!filled) { toast('مقدار خالی است', true); return null; }
   return rec;
 }
 
 /* ═════════════════════════════ 7. META FORM ═════════════════════════════════ */
 
-let mDate = null, mBid = null, mMood = null, mBigh = null, mBand = null, mOpfa = null;
+let mDate = null, mBid = null, mOpfa = null;
 
 function buildMeta() {
   mDate = makeDateWheel($('mDate'));
   mBid  = makeClockWheel($('mBid'), DEFAULT_BID_H, DEFAULT_BID_M);
-  mMood = makeDurWheel($('mMood'), META_DEF.mood[0], META_DEF.mood[1]);
-  mBigh = makeDurWheel($('mBigh'), META_DEF.bigh[0], META_DEF.bigh[1]);
-  mBand = makeDurWheel($('mBand'), META_DEF.band[0], META_DEF.band[1]);
-  mOpfa = makeDurWheel($('mOpfa'), META_DEF.opfa[0], META_DEF.opfa[1]);
-  if (!$('m_checkin').value) $('m_checkin').value = META_DEF.checkin;
+  mOpfa = makeDurWheel($('mOpfa'), 4, 0);
 
   /* Each question is pre-answered with its good outcome, so a normal day
      needs no taps at all and you only touch the exceptions. */
@@ -572,9 +683,16 @@ function buildMeta() {
   }).join('');
 }
 
+function radioEl(name) {
+  return document.querySelector(`input[name="${name}"]:checked`);
+}
 function radioVal(name) {
-  const el = document.querySelector(`input[name="${name}"]:checked`);
+  const el = radioEl(name);
   return el ? Number(el.value) : '';
+}
+function radioText(name) {
+  const el = radioEl(name);
+  return el ? el.value : '';
 }
 
 function collectMeta() {
@@ -583,11 +701,7 @@ function collectMeta() {
     createdAt: new Date().toISOString(),
     dateShamsi: mDate.value(),
     bid: mBid.value(),
-    checkin1h: num($('m_checkin').value),
-    moodToFlowMin: mMood.minutes(), moodToFlowHM: mMood.hm(),
-    bigharariMin:  mBigh.minutes(), bigharariHM:  mBigh.hm(),
-    bandShadidMin: mBand.minutes(), bandShadidHM: mBand.hm(),
-    openfastMin:   mOpfa.minutes(), openfastHM:   mOpfa.hm(),
+    openfastMin: mOpfa.minutes(), openfastHM: mOpfa.hm(),
     note: $('m_note').value.trim(),
     synced: 0
   };
@@ -619,7 +733,10 @@ async function doSave(again) {
     if (!rec) return;
     await put('sessions', rec);
     vibrate(25);
-    toast('ثبت شد · ' + (rec.hm || rec.startClock || rec.count || rec.reactSec));
+    const extra = rec.metric === 'accum' || rec.metric === 'tick'
+      ? ' · جمع امروز ' + ((dyn.accumNow || 0) + (Number(rec.count) || 1))
+      : '';
+    toast('ثبت شد · ' + (rec.hm || rec.count || rec.reactSec) + extra);
     $('s_note').value = '';
     buildDynamic();
   } else if (activeTab === 'meta') {
@@ -701,21 +818,24 @@ async function refreshData() {
     `آدرس فعلی: <span class="ltr">${location.origin + location.pathname}</span>`;
 
   const byCat = {};
-  let totalMin = 0, totalEff = 0;
+  let totalMin = 0;
+  let checkins = 0, rules = 0;
   rows.forEach(r => {
-    const mi = Number(r.minutes) || 0, ef = Number(r.effort) || 0;
-    totalMin += mi; totalEff += ef;
-    if (!byCat[r.category]) byCat[r.category] = { min:0, eff:0, n:0 };
+    const mi = Number(r.minutes) || 0;
+    totalMin += mi;
+    if (r.code === 'checkin') checkins += Number(r.count) || 1;
+    if (r.code === 'ghanoon') rules += Number(r.count) || 1;
+    if (!byCat[r.category]) byCat[r.category] = { min:0, n:0 };
     byCat[r.category].min += mi;
-    byCat[r.category].eff += ef;
     byCat[r.category].n++;
   });
 
-  let html = `<b>${today}</b> — جمع کل: <b>${fmtHM(totalMin)}</b> (${totalMin} دقیقه) · تلاش: <b>${totalEff}</b> · نوبت: <b>${rows.length}</b>`;
+  let html = `<b>${today}</b> — جمع: <b>${fmtHM(totalMin)}</b> · نوبت: <b>${rows.length}</b>` +
+             ` · چک‌این: <b>${checkins}</b> · قانون: <b>${rules}</b>`;
   const cats = Object.keys(byCat);
   if (cats.length) {
     html += '<div style="margin-top:8px">' +
-      cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b> · تلاش ${byCat[c].eff} · ${byCat[c].n} نوبت`).join('<br/>') +
+      cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b> · ${byCat[c].n} نوبت`).join('<br/>') +
       '</div>';
   }
   $('todaySum').innerHTML = html;
@@ -723,9 +843,9 @@ async function refreshData() {
   document.querySelector('#tblRecent tbody').innerHTML = s.slice(-20).reverse().map(r => `
     <tr>
       <td class="ltr">${r.dateShamsi}</td>
+      <td>${r.part || ''}</td>
       <td>${(CODES.find(c => c.code === r.code) || {}).label || r.code}</td>
-      <td class="ltr">${r.hm || r.startClock || r.count || (r.reactSec !== '' ? r.reactSec + 's' : '')}</td>
-      <td class="ltr">${r.effort}</td>
+      <td class="ltr">${r.hm || r.count || (r.reactSec !== '' ? r.reactSec + 's' : '')}</td>
       <td><span class="tag ${r.synced ? 'sent' : 'pending'}">${r.synced ? 'رفت' : 'صف'}</span></td>
     </tr>`).join('');
 }
@@ -826,6 +946,7 @@ async function boot() {
 
   sDate = makeDateWheel($('sDate'));
   buildCodeSelects();
+  buildLayers();
   buildMeta();
 
   $('cfg_url').value    = cfgGet('url');

@@ -53,6 +53,7 @@ textarea{min-height:60px;resize:vertical}
 
 /* ---------- wheel picker ---------- */
 .wheels{display:flex;gap:8px;align-items:stretch}
+.wheels.ltr,.wcap.ltr{direction:ltr}
 /* 152 = 150 inner box + the 1px borders, so the inner box is exactly
    55 + 40 + 55 and item i sits under the band at scrollTop = i * 40 with no
    remainder, which is what the picker code assumes.
@@ -63,7 +64,8 @@ textarea{min-height:60px;resize:vertical}
    stops, so the CSS version bought nothing and cost correctness. */
 .wcol{flex:1;position:relative;height:152px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .wcol .sc{height:100%;overflow-y:scroll;padding:55px 0;
-  scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+  scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain}
 .wcol .sc::-webkit-scrollbar{display:none}
 .wcol .it{height:40px;line-height:40px;text-align:center;
   font-size:1.02rem;color:#5f7186;transition:color .12s,transform .12s;direction:ltr}
@@ -90,7 +92,24 @@ textarea{min-height:60px;resize:vertical}
   background:#0b1016;border:1px solid var(--line);color:var(--muted);border-radius:999px;
   padding:7px 12px;font-size:.8rem;font-family:inherit;cursor:pointer
 }
-.chips button:active{border-color:var(--accent);color:var(--ink)}
+.chips button:active,.chips button.on{border-color:var(--accent);color:var(--ink)}
+.parts{display:flex;gap:6px;margin:4px 0 2px}
+.parts button{
+  flex:1;background:#0b1016;border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:9px 2px;font-size:.74rem;font-family:inherit;cursor:pointer
+}
+.parts button.on{background:#1e2b3c;border-color:var(--accent);color:var(--ink);font-weight:bold}
+.layers{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:4px}
+.layers .cell .lb{margin-top:8px}
+.accum{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:#152033;border:1px solid var(--accent);border-radius:12px;padding:12px;margin-top:8px
+}
+.accum b{font-size:1.35rem}
+.plus{
+  min-width:64px;background:#1c6fb8;border:1px solid #2f8ad8;color:#fff;
+  border-radius:12px;padding:12px 14px;font-size:1.1rem;font-family:inherit;font-weight:bold;cursor:pointer
+}
 .bar{
   position:fixed;bottom:0;left:0;right:0;background:#131922;border-top:1px solid var(--line);
   padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:20
@@ -150,23 +169,22 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
   <section id="paneSession">
     <div class="card">
       <h2>ثبت یک نوبت</h2>
-      <p class="hint">فقط چیزی که همین الان تمام شد. فیلدها بر اساس نوع فعالیت عوض می‌شوند.</p>
+      <p class="hint">پارت روز را بزن، بعد همان کاری که همین الان تمام شد. کار پارت‌های قبلی در پارت‌های بعدی هم هست.</p>
+
+      <label class="lb">پارت روز</label>
+      <div class="parts" id="sParts"></div>
 
       <label class="lb">تاریخ</label>
       <div id="sDate"></div>
-
-      <label class="lb">دسته</label>
-      <select id="s_cat"></select>
 
       <label class="lb">فعالیت <span class="req">*</span></label>
       <select id="s_code"></select>
 
       <div id="dynFields"></div>
 
-      <details>
-        <summary>فیلدهای بیشتر</summary>
-        <div id="extraFields"></div>
-      </details>
+      <label class="lb">لایه‌های همین نوبت</label>
+      <p class="hint">هر بار که کلاک می‌زنی، همان لحظه را اندازه بگیر. صفر یعنی این لایه را رد کن.</p>
+      <div class="layers" id="sLayers"></div>
 
       <label class="lb">یادداشت</label>
       <textarea id="s_note" placeholder="اختیاری"></textarea>
@@ -177,7 +195,7 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
   <section id="paneMeta" class="hide">
     <div class="card">
       <h2>متای روز</h2>
-      <p class="hint">یک بار در شبانه‌روز. آخر شب پر کن.</p>
+      <p class="hint">یک بار در شبانه‌روز. چیزهایی که آخر شب معلوم می‌شود، نه هر نوبت.</p>
 
       <label class="lb">تاریخ</label>
       <div id="mDate"></div>
@@ -185,22 +203,10 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
       <label class="lb">ساعت بیداری</label>
       <div id="mBid"></div>
 
-      <div id="metaBools"></div>
-
-      <label class="lb">تعداد چک‌این داخل یک ساعت</label>
-      <input id="m_checkin" class="ltr" type="number" inputmode="numeric" min="0" placeholder="3"/>
-
-      <label class="lb">بازه مود تا فلو</label>
-      <div id="mMood"></div>
-
-      <label class="lb">بی‌قراری و تاب‌آوری</label>
-      <div id="mBigh"></div>
-
-      <label class="lb">فشار و درد و زجر شدید</label>
-      <div id="mBand"></div>
-
       <label class="lb">بازه اوپن‌فست</label>
       <div id="mOpfa"></div>
+
+      <div id="metaBools"></div>
 
       <label class="lb">یادداشت روز</label>
       <textarea id="m_note" placeholder="اختیاری"></textarea>
@@ -254,7 +260,7 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
     <div class="card">
       <h2>۲۰ نوبت آخر</h2>
-      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>فعالیت</th><th>مقدار</th><th>تلاش</th><th></th></tr></thead><tbody></tbody></table>
+      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>پارت</th><th>فعالیت</th><th>مقدار</th><th></th></tr></thead><tbody></tbody></table>
     </div>
   </section>
 
@@ -271,6 +277,6 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
 <!-- The ?v= is bumped with every release. An old cached app.js can never be
      served in place of a new one, because the URL itself changes. -->
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
