@@ -12,7 +12,7 @@
 /* Bump this whenever you change anything. It is printed in the header, so a
    glance tells you whether the browser is running the new build or a stale
    cached one. */
-const APP_VERSION = 'v7 · parts';
+const APP_VERSION = 'v8 · notebook';
 
 /* ═════════════════════════════ 1. ACTIVITY TABLE ═════════════════════════════
    Every activity declares how it is measured and from which day-part it first
@@ -29,62 +29,64 @@ const APP_VERSION = 'v7 · parts';
    ========================================================================== */
 
 const PARTS = [
-  { id: 0, label: 'تا ۱۲',    hint: 'صبح تا ظهر' },
-  { id: 1, label: '۱۲ تا ۲',  hint: 'ظهر' },
-  { id: 2, label: '۲ تا ۶',   hint: 'بعدازظهر' },
-  { id: 3, label: '۶ به بعد', hint: 'بعد از اوپن‌فست' }
+  { id: 0, label: 'تا ۱۲',     hint: 'سه پارت صبح' },
+  { id: 1, label: '۱۲ تا ۲',   hint: 'یک پارت ظهر' },
+  { id: 2, label: '۲ تا ۶',    hint: 'دو پارت بعدازظهر' },
+  { id: 3, label: 'بعد اوپن',  hint: 'بعد از اوپن‌فست' }
 ];
 
+/* Parenthetical text is the nature of the activity, not a field to fill.
+   Layers live in their own category so a normal session is only duration. */
 const CODES = [
-  { cat:'کار و آی‌تی',     code:'itpr',         label:'آی‌تی حرفه‌ای',              metric:'dur',   from:0, def:{h:2,m:40} },
+  { cat:'تخصیص',    code:'takhkhod',     label:'تخصیص خودم', metric:'dur', from:0, def:{h:0,m:30} },
+  { cat:'تخصیص',    code:'takhshose',    label:'تخصیص شویسی (پیش‌برنامه، مجازی، حضوری)', metric:'dur', from:0, def:{h:0,m:30} },
+  { cat:'تخصیص',    code:'takhmojaz',    label:'تخصیص مجاز متناسب (پیش‌برنامه)', metric:'dur', from:0, def:{h:0,m:40} },
 
-  { cat:'تخصیص',          code:'takhkhod',     label:'تخصیص خودم',                metric:'dur',   from:0, def:{h:0,m:30} },
-  { cat:'تخصیص',          code:'takhshose',    label:'تخصیص مجاز',                metric:'dur',   from:0, def:{h:0,m:40} },
+  { cat:'آراستگی',  code:'arasmotakh',   label:'آراستگی مراقبت تخصصی شویسی', metric:'dur', from:0, def:{h:0,m:30} },
+  { cat:'آراستگی',  code:'arasmor',      label:'آراستگی مراقبت (پیش‌برنامه)', metric:'dur', from:0, def:{h:0,m:25} },
 
-  { cat:'آراستگی',        code:'arasmotakh',   label:'آراستگی شویسی',             metric:'dur',   from:0, def:{h:0,m:30} },
-  { cat:'آراستگی',        code:'arasmor',      label:'آراستگی خودم',              metric:'dur',   from:0, def:{h:0,m:25} },
+  { cat:'کار',      code:'itpr',         label:'آی‌تی / کار اداره (فکر، فلو عمیق، سختی، زجر، تحمل، حوصله)', metric:'dur', from:0, def:{h:2,m:40} },
 
-  { cat:'ورزش',           code:'azkesh',       label:'ازکش / باشگاه',             metric:'dur',   from:2, def:{h:1,m:0} },
-  { cat:'ورزش',           code:'do',           label:'دو',                        metric:'dur',   from:2, def:{h:0,m:30} },
+  { cat:'سلامت',    code:'drazmayesh',   label:'دکتر / آزمایش / کلینیک / پوست بیکینی', metric:'dur', from:0, def:{h:2,m:30} },
 
-  { cat:'روتین',          code:'rout',         label:'روتین پرت',                 metric:'dur',   from:0, def:{h:0,m:40} },
+  { cat:'ضروری',    code:'zaruri_am',    label:'ضروری [بانک حضوری، اصلاح بدن، آنالیز، قانون، تعیین‌سطح زبان، اتو، قرص، آب، دلار، طلا، سرمایه‌گذاری، وام]', metric:'dur', from:0, def:{h:0,m:20} },
 
-  { cat:'واکنش',          code:'mintakhir',    label:'تأخیر واکنش',               metric:'sec',   from:0, def:{n:2} },
-  { cat:'واکنش',          code:'checkin',      label:'چک‌این روز',                metric:'accum', from:0, def:{n:1} },
-  { cat:'واکنش',          code:'ghanoon',      label:'قانون فرای من',             metric:'tick',  from:0 },
+  { cat:'آخر هفته', code:'hafte_prereg', label:'آخر هفته (پیش‌ثبت) [کلاس تخصصی، مکالمه زبان]', metric:'dur', from:0, def:{h:0,m:40} },
 
-  { cat:'سلامت',          code:'ab',           label:'آب (مدت نوشیدن)',           metric:'dur',   from:0, def:{h:0,m:20} },
-  { cat:'سلامت',          code:'dand1',        label:'دندان ۱ مسواک',             metric:'reps',  from:3, def:{r:1,pr:5} },
-  { cat:'سلامت',          code:'dand2',        label:'دندان ۲ نخ',                metric:'reps',  from:3, def:{r:1,pr:5} },
-  { cat:'سلامت',          code:'dand3',        label:'دندان ۳ دهان‌شویه',          metric:'reps',  from:3, def:{r:1,pr:5} },
-  { cat:'سلامت',          code:'drazmayesh',   label:'دکتر / آزمایش',             metric:'dur',   from:0, def:{h:2,m:30} },
-  { cat:'سلامت',          code:'ghors_sonti',  label:'قرص سنتی',                  metric:'reps',  from:0, def:{r:1,pr:5}, kind:true },
-  { cat:'سلامت',          code:'ghors_kaj',    label:'قرص کاج',                   metric:'reps',  from:0, def:{r:1,pr:5}, kind:true },
-  { cat:'سلامت',          code:'qat',          label:'قطره',                      metric:'reps',  from:3, def:{r:1,pr:5} },
-  { cat:'سلامت',          code:'ker',          label:'کرم',                       metric:'reps',  from:3, def:{r:1,pr:5} },
+  { cat:'روتین',    code:'rout',         label:'روتین', metric:'dur', from:0, def:{h:0,m:40} },
 
-  { cat:'خانه',           code:'shosmort',     label:'شست مرتب',                  metric:'dur',   from:1, def:{h:0,m:20} },
-  { cat:'خانه',           code:'otu',          label:'اتو',                       metric:'dur',   from:0, def:{h:0,m:20} },
+  { cat:'لایه‌ها',  code:'moodflow',     label:'مود تا فلو', metric:'dur', from:0, def:{h:5,m:10} },
+  { cat:'لایه‌ها',  code:'bightabav',    label:'بی‌قراری و تاب‌آوری', metric:'dur', from:0, def:{h:3,m:15} },
+  { cat:'لایه‌ها',  code:'feshdard',     label:'فشار و درد شدید', metric:'dur', from:0, def:{h:0,m:0} },
+  { cat:'لایه‌ها',  code:'checkin',      label:'چک‌این / سر زدن به خود', metric:'accum', from:0, def:{n:1} },
+  { cat:'لایه‌ها',  code:'mintakhir',    label:'حداقل تأخیر واکنش', metric:'sec', from:0, def:{n:2} },
 
-  { cat:'یادگیری',        code:'ket',          label:'کتاب',                      metric:'dur',   from:3, def:{h:0,m:15} },
-  { cat:'یادگیری',        code:'reswch',       label:'پژوهش',                     metric:'dur',   from:3, def:{h:1,m:50} },
+  { cat:'سلامت',    code:'ab',           label:'آب', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'ضروری',    code:'zaruri_noon',  label:'ضروری [شست مرتب، خرید]', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'کار',      code:'assessvisa',   label:'ارزیابی ویزا', metric:'dur', from:1, def:{h:0,m:30} },
+  { cat:'کار',      code:'pardpei',      label:'پرداخت‌پیگیری', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'کار',      code:'bimebargoz',   label:'بیمه بارگذاری', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'کار',      code:'peigiri',      label:'پیگیری قانونی', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'کار',      code:'peigirimaj',   label:'پیگیری قانونی مجازی', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'کار',      code:'malizar',      label:'مالی ضروری', metric:'dur', from:1, def:{h:0,m:25} },
+  { cat:'کار',      code:'kartakh2',     label:'کار تخصصی دوم', metric:'dur', from:1, def:{h:0,m:40} },
 
-  { cat:'مالی و ضروری',   code:'zaruri',       label:'ضروری صبح',                 metric:'dur',   from:0, def:{h:0,m:20} },
-  { cat:'مالی و ضروری',   code:'banki',        label:'بانکی / سرمایه‌گذاری',       metric:'dur',   from:0, def:{h:0,m:45} },
-  { cat:'مالی و ضروری',   code:'bargozbime',   label:'بیمه / پیگیری / خرید',      metric:'dur',   from:1, def:{h:0,m:25} },
+  { cat:'ورزش',     code:'rah',          label:'راه', metric:'dur', from:2, def:{h:0,m:30} },
+  { cat:'ورزش',     code:'do',           label:'دو', metric:'dur', from:2, def:{h:0,m:30} },
+  { cat:'ورزش',     code:'azkesh',       label:'ازکش (فشار، طولانی، سختی، فلو، تمرکز، زجر، درد)', metric:'dur', from:2, def:{h:1,m:0} },
+  { cat:'ارتباط',   code:'moshv',        label:'مشاوره روان‌پی (هر دو هفته)', metric:'dur', from:2, def:{h:0,m:45} },
+  { cat:'ضروری',    code:'zaruri_pm',    label:'ضروری [دیوار (پیش‌برنامه، پیش‌تعیین)، فروش حضوری ملک (پیش)، خرید]', metric:'dur', from:2, def:{h:0,m:25} },
+  { cat:'خانه',     code:'otu',          label:'اتو', metric:'dur', from:2, def:{h:0,m:20} },
+  { cat:'خانه',     code:'shosmort',     label:'شست مرتب', metric:'dur', from:2, def:{h:0,m:20} },
+  { cat:'سلامت',    code:'mokamel',      label:'مکمل [ویتامین، کلاژن، امگا، قرص، کراتین، قطره، ترمو، فلوکسامین، منیزیم، مینرال]', metric:'reps', from:2, def:{r:1,pr:5} },
 
-  { cat:'ارتباط',         code:'sabtturkela',  label:'ثبت‌نام تور و کلاس',         metric:'dur',   from:3, def:{h:0,m:15} },
-  { cat:'ارتباط',         code:'moshv',        label:'مشاوره / کارگاه روان',      metric:'dur',   from:2, def:{h:0,m:20} }
-];
-
-/* Layers clocked on every session, not once a day. Zero means "skip". */
-const LAYERS = [
-  ['mood',  'مود تا فلو',   5, 10],
-  ['bigh',  'بی‌قراری',      0,  0],
-  ['tabav', 'تاب‌آوری',      0,  0],
-  ['fesh',  'فشار شدید',     0,  0],
-  ['dard',  'درد شدید',      0,  0],
-  ['zajr',  'زجر شدید',      0,  0]
+  { cat:'ارتباط',   code:'sabt',         label:'ثبت (تور، کلاس، ایونت، فضای اشتراکی، کارگاه روان، کارگاه عرفان، گروه کوه، باشگاه انقلاب)', metric:'dur', from:3, def:{h:0,m:15} },
+  { cat:'سلامت',    code:'salad',        label:'سالاد', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
+  { cat:'یادگیری',  code:'reswch',       label:'پژوهش و هوش', metric:'dur', from:3, def:{h:1,m:50} },
+  { cat:'سلامت',    code:'dand',         label:'دندان (مسواک، نخ، دهان‌شویه)', metric:'reps', from:3, def:{r:3,pr:5} },
+  { cat:'بعد اوپن', code:'affplan',      label:'پلن بعد اوپن', metric:'dur', from:3, def:{h:0,m:20} },
+  { cat:'بعد اوپن', code:'affket',       label:'کتاب بعد اوپن', metric:'dur', from:3, def:{h:0,m:15} },
+  { cat:'بعد اوپن', code:'afflog',       label:'لاگ ایونت روان', metric:'dur', from:3, def:{h:0,m:10} }
 ];
 
 /* polarity 'neg' → "نه" is the good (green) answer. */
@@ -97,9 +99,7 @@ const META_BOOLS = [
 ];
 
 const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','category','code','metric',
-                        'minutes','hm','reactSec','count','reps','perRep','kind',
-                        'moodMin','moodHM','bighMin','bighHM','tabavMin','tabavHM',
-                        'feshMin','feshHM','dardMin','dardHM','zajrMin','zajrHM','note'];
+                        'minutes','hm','reactSec','count','reps','perRep','kind','note'];
 
 const META_FIELDS = ['uid','createdAt','dateShamsi','bid',
                      'openfastMin','openfastHM',
@@ -444,7 +444,7 @@ function toast(msg, isErr) {
 
 /* ═════════════════════════════ 6. SESSION FORM ══════════════════════════════ */
 
-let sDate = null, dyn = {}, layers = {}, activePart = 0;
+let sDate = null, dyn = {}, activePart = 0;
 
 const currentCode = () => CODES.find(c => c.code === $('s_code').value) || codesForPart(activePart)[0];
 const codesForPart = p => CODES.filter(c => (c.from || 0) <= p);
@@ -474,19 +474,23 @@ function buildParts() {
 }
 
 function fillCodes() {
-  const list = codesForPart(activePart);
-  const cats = [...new Set(list.map(c => c.cat))];
+  const allowed = codesForPart(activePart);
+  const cats = [...new Set(allowed.map(c => c.cat))];
+  const prevCat = $('s_cat').value;
+  $('s_cat').innerHTML = '<option value="">همه</option>' + cats.map(c => `<option>${c}</option>`).join('');
+  if (prevCat && cats.includes(prevCat)) $('s_cat').value = prevCat;
+
+  const chosen = $('s_cat').value;
+  const list = chosen ? allowed.filter(x => x.cat === chosen) : allowed;
   const keep = $('s_code').value;
-  $('s_code').innerHTML = cats.map(cat =>
-    `<optgroup label="${cat}">` +
-    list.filter(x => x.cat === cat).map(x => `<option value="${x.code}">${x.label}</option>`).join('') +
-    `</optgroup>`).join('');
+  $('s_code').innerHTML = list.map(x => `<option value="${x.code}">${x.label}</option>`).join('');
   if (keep && list.some(c => c.code === keep)) $('s_code').value = keep;
   buildDynamic();
 }
 
 function buildCodeSelects() {
   buildParts();
+  $('s_cat').addEventListener('change', fillCodes);
   $('s_code').addEventListener('change', buildDynamic);
   fillCodes();
 }
@@ -511,6 +515,7 @@ function buildDynamic() {
 
   host.innerHTML = '';
   dyn = {};
+  $('codeHint').textContent = c.label;
 
   if (c.metric === 'dur') {
     dyn.dur = makeDurWheel(addField(host, 'مدت'), d.h || 0, d.m || 0);
@@ -577,18 +582,6 @@ async function todaySum(code) {
              .reduce((a, r) => a + (Number(r.count) || 1), 0);
 }
 
-function buildLayers() {
-  const host = $('sLayers');
-  host.innerHTML = '';
-  layers = {};
-  LAYERS.forEach(([id, label, h, m]) => {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    host.appendChild(cell);
-    layers[id] = makeDurWheel(addField(cell, label), h, m);
-  });
-}
-
 function quickChips(parent, values, cb) {
   const d = document.createElement('div');
   d.className = 'chips';
@@ -609,8 +602,6 @@ function collectSession() {
     code: c.code,
     metric: c.metric,
     minutes:'', hm:'', reactSec:'', count:'', reps:'', perRep:'', kind:'',
-    moodMin:'', moodHM:'', bighMin:'', bighHM:'', tabavMin:'', tabavHM:'',
-    feshMin:'', feshHM:'', dardMin:'', dardHM:'', zajrMin:'', zajrHM:'',
     note: $('s_note').value.trim(),
     synced: 0
   };
@@ -641,16 +632,6 @@ function collectSession() {
     rec.count = 1;
   }
   if (c.kind) rec.kind = radioText('f_kind') || 'خوردن';
-
-  LAYERS.forEach(([id]) => {
-    const w = layers[id];
-    if (!w) return;
-    const m = w.minutes();
-    if (m > 0) {
-      rec[id + 'Min'] = m;
-      rec[id + 'HM']  = w.hm();
-    }
-  });
 
   const filled = [rec.minutes, rec.count, rec.reactSec].some(v => v !== '' && v !== 0);
   if (!filled) { toast('مقدار خالی است', true); return null; }
@@ -819,19 +800,18 @@ async function refreshData() {
 
   const byCat = {};
   let totalMin = 0;
-  let checkins = 0, rules = 0;
+  let checkins = 0;
   rows.forEach(r => {
     const mi = Number(r.minutes) || 0;
     totalMin += mi;
     if (r.code === 'checkin') checkins += Number(r.count) || 1;
-    if (r.code === 'ghanoon') rules += Number(r.count) || 1;
     if (!byCat[r.category]) byCat[r.category] = { min:0, n:0 };
     byCat[r.category].min += mi;
     byCat[r.category].n++;
   });
 
   let html = `<b>${today}</b> — جمع: <b>${fmtHM(totalMin)}</b> · نوبت: <b>${rows.length}</b>` +
-             ` · چک‌این: <b>${checkins}</b> · قانون: <b>${rules}</b>`;
+             ` · چک‌این: <b>${checkins}</b>`;
   const cats = Object.keys(byCat);
   if (cats.length) {
     html += '<div style="margin-top:8px">' +
@@ -946,7 +926,6 @@ async function boot() {
 
   sDate = makeDateWheel($('sDate'));
   buildCodeSelects();
-  buildLayers();
   buildMeta();
 
   $('cfg_url').value    = cfgGet('url');

@@ -169,7 +169,7 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
   <section id="paneSession">
     <div class="card">
       <h2>ثبت یک نوبت</h2>
-      <p class="hint">پارت روز را بزن، بعد همان کاری که همین الان تمام شد. کار پارت‌های قبلی در پارت‌های بعدی هم هست.</p>
+      <p class="hint">پارت را بزن، دسته را بزن، فقط مدت همان کار را بگذار. متن داخل پرانتز پیش‌فرض آن کار است، نه فیلد جدا. لایه‌ها و چک‌این دستهٔ جدا هستند.</p>
 
       <label class="lb">پارت روز</label>
       <div class="parts" id="sParts"></div>
@@ -177,14 +177,14 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
       <label class="lb">تاریخ</label>
       <div id="sDate"></div>
 
+      <label class="lb">دسته</label>
+      <select id="s_cat"></select>
+
       <label class="lb">فعالیت <span class="req">*</span></label>
       <select id="s_code"></select>
+      <p class="hint" id="codeHint"></p>
 
       <div id="dynFields"></div>
-
-      <label class="lb">لایه‌های همین نوبت</label>
-      <p class="hint">هر بار که کلاک می‌زنی، همان لحظه را اندازه بگیر. صفر یعنی این لایه را رد کن.</p>
-      <div class="layers" id="sLayers"></div>
 
       <label class="lb">یادداشت</label>
       <textarea id="s_note" placeholder="اختیاری"></textarea>
@@ -277,6 +277,6 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
 <!-- The ?v= is bumped with every release. An old cached app.js can never be
      served in place of a new one, because the URL itself changes. -->
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
