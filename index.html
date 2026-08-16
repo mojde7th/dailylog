@@ -195,18 +195,39 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
   <section id="paneMeta" class="hide">
     <div class="card">
       <h2>متای روز</h2>
-      <p class="hint">یک بار در شبانه‌روز. چیزهایی که آخر شب معلوم می‌شود، نه هر نوبت.</p>
+      <p class="hint">یک بار در شبانه‌روز. عدد مبهم نه؛ ساعت و گرم و درصد.</p>
 
       <label class="lb">تاریخ</label>
       <div id="mDate"></div>
 
+      <label class="lb">ساعت زنگ</label>
+      <div id="mAlarm"></div>
+
       <label class="lb">ساعت بیداری</label>
       <div id="mBid"></div>
 
-      <label class="lb">بازه اوپن‌فست</label>
-      <div id="mOpfa"></div>
+      <div class="sum" id="bidDiff">تفاضل: —</div>
 
-      <div id="metaBools"></div>
+      <label class="lb">اوپن‌فست ۱ — ساشه پروتئین</label>
+      <p class="hint">از ساعت ۱۵ تا یک بامداد. پیش‌فرض ۱۵. پایین‌تر از ۱۵ ذخیره نمی‌شود.</p>
+      <div id="mOpf1"></div>
+
+      <label class="lb">اوپن‌فست ۲ — ساعت دقیق</label>
+      <div id="mOpf2"></div>
+
+      <label class="lb">میزان چرت</label>
+      <p class="hint">صفر یعنی چرت نبود. بیشتر از ۲۰ دقیقه ذخیره نمی‌شود.</p>
+      <div id="mNap"></div>
+
+      <label class="lb">مشخص بودن برنامهٔ امروز</label>
+      <p class="hint">از ۵۰ درصد به بالا. کمتر از ۵۰ ذخیره نمی‌شود.</p>
+      <div id="mPlan"></div>
+
+      <label class="lb">گرم قند و کرب و شیرین‌کننده</label>
+      <input id="m_sugar" class="ltr" type="number" inputmode="decimal" min="0" step="1" value="0"/>
+
+      <label class="lb">گرم چیز اشتباه بعد از اوپن‌فست</label>
+      <input id="m_wrong" class="ltr" type="number" inputmode="decimal" min="0" step="1" value="0"/>
 
       <label class="lb">یادداشت روز</label>
       <textarea id="m_note" placeholder="اختیاری"></textarea>
@@ -277,6 +298,6 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
 <!-- The ?v= is bumped with every release. An old cached app.js can never be
      served in place of a new one, because the URL itself changes. -->
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@
 /* Bump this whenever you change anything. It is printed in the header, so a
    glance tells you whether the browser is running the new build or a stale
    cached one. */
-const APP_VERSION = 'v8 · notebook';
+const APP_VERSION = 'v9 · meta';
 
 /* ═════════════════════════════ 1. ACTIVITY TABLE ═════════════════════════════
    Every activity declares how it is measured and from which day-part it first
@@ -54,6 +54,7 @@ const CODES = [
   { cat:'آخر هفته', code:'hafte_prereg', label:'آخر هفته (پیش‌ثبت) [کلاس تخصصی، مکالمه زبان]', metric:'dur', from:0, def:{h:0,m:40} },
 
   { cat:'روتین',    code:'rout',         label:'روتین', metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'قانون',    code:'ghanoon',      label:'قانون فرای من', metric:'reps', from:0, def:{r:1,pr:5} },
 
   { cat:'لایه‌ها',  code:'moodflow',     label:'مود تا فلو', metric:'dur', from:0, def:{h:5,m:10} },
   { cat:'لایه‌ها',  code:'bightabav',    label:'بی‌قراری و تاب‌آوری', metric:'dur', from:0, def:{h:3,m:15} },
@@ -89,25 +90,20 @@ const CODES = [
   { cat:'بعد اوپن', code:'afflog',       label:'لاگ ایونت روان', metric:'dur', from:3, def:{h:0,m:10} }
 ];
 
-/* polarity 'neg' → "نه" is the good (green) answer. */
-const META_BOOLS = [
-  ['nap',            'چرت داشتم',                              'neg'],
-  ['planTomorrow',   'برنامه فردا ایجاد شده',                   'pos'],
-  ['sachetProtein',  'ساشه پروتئین بعد از ساعت ۳',              'pos'],
-  ['noSugar',        'هیچ قند و کرب و شیرین‌کننده نخوردم',       'pos'],
-  ['afterOpfaClean', 'بعد از اوپن‌فست چیز اشتباهی نخوردم',       'pos']
-];
-
 const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','category','code','metric',
                         'minutes','hm','reactSec','count','reps','perRep','kind','note'];
 
-const META_FIELDS = ['uid','createdAt','dateShamsi','bid',
-                     'openfastMin','openfastHM',
-                     ...META_BOOLS.map(b => b[0]), 'note'];
+const META_FIELDS = ['uid','createdAt','dateShamsi',
+                     'alarm','bid','bidDiffMin','bidDiffHM',
+                     'opf1','opf2',
+                     'napMin','planPct','sugarG','wrongG','note'];
 
 const DEFAULT_BID_H = 3;
 const DEFAULT_BID_M = 30;
 const MIN_REACT_SEC = 2;
+const OPF1_HOURS = [15,16,17,18,19,20,21,22,23,0,1];
+const NAP_MAX = 20;
+const PLAN_MIN = 50;
 
 /* ═════════════════════════════ 2. JALALI CALENDAR ═══════════════════════════ */
 
@@ -355,36 +351,68 @@ function minuteIndex(m) {
 
 /* Hour on the LEFT, minute on the RIGHT. Minutes go 00 … 60 and the column
    loops, so scrolling up from 00 lands on 60 instead of dying at the top. */
-function makeClockWheel(host, defH, defM) {
-  const hh = [];
-  for (let i = 0; i < 24; i++) hh.push(pad2(i));
+function makeClockWheel(host, defH, defM, hourList, onChange) {
+  const hours = hourList && hourList.length ? hourList : [...Array(24).keys()];
+  const hh = hours.map(h => pad2(h));
   const mm = minuteItems();
-  const wh = wheelColumn(hh, defH || 0, null, { loop: true });
-  const wm = wheelColumn(mm, minuteIndex(defM), null, { loop: true });
+  const h0 = Math.max(0, hours.indexOf(defH == null ? hours[0] : defH));
+  const notify = () => { if (onChange) onChange(hh[wh.get()] + ':' + mm[wm.get()]); };
+  const wh = wheelColumn(hh, h0, notify, { loop: true });
+  const wm = wheelColumn(mm, minuteIndex(defM), notify, { loop: true });
   wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
   return { value: () => hh[wh.get()] + ':' + mm[wm.get()] };
 }
 
 function makeDurWheel(host, defH, defM) {
   const hh = [];
-  for (let i = 0; i <= 14; i++) hh.push(String(i));
+  for (let i = 0; i <= 24; i++) hh.push(String(i));
   const mm = minuteItems();
-  const wh = wheelColumn(hh, defH || 0, null, { loop: true });
+  const wh = wheelColumn(hh, Math.min(24, defH || 0), null, { loop: true });
   const wm = wheelColumn(mm, minuteIndex(defM), null, { loop: true });
   wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
   return {
-    minutes: () => wh.get() * 60 + Number(mm[wm.get()]),
+    minutes: () => Number(hh[wh.get()]) * 60 + Number(mm[wm.get()]),
     hm: () => {
-      const total = wh.get() * 60 + Number(mm[wm.get()]);
+      const total = Number(hh[wh.get()]) * 60 + Number(mm[wm.get()]);
       return Math.floor(total / 60) + ':' + pad2(total % 60);
     },
     setMinutes: m => {
-      const n = Number(m) || 0;
+      const n = Math.max(0, Math.min(24 * 60, Number(m) || 0));
       wh.set(Math.floor(n / 60), true);
       wm.set(minuteIndex(n % 60), true);
     },
     reset: () => { wh.set(0); wm.set(0); }
   };
+}
+
+function makeMinWheel(host, max, def, step) {
+  step = step || 1;
+  const mm = [];
+  for (let i = 0; i <= max; i += step) mm.push(String(i));
+  const start = mm.indexOf(String(def));
+  const wm = wheelColumn(mm, start < 0 ? 0 : start, null, { loop: true });
+  wheelGroup(host, [wm], ['دقیقه'], true);
+  return { minutes: () => Number(mm[wm.get()]) };
+}
+
+function makePctWheel(host, min, def) {
+  const items = [];
+  for (let i = min; i <= 100; i += 5) items.push(String(i));
+  const start = items.indexOf(String(def));
+  const w = wheelColumn(items, start < 0 ? 0 : start, null, { loop: false });
+  wheelGroup(host, [w], ['درصد'], true);
+  return { value: () => Number(items[w.get()]) };
+}
+
+function clockToMin(hhmm) {
+  const p = String(hhmm || '0:0').split(':');
+  return (Number(p[0]) || 0) * 60 + (Number(p[1]) || 0);
+}
+
+function bidDiffMin(alarm, wake) {
+  let d = clockToMin(wake) - clockToMin(alarm);
+  if (d < 0) d += 24 * 60;
+  return d;
 }
 
 /* ═════════════════════════════ 4. STORAGE ═══════════════════════════════════ */
@@ -519,7 +547,22 @@ function buildDynamic() {
 
   if (c.metric === 'dur') {
     dyn.dur = makeDurWheel(addField(host, 'مدت'), d.h || 0, d.m || 0);
-    quickChips(host, [10,15,20,25,30,40,45,60,90], m => dyn.dur.setMinutes(m));
+    const hintM = document.createElement('p');
+    hintM.className = 'hint';
+    hintM.textContent = 'پیشنهاد دقیقه';
+    host.appendChild(hintM);
+    quickChips(host, [5,10,15,20,25,30,40,45,50,55,60], m => {
+      const h = Math.floor(dyn.dur.minutes() / 60);
+      dyn.dur.setMinutes(h * 60 + m);
+    });
+    const hintH = document.createElement('p');
+    hintH.className = 'hint';
+    hintH.textContent = 'پیشنهاد ساعت';
+    host.appendChild(hintH);
+    quickChips(host, [1,2,3,4,5,6], h => {
+      const m = dyn.dur.minutes() % 60;
+      dyn.dur.setMinutes(h * 60 + m);
+    });
   }
 
   if (c.metric === 'sec') {
@@ -640,28 +683,33 @@ function collectSession() {
 
 /* ═════════════════════════════ 7. META FORM ═════════════════════════════════ */
 
-let mDate = null, mBid = null, mOpfa = null;
+let mDate = null, mAlarm = null, mBid = null, mOpf1 = null, mOpf2 = null, mNap = null, mPlan = null;
+
+function paintBidDiff() {
+  if (!mAlarm || !mBid || !$('bidDiff')) return;
+  const a = mAlarm.value(), b = mBid.value(), d = bidDiffMin(a, b);
+  $('bidDiff').innerHTML =
+    `زنگ: <b class="ltr">${a}</b> · بیداری: <b class="ltr">${b}</b> · تفاضل: <b class="ltr">${fmtHM(d)}</b> (${d} دقیقه)`;
+}
 
 function buildMeta() {
-  mDate = makeDateWheel($('mDate'));
-  mBid  = makeClockWheel($('mBid'), DEFAULT_BID_H, DEFAULT_BID_M);
-  mOpfa = makeDurWheel($('mOpfa'), 4, 0);
+  mDate  = makeDateWheel($('mDate'));
+  mAlarm = makeClockWheel($('mAlarm'), DEFAULT_BID_H, DEFAULT_BID_M, null, paintBidDiff);
+  mBid   = makeClockWheel($('mBid'),   DEFAULT_BID_H, DEFAULT_BID_M, null, paintBidDiff);
+  mOpf1  = makeClockWheel($('mOpf1'), 15, 0, OPF1_HOURS);
+  mOpf2  = makeClockWheel($('mOpf2'), 18, 0);
+  mNap   = makeMinWheel($('mNap'), NAP_MAX, 0, 1);
+  mPlan  = makePctWheel($('mPlan'), PLAN_MIN, 70);
+  paintBidDiff();
+  setTimeout(paintBidDiff, 80);
+  setTimeout(paintBidDiff, 300);
 
-  /* Each question is pre-answered with its good outcome, so a normal day
-     needs no taps at all and you only touch the exceptions. */
-  $('metaBools').innerHTML = META_BOOLS.map(([id, label, pol]) => {
-    const neg    = pol === 'neg';
-    const yesCls = neg ? ' class="no"' : '';
-    const noCls  = neg ? '' : ' class="no"';
-    const yesChk = neg ? '' : ' checked';
-    const noChk  = neg ? ' checked' : '';
-    return `
-    <label class="lb">${label}</label>
-    <div class="seg">
-      <input type="radio" name="mb_${id}" id="mb_${id}_y" value="1"${yesCls}${yesChk}/><label for="mb_${id}_y">آره</label>
-      <input type="radio" name="mb_${id}" id="mb_${id}_n" value="0"${noCls}${noChk}/><label for="mb_${id}_n">نه</label>
-    </div>`;
-  }).join('');
+  const sugarBox = document.createElement('div');
+  $('m_sugar').insertAdjacentElement('afterend', sugarBox);
+  quickChips(sugarBox, [0,5,10,15,20,30], v => { $('m_sugar').value = v; });
+  const wrongBox = document.createElement('div');
+  $('m_wrong').insertAdjacentElement('afterend', wrongBox);
+  quickChips(wrongBox, [0,5,10,15,20,30], v => { $('m_wrong').value = v; });
 }
 
 function radioEl(name) {
@@ -677,17 +725,37 @@ function radioText(name) {
 }
 
 function collectMeta() {
-  const o = {
+  const opf1 = mOpf1.value();
+  const opf1h = Number(opf1.split(':')[0]);
+  if (OPF1_HOURS.indexOf(opf1h) < 0) {
+    toast('اوپن‌فست یک باید از ساعت ۱۵ تا یک بامداد باشد', true);
+    return null;
+  }
+  const nap = mNap.minutes();
+  if (nap > NAP_MAX) {
+    toast('چرت بیشتر از ۲۰ دقیقه قابل ثبت نیست', true);
+    return null;
+  }
+  const plan = mPlan.value();
+  if (plan < PLAN_MIN) {
+    toast('برنامهٔ امروز باید حداقل ۵۰ درصد مشخص باشد', true);
+    return null;
+  }
+  const alarm = mAlarm.value(), bid = mBid.value(), diff = bidDiffMin(alarm, bid);
+  return {
     uid: uid(),
     createdAt: new Date().toISOString(),
     dateShamsi: mDate.value(),
-    bid: mBid.value(),
-    openfastMin: mOpfa.minutes(), openfastHM: mOpfa.hm(),
+    alarm, bid,
+    bidDiffMin: diff, bidDiffHM: fmtHM(diff),
+    opf1, opf2: mOpf2.value(),
+    napMin: nap,
+    planPct: plan,
+    sugarG: num($('m_sugar').value) === '' ? 0 : num($('m_sugar').value),
+    wrongG: num($('m_wrong').value) === '' ? 0 : num($('m_wrong').value),
     note: $('m_note').value.trim(),
     synced: 0
   };
-  META_BOOLS.forEach(([id]) => { o[id] = radioVal('mb_' + id); });
-  return o;
 }
 
 /* ═════════════════════════════ 8. TABS AND SAVE ═════════════════════════════ */
@@ -705,6 +773,7 @@ function showTab(name) {
   $('btnSave').disabled  = (name === 'data');
   $('btnAgain').disabled = (name !== 'session');
   settleWheels();                                // panes that were hidden lost their scroll
+  if (name === 'meta') paintBidDiff();
   if (name === 'data') refreshData();
 }
 
@@ -721,7 +790,9 @@ async function doSave(again) {
     $('s_note').value = '';
     buildDynamic();
   } else if (activeTab === 'meta') {
-    await put('meta', collectMeta());
+    const rec = collectMeta();
+    if (!rec) return;
+    await put('meta', rec);
     vibrate(25);
     toast('متای روز ثبت شد');
   }
