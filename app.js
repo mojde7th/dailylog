@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v19 · meta';
+const APP_VERSION = 'v20 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -988,25 +988,44 @@ function paintSyncOut(msg) {
   if (el) el.textContent = msg;
 }
 
-async function probeScript(url) {
-  const res = await fetch(url, { method: 'GET' });
-  const raw = await res.text();
+async function parseScriptBody(raw) {
   try { return JSON.parse(raw); }
-  catch (e) { throw new Error('پاسخ شیت جیسان نیست'); }
+  catch (e) {
+    const clip = String(raw || '').replace(/\s+/g, ' ').slice(0, 80);
+    throw new Error('پاسخ شیت جیسان نیست · ' + clip);
+  }
+}
+
+async function probeScript(url, secret) {
+  try {
+    const res = await fetch(url, { method: 'GET' });
+    const raw = await res.text();
+    const outp = await parseScriptBody(raw);
+    if (outp && (outp.version || outp.alive || outp.ok != null)) return outp;
+  } catch (e) {}
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ secret: secret || '', type: 'meta', fields: ['uid'], rows: [] })
+  });
+  const raw = await res.text();
+  return parseScriptBody(raw);
 }
 
 async function checkSheet(loud) {
   const url = (cfgGet('url') || ($('cfg_url') && $('cfg_url').value.trim()) || '');
+  const secret = (cfgGet('secret') || ($('cfg_secret') && $('cfg_secret').value.trim()) || '');
   if (!url) {
     paintSyncOut('آدرس وب‌اپ خالی است');
     if (loud) toast('آدرس وب‌اپ خالی است', true);
     return false;
   }
+  paintSyncOut('در حال پرسیدن شیت…');
   try {
-    const outp = await probeScript(url);
+    const outp = await probeScript(url, secret);
     const ver = String(outp.version || '');
     const ok = ver === SCRIPT_VERSION;
-    const tab = outp.lookAt || '';
+    const tab = outp.lookAt || outp.tab || '';
     paintSyncOut(
       ok
         ? ('شیت درست · ' + ver + (tab ? (' · ' + tab) : '') + ' · ' + execHint(url))
@@ -1016,7 +1035,11 @@ async function checkSheet(loud) {
     if (loud) toast(ok ? 'شیت درست است' : 'همین آدرس کهنه است', !ok);
     return ok;
   } catch (e) {
-    paintSyncOut('آدرس شیت باز نشد');
+    const msg = String(e.message || e);
+    const line = (msg.indexOf('Failed to fetch') >= 0 || msg.indexOf('NetworkError') >= 0)
+      ? 'مرورگر وب‌اپ را نخواند. همان لینک /exec را در تب تازه باز کن'
+      : msg;
+    paintSyncOut(line);
     if (loud) toast('آدرس شیت باز نشد', true);
     return false;
   }
