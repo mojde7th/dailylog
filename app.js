@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v25 · meta';
+const APP_VERSION = 'v26 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -250,13 +250,40 @@ function wheelColumn(items, initial, onChange, opts) {
     }, 80);
   }, { passive: true });
 
+  let armed = false;
+  function arm(on) {
+    armed = !!on;
+    col.classList.toggle('armed', armed);
+  }
+  function nudge(dir) {
+    let i = logical() + dir;
+    if (loop) i = ((i % N) + N) % N;
+    else i = clampLog(i);
+    set(i);
+    if (onChange) onChange(i);
+  }
   sc.addEventListener('wheel', e => {
     e.preventDefault();
     e.stopPropagation();
-    window.scrollBy(0, e.deltaY);
+    if (!armed) {
+      window.scrollBy(0, e.deltaY);
+      return;
+    }
+    nudge(e.deltaY > 0 ? 1 : -1);
   }, { passive: false });
 
-  const api = { el: col, get: logical, set, apply, destroy: () => WHEELS.delete(api) };
+  const api = { el: col, get: logical, set, apply, arm, destroy: () => WHEELS.delete(api) };
+  col.addEventListener('pointerdown', () => {
+    WHEELS.forEach(w => { if (w !== api && w.arm) w.arm(false); });
+    arm(true);
+  });
+  if (!window._wheelDisarm) {
+    window._wheelDisarm = true;
+    document.addEventListener('pointerdown', e => {
+      if (e.target.closest('.wcol')) return;
+      WHEELS.forEach(w => { if (w.arm) w.arm(false); });
+    }, true);
+  }
   WHEELS.add(api);
   return api;
 }
@@ -540,12 +567,11 @@ function totalLine(it, rec) {
 async function paintMetaStatus() {
   const day = mDate ? selectedMetaDay() : '';
   const rec = day ? await metaFor(day) : null;
-  ['metaGate','metaGate2'].forEach(id => {
-    const el = $(id);
-    if (!el) return;
-    el.textContent = day || '';
-    el.className = 'gate' + (rec && isComplete(rec) ? ' ok' : '');
-  });
+  const sum = rec ? metaSummary(rec) : '—';
+  const sumEl = $('metaSum');
+  if (sumEl) sumEl.textContent = 'meta · ' + sum;
+  const nbSum = $('nbMetaSum');
+  if (nbSum) nbSum.textContent = 'meta · ' + sum;
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
@@ -943,8 +969,11 @@ function showTab(name) {
   $('tabSession').classList.toggle('active', name === 'session');
   $('tabMeta').classList.toggle('active',    name === 'meta');
   $('tabData').classList.toggle('active',    name === 'data');
-  $('btnSave').disabled  = (name === 'data');
-  $('btnSave').textContent = name === 'meta' ? 'وضعیت متا' : 'این خط را بنویس';
+  $('btnSave').disabled  = (name !== 'session');
+  $('btnSave').textContent = 'این خط را بنویس';
+  const bar = document.querySelector('.bar');
+  if (bar) bar.classList.toggle('hide', name !== 'session');
+  document.body.style.paddingBottom = name === 'session' ? '100px' : '24px';
   settleWheels();
   if (name === 'meta') paintMetaStatus();
   if (name === 'session') { paintNotebook(); paintMetaStatus(); }
@@ -961,11 +990,6 @@ async function doSave() {
     $('s_note').value = '';
     $('s_tags').value = '';
     await paintNotebook();
-  } else if (activeTab === 'meta') {
-    await paintMetaStatus();
-    const rec = await metaFor(selectedMetaDay());
-    if (isComplete(rec)) toast('متا کامل است');
-    else toast('هنوز تیک‌نخورده دارد — هر مورد را جدا بگذار', true);
   }
   updateQueueBadge();
   trySync();

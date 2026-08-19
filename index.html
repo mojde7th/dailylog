@@ -56,6 +56,7 @@ textarea{min-height:52px;resize:vertical}
 .wheels.ltr,.wcap.ltr{direction:ltr}
 .wheels.slim .wcol{flex:0 0 96px;max-width:96px}
 .wcol{flex:1;max-width:140px;position:relative;height:152px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.wcol.armed{border-color:var(--accent)}
 .wcol .sc{height:100%;overflow-y:scroll;padding:55px 0;
   scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
   overscroll-behavior-y:contain}
@@ -120,7 +121,7 @@ button.cancel{
 .stat{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
 .stat b{color:var(--ink)}
 .sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem}
-.gate{background:#1c180e;border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:0 0 14px;font-size:.84rem}
+.gate{display:none}
 .gate.ok{background:#0f1c16;border-color:var(--good)}
 .checks{display:none}
 .mblock{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;background:#0b1016}
@@ -190,6 +191,7 @@ button.put{
       <h2>متای روز</h2>
       <label class="lb">تاریخ</label>
       <div id="mDate"></div>
+      <div class="sum ltr" id="metaSum">—</div>
       <div class="checks" id="metaChecks"></div>
     </div>
     <div id="metaBlocks"></div>
@@ -277,6 +279,6 @@ button.put{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>
