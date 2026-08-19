@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v24 · meta';
+const APP_VERSION = 'v25 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1055,12 +1055,7 @@ async function trySync(loud) {
   const url = cfgGet('url'), secret = cfgGet('secret');
   if (!url) { if (loud) toast('آدرس وب‌اپ خالی است', true); return; }
   if (!navigator.onLine) { if (loud) toast('آفلاین هستی', true); return; }
-
-  const fresh = await checkSheet(false);
-  if (!fresh) {
-    if (loud) toast('همین آدرس کهنه است', true);
-    return;
-  }
+  if (trySync._busy) { if (loud) toast('در حال ارسال'); return; }
 
   const s = (await getAll('sessions')).filter(r => !r.synced);
   const m = (await getAll('meta')).filter(r => !r.synced);
@@ -1068,6 +1063,8 @@ async function trySync(loud) {
     if (loud) toast('صف خالی است');
     return;
   }
+
+  trySync._busy = true;
   try {
     let info = [];
     if (s.length) info.push(await pushBatch(url, secret, 'session', s, SESSION_FIELDS));
@@ -1077,11 +1074,13 @@ async function trySync(loud) {
       ' +' + (x.inserted || 0) + ' ~' + (x.updated || 0)
     ).join(' · ');
     paintSyncOut(line);
-    toast('شیت به‌روز شد');
+    if (loud) toast('شیت به‌روز شد');
   } catch (e) {
     const msg = String(e.message || e);
     paintSyncOut(msg);
-    toast(msg.indexOf('old script') >= 0 ? 'همین آدرس کهنه است' : 'ارسال نشد، در صف ماند', true);
+    if (loud) toast(msg.indexOf('old script') >= 0 ? 'همین آدرس کهنه است' : 'ارسال نشد، در صف ماند', true);
+  } finally {
+    trySync._busy = false;
   }
   updateQueueBadge();
   if (activeTab === 'data') refreshData();
@@ -1121,7 +1120,7 @@ function updateNetPill() {
 
 /* ═════════════════════════════ 9. DATA / CSV ═══════════════════════════════ */
 
-async function metaSummary(rec) {
+function metaSummary(rec) {
   if (!rec) return '—';
   const bits = [];
   META_ITEMS.forEach(it => {
