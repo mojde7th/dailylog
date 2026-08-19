@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v23 · meta';
+const APP_VERSION = 'v24 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -914,20 +914,20 @@ async function paintNotebook() {
     });
     order.forEach(code => {
       const g = bag[code];
-      html += '<div class="nbline">';
-      html += '<span class="nbcode">' + esc(code) + '</span>';
-      if (g.tags.length) html += '<span class="nbtags">' + esc(g.tags.join(', ')) + '</span>';
       let dur = '';
       if (g.count && !g.sum) dur = '×' + g.count;
       else {
-        dur = (g.chunks.length ? g.chunks.join(', ') : '0m');
-        if (g.chunks.length > 1) dur += '  =' + fmtChunk(g.sum);
+        dur = (g.chunks.length ? g.chunks.join(',') : '0m');
+        if (g.chunks.length > 1) dur += ' =' + fmtChunk(g.sum);
       }
-      html += '<span class="nbdur">' + esc(dur) + '</span>';
-      html += '</div>';
+      const tags = g.tags.length ? '(' + g.tags.join(',') + ')' : '';
+      html += '<div class="nbline">' + esc(code + tags + ':' + dur) + '</div>';
     });
     html += '</div>';
   });
+  const rec = day ? await metaFor(day) : null;
+  const sumEl = $('nbMetaSum');
+  if (sumEl) sumEl.textContent = rec ? ('meta · ' + metaSummary(rec)) : 'meta · —';
   host.innerHTML = html || '<div class="empty">خالی</div>';
 }
 
@@ -1179,26 +1179,19 @@ async function refreshData() {
     html += '<div style="margin-top:8px">' +
       cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b>`).join('<br/>') + '</div>';
   }
+  const todayMeta = m.find(r => r.dateShamsi === today);
+  html += '<div class="ltr" style="margin-top:8px">متا · ' +
+    esc(todayMeta ? metaSummary(todayMeta) : '—') + '</div>';
   $('todaySum').innerHTML = html;
   const mixed = [];
   s.forEach(r => mixed.push({
     at: r.createdAt || '',
     date: r.dateShamsi || '',
-    kind: 'دفتر',
+    kind: r.part || '',
     what: r.code || '',
     val: r.chunk || r.hm || r.count || '',
     synced: r.synced,
     store: 'sessions',
-    uid: r.uid
-  }));
-  m.forEach(r => mixed.push({
-    at: r.createdAt || '',
-    date: r.dateShamsi || '',
-    kind: 'متا',
-    what: r.dateShamsi || '',
-    val: metaSummary(r),
-    synced: r.synced,
-    store: 'meta',
     uid: r.uid
   }));
   mixed.sort((a, b) => String(b.at).localeCompare(String(a.at)));

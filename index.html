@@ -130,20 +130,14 @@ button.put{
   border-radius:10px;padding:10px;font-family:inherit;cursor:pointer
 }
 .nb{
-  font-family:Consolas,"Cascadia Mono",Tahoma,sans-serif;direction:rtl;text-align:right;
+  font-family:Consolas,"Cascadia Mono",Tahoma,monospace;direction:ltr;text-align:left;
   background:#070b10;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
   min-height:80px;font-size:.82rem;line-height:1.7;color:#c8f0d8;
   overflow-x:hidden;overflow-wrap:anywhere;word-break:break-word
 }
-.nb .partline{color:#6db3f2;margin:0 0 6px;font-weight:bold;text-align:right}
+.nb .partline{direction:rtl;text-align:right;color:#6db3f2;margin:0 0 6px;font-weight:bold;font-family:Tahoma,sans-serif}
 .nb .nbpart{margin:0 0 12px}
-.nb .nbline{
-  display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:baseline;gap:8px;
-  margin:0 0 8px
-}
-.nb .nbcode{direction:ltr;unicode-bidi:isolate;color:#c8f0d8}
-.nb .nbtags{direction:ltr;unicode-bidi:isolate;color:#8fb89a;font-size:.78rem}
-.nb .nbdur{direction:ltr;unicode-bidi:isolate;color:#d7f5e7}
+.nb .nbline{display:block;direction:ltr;text-align:left;margin:0 0 4px}
 .nb .empty{color:#5f7186}
 .catlab{font-size:.75rem;color:var(--muted);margin:12px 0 6px}
 .alist{display:flex;flex-wrap:wrap;gap:6px}
@@ -208,6 +202,7 @@ button.put{
       <p class="hint">خط به خط مثل دفتر. پارت با خط جدا می‌شود. کار تکراری در پارت بعد هم مجاز است. زمان‌ها با ویرگول جمع می‌شوند.</p>
       <label class="lb">تاریخ</label>
       <div id="sDate"></div>
+      <div class="sum ltr" id="nbMetaSum">—</div>
       <div class="nb" id="nbLog">در حال خواندن دفتر…</div>
     </div>
     <div class="card">
@@ -269,7 +264,7 @@ button.put{
     </div>
     <div class="card">
       <h2>آخرین ثبت‌ها</h2>
-      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>نوع</th><th>چیست</th><th>مقدار</th><th></th></tr></thead><tbody></tbody></table>
+      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>پارت</th><th>فعالیت</th><th>مقدار</th><th></th></tr></thead><tbody></tbody></table>
     </div>
   </section>
 
@@ -282,6 +277,6 @@ button.put{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>
