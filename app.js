@@ -5,8 +5,8 @@
 
 'use strict';
 
-const APP_VERSION = 'v17 · wrap';
-const SCRIPT_VERSION = 'v6-meta';
+const APP_VERSION = 'v18 · meta';
+const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -82,6 +82,13 @@ const META_ITEMS = [
   { id:'moodToFlow',     label:'moodtoflow',                                        kind:'accumDur' },
   { id:'fastMode',       label:'fastMode',                                          kind:'xor', options:['cleanfast>=19h','open<5h'] },
   { id:'cleanAfterOpen', label:'cleaneatingafteropen',                              kind:'flag' },
+  { id:'raatayeghavanineakhlaghietayinshode100', label:'raatayeghavanineakhlaghietayinshode100%', kind:'flag' },
+  { id:'adametakhghmoj0', label:'adametakhghmoj0%',                                  kind:'flag' },
+  { id:'takhmojmotns',    label:'takhmojmotns',                                      kind:'flag' },
+  { id:'mohtmoj100',      label:'mohtmoj100%',                                       kind:'flag' },
+  { id:'budandarjayemojaz100', label:'budandarjayemojaz100%',                        kind:'flag' },
+  { id:'kharidemojaz100', label:'kharidemojaz100%',                                  kind:'flag' },
+  { id:'rayyatepartbandieruz100', label:'rayyatepartbandieruz100%',                  kind:'flag' },
   { id:'afterFastMood',  label:'afterfastmoodtoflow',                               kind:'accumDur' },
   { id:'nchort',         label:'nchort',                                           kind:'flag' },
   { id:'bidDiff',        label:'tafazol',                                          kind:'min15' },
@@ -93,9 +100,14 @@ const META_ITEMS = [
   { id:'mintakhir',      label:'mintakhir',                                         kind:'secchips' }
 ];
 
+const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
+
 const META_FIELDS = ['uid','createdAt','dateShamsi',
   'moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin',
-  'fastMode','cleanAfterOpen','nchort','preplan12',
+  'fastMode','cleanAfterOpen',
+  'raatayeghavanineakhlaghietayinshode100','adametakhghmoj0','takhmojmotns',
+  'mohtmoj100','budandarjayemojaz100','kharidemojaz100','rayyatepartbandieruz100',
+  'nchort','preplan12',
   'bidDiffMin','opf1','opf2','mintakhir',
   'doneJson','complete'];
 
@@ -440,7 +452,7 @@ function fillMetaGaps(keep, extra) {
   ['fastMode','opf1','opf2'].forEach(k => {
     if (!keep[k] && extra[k]) keep[k] = extra[k];
   });
-  ['cleanAfterOpen','nchort','preplan12'].forEach(k => {
+  META_FLAG_IDS.forEach(k => {
     if (!keep[k] && extra[k]) keep[k] = extra[k];
   });
   if (keep.bidDiffMin === '' || keep.bidDiffMin == null) keep.bidDiffMin = extra.bidDiffMin;
@@ -475,15 +487,17 @@ async function metaFor(day) {
   return keep;
 }
 function blankMeta(day) {
-  return {
+  const rec = {
     uid: metaUid(day),
     createdAt: new Date().toISOString(),
     dateShamsi: day,
     moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0,
-    fastMode:'', cleanAfterOpen:0, nchort:0, preplan12:0,
+    fastMode:'',
     bidDiffMin:'', opf1:'', opf2:'', mintakhir:'',
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
+  META_FLAG_IDS.forEach(k => { rec[k] = 0; });
+  return rec;
 }
 
 /* ═════════════════════════════ 5. META FORM ════════════════════════════════ */
@@ -954,13 +968,13 @@ async function doSave() {
 /* ═════════════════════════════ 8. SYNC ═════════════════════════════════════ */
 
 async function forceMetaResyncOnce() {
-  if (cfgGet('meta_resync') === 'v13') return;
+  if (cfgGet('meta_resync') === 'v18') return;
   const all = await getAll('meta');
   for (const r of all) {
     r.synced = 0;
     await put('meta', r);
   }
-  cfgSet('meta_resync', 'v13');
+  cfgSet('meta_resync', 'v18');
 }
 
 function paintSyncOut(msg) {
