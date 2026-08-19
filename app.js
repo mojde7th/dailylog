@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v21 · meta';
+const APP_VERSION = 'v22 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -249,6 +249,12 @@ function wheelColumn(items, initial, onChange, opts) {
       }, 180);
     }, 80);
   }, { passive: true });
+
+  sc.addEventListener('wheel', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.scrollBy(0, e.deltaY);
+  }, { passive: false });
 
   const api = { el: col, get: logical, set, apply, destroy: () => WHEELS.delete(api) };
   WHEELS.add(api);
@@ -1181,7 +1187,9 @@ async function refreshData() {
     kind: 'دفتر',
     what: r.code || '',
     val: r.chunk || r.hm || r.count || '',
-    synced: r.synced
+    synced: r.synced,
+    store: 'sessions',
+    uid: r.uid
   }));
   m.forEach(r => mixed.push({
     at: r.createdAt || '',
@@ -1189,7 +1197,9 @@ async function refreshData() {
     kind: 'متا',
     what: r.dateShamsi || '',
     val: metaSummary(r),
-    synced: r.synced
+    synced: r.synced,
+    store: 'meta',
+    uid: r.uid
   }));
   mixed.sort((a, b) => String(b.at).localeCompare(String(a.at)));
   document.querySelector('#tblRecent tbody').innerHTML = mixed.slice(0, 30).map(r => `
@@ -1198,7 +1208,9 @@ async function refreshData() {
       <td>${esc(r.kind)}</td>
       <td class="ltr">${esc(r.what)}</td>
       <td class="ltr">${esc(r.val)}</td>
-      <td>${tagCell(r.synced)}</td>
+      <td>${tagCell(r.synced)}${!r.synced && r.uid
+        ? ' <button type="button" class="cancel" data-store="' + esc(r.store) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
+        : ''}</td>
     </tr>`).join('');
 }
 
@@ -1303,6 +1315,19 @@ async function boot() {
   $('btnCsvM').addEventListener('click', () => exportCsv('meta', META_FIELDS, 'meta'));
   $('btnShare').addEventListener('click', shareCsv);
   $('btnHardReload').addEventListener('click', hardReload);
+  $('tblRecent').addEventListener('click', async ev => {
+    const b = ev.target.closest('button.cancel');
+    if (!b) return;
+    const store = b.dataset.store;
+    const id = b.dataset.uid;
+    if (!store || !id) return;
+    await delKey(store, id);
+    toast('از صف حذف شد');
+    await refreshData();
+    updateQueueBadge();
+    if (store === 'meta') paintMetaStatus();
+    else paintNotebook();
+  });
   $('btnWipe').addEventListener('click', async () => {
     if (!confirm('همه دادهٔ این دستگاه پاک شود؟')) return;
     await clearStore('sessions');
