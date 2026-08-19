@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v18 · meta';
+const APP_VERSION = 'v19 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -977,6 +977,12 @@ async function forceMetaResyncOnce() {
   cfgSet('meta_resync', 'v18');
 }
 
+function execHint(url) {
+  const u = String(url || '');
+  const m = u.match(/\/macros\/s\/([^/]+)/);
+  return m ? ('script/' + m[1].slice(0, 12) + '…') : u.slice(0, 40);
+}
+
 function paintSyncOut(msg) {
   const el = $('syncOut');
   if (el) el.textContent = msg;
@@ -1003,8 +1009,9 @@ async function checkSheet(loud) {
     const tab = outp.lookAt || '';
     paintSyncOut(
       ok
-        ? ('شیت درست · ' + ver + (tab ? (' · ' + tab) : ''))
-        : ('همین آدرس کهنه است · آمده: ' + (ver || 'بدون‌نسخه') + ' · باید: ' + SCRIPT_VERSION)
+        ? ('شیت درست · ' + ver + (tab ? (' · ' + tab) : '') + ' · ' + execHint(url))
+        : ('وب‌اپ شیت کهنه است نه گیت‌هاب · آمده: ' + (ver || 'بدون‌نسخه') +
+           ' · باید: ' + SCRIPT_VERSION + ' · ' + execHint(url))
     );
     if (loud) toast(ok ? 'شیت درست است' : 'همین آدرس کهنه است', !ok);
     return ok;
@@ -1098,7 +1105,8 @@ async function refreshData() {
     `نسخهٔ اپ: <b>${APP_VERSION}</b><br/>` +
     `نسخهٔ شیت باید: <b>${SCRIPT_VERSION}</b><br/>` +
     `امروز به شمسی: <b>${today}</b><br/>` +
-    `آدرس فعلی: <span class="ltr">${location.origin + location.pathname}</span>`;
+    `آدرس اپ: <span class="ltr">${location.origin + location.pathname}</span><br/>` +
+    `آدرس وب‌اپ شیت: <span class="ltr">${cfgGet('url') || 'خالی'}</span>`;
   const byCat = {};
   let totalMin = 0;
   rows.forEach(r => {
