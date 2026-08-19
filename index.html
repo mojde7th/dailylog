@@ -108,7 +108,21 @@ th{color:var(--muted);font-weight:normal}
 .tag.sent{border-color:var(--good);color:var(--good)}
 button.cancel{
   background:#2a1618;border:1px solid var(--bad);color:#f8c9cd;border-radius:8px;
-  padding:4px 8px;font-size:.72rem;font-family:inherit;cursor:pointer
+  padding:6px 10px;font-size:.75rem;font-family:inherit;cursor:pointer;white-space:nowrap
+}
+.loglist{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.logcard{background:#0b1016;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.loghead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.logmeta{display:flex;align-items:center;gap:8px;min-width:0}
+.logkind{font-size:.72rem;border:1px solid var(--line);border-radius:8px;padding:2px 8px;white-space:nowrap}
+.logdate{direction:ltr;color:var(--muted);font-size:.78rem}
+.logactions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.logwhat{direction:ltr;text-align:left;font-size:.86rem}
+.logval{direction:ltr;text-align:left;color:#c8f0d8;font-size:.9rem;margin-top:2px}
+.logchips{display:flex;flex-wrap:wrap;gap:6px;direction:ltr;justify-content:flex-start;margin-top:8px}
+.logchips span{
+  border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:.72rem;
+  direction:ltr;max-width:100%;overflow-wrap:anywhere
 }
 #toast{
   position:fixed;bottom:100px;right:50%;transform:translateX(50%);background:#12312a;
@@ -266,7 +280,7 @@ button.put{
     </div>
     <div class="card">
       <h2>آخرین ثبت‌ها</h2>
-      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>نوع</th><th>چیست</th><th>مقدار</th><th>صف</th></tr></thead><tbody></tbody></table>
+      <div id="logList" class="loglist"></div>
     </div>
   </section>
 
@@ -279,6 +293,6 @@ button.put{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=27"></script>
+<script src="app.js?v=28"></script>
 </body>
 </html>

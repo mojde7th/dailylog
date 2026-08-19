@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v27 · meta';
+const APP_VERSION = 'v28 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1144,8 +1144,8 @@ function updateNetPill() {
 
 /* ═════════════════════════════ 9. DATA / CSV ═══════════════════════════════ */
 
-function metaSummary(rec) {
-  if (!rec) return '—';
+function metaBits(rec) {
+  if (!rec) return [];
   const bits = [];
   META_ITEMS.forEach(it => {
     if (it.kind === 'accumDur') {
@@ -1165,6 +1165,10 @@ function metaSummary(rec) {
       bits.push('mintakhir=' + rec.mintakhir + 's');
     }
   });
+  return bits;
+}
+function metaSummary(rec) {
+  const bits = metaBits(rec);
   return bits.join(' · ') || '—';
 }
 
@@ -1222,22 +1226,31 @@ async function refreshData() {
     date: r.dateShamsi || '',
     kind: 'متا',
     what: 'meta',
-    val: metaSummary(r),
+    bits: metaBits(r),
     synced: r.synced,
     store: 'meta',
     uid: r.uid
   }));
   mixed.sort((a, b) => String(b.at).localeCompare(String(a.at)));
-  document.querySelector('#tblRecent tbody').innerHTML = mixed.slice(0, 30).map(r => `
-    <tr>
-      <td class="ltr">${esc(r.date)}</td>
-      <td>${esc(r.kind)}</td>
-      <td class="ltr">${esc(r.what)}</td>
-      <td class="ltr">${esc(r.val)}</td>
-      <td>${tagCell(r.synced)}${!r.synced && r.uid
-        ? ' <button type="button" class="cancel" data-store="' + esc(r.store) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
-        : ''}</td>
-    </tr>`).join('');
+  const host = $('logList');
+  if (!host) return;
+  host.innerHTML = mixed.slice(0, 30).map(r => {
+    const actions = tagCell(r.synced) + (!r.synced && r.uid
+      ? '<button type="button" class="cancel" data-store="' + esc(r.store) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
+      : '');
+    const bits = r.store === 'meta' && r.bits && r.bits.length
+      ? '<div class="logchips">' + r.bits.map(b => '<span>' + esc(b) + '</span>').join('') + '</div>'
+      : (r.val ? '<div class="logval">' + esc(r.val) + '</div>' : '');
+    return '<div class="logcard">' +
+      '<div class="loghead">' +
+        '<div class="logmeta"><span class="logkind">' + esc(r.kind) + '</span>' +
+        '<span class="logdate">' + esc(r.date) + '</span></div>' +
+        '<div class="logactions">' + actions + '</div>' +
+      '</div>' +
+      (r.what && r.store !== 'meta' ? '<div class="logwhat">' + esc(r.what) + '</div>' : '') +
+      bits +
+    '</div>';
+  }).join('') || '<div class="empty">خالی</div>';
 }
 
 const csvEscape = v => {
@@ -1341,7 +1354,7 @@ async function boot() {
   $('btnCsvM').addEventListener('click', () => exportCsv('meta', META_FIELDS, 'meta'));
   $('btnShare').addEventListener('click', shareCsv);
   $('btnHardReload').addEventListener('click', hardReload);
-  $('tblRecent').addEventListener('click', async ev => {
+  $('logList').addEventListener('click', async ev => {
     const b = ev.target.closest('button.cancel');
     if (!b) return;
     const store = b.dataset.store;
