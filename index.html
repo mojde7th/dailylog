@@ -47,22 +47,14 @@ input,select,textarea{
   border-radius:10px;padding:11px 12px;font-family:inherit;font-size:16px
 }
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
-textarea{min-height:60px;resize:vertical}
+textarea{min-height:52px;resize:vertical}
 .ltr{direction:ltr;text-align:left}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* ---------- wheel picker ---------- */
-.wheels{display:flex;gap:8px;align-items:stretch}
+.wheels{display:flex;gap:8px;align-items:stretch;justify-content:center}
 .wheels.ltr,.wcap.ltr{direction:ltr}
-/* 152 = 150 inner box + the 1px borders, so the inner box is exactly
-   55 + 40 + 55 and item i sits under the band at scrollTop = i * 40 with no
-   remainder, which is what the picker code assumes.
-
-   No scroll-snap-type here, on purpose. Chrome re-snaps to the FIRST item
-   whenever the snap style is recalculated, which silently dragged every wheel
-   back to 1403/01/01 and 0:00. The picker snaps in JavaScript once the finger
-   stops, so the CSS version bought nothing and cost correctness. */
-.wcol{flex:1;position:relative;height:152px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.wheels.slim .wcol{flex:0 0 96px;max-width:96px}
+.wcol{flex:1;max-width:140px;position:relative;height:152px;background:#0b1016;border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .wcol .sc{height:100%;overflow-y:scroll;padding:55px 0;
   scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
   overscroll-behavior-y:contain}
@@ -75,18 +67,6 @@ textarea{min-height:60px;resize:vertical}
 .wcap{display:flex;gap:8px;margin-top:4px}
 .wcap span{flex:1;text-align:center;font-size:.72rem;color:var(--muted)}
 
-.seg{display:flex;gap:6px;margin-top:5px}
-.seg input{display:none}
-.seg label{
-  flex:1;margin:0;text-align:center;background:#0b1016;border:1px solid var(--line);
-  border-radius:10px;padding:10px 4px;font-size:.88rem;cursor:pointer;color:var(--muted)
-}
-.seg input:checked + label{background:#12312a;border-color:var(--good);color:var(--good)}
-.seg input.no:checked + label{background:#2a1618;border-color:var(--bad);color:var(--bad)}
-.stars{display:flex;gap:6px}
-.stars button{flex:1;background:#0b1016;border:1px solid var(--line);color:var(--muted);
-  border-radius:10px;padding:10px 0;font-size:.9rem;font-family:inherit;cursor:pointer}
-.stars button.on{background:#2a2414;border-color:var(--warn);color:var(--warn)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .chips button{
   background:#0b1016;border:1px solid var(--line);color:var(--muted);border-radius:999px;
@@ -99,17 +79,11 @@ textarea{min-height:60px;resize:vertical}
   border-radius:10px;padding:9px 2px;font-size:.74rem;font-family:inherit;cursor:pointer
 }
 .parts button.on{background:#1e2b3c;border-color:var(--accent);color:var(--ink);font-weight:bold}
-.layers{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:4px}
-.layers .cell .lb{margin-top:8px}
 .accum{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   background:#152033;border:1px solid var(--accent);border-radius:12px;padding:12px;margin-top:8px
 }
-.accum b{font-size:1.35rem}
-.plus{
-  min-width:64px;background:#1c6fb8;border:1px solid #2f8ad8;color:#fff;
-  border-radius:12px;padding:12px 14px;font-size:1.1rem;font-family:inherit;font-weight:bold;cursor:pointer
-}
+.accum b{font-size:1.2rem}
 .bar{
   position:fixed;bottom:0;left:0;right:0;background:#131922;border-top:1px solid var(--line);
   padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:20
@@ -141,8 +115,44 @@ th{color:var(--muted);font-weight:normal}
 .stat{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
 .stat b{color:var(--ink)}
 .sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem}
-details{border:1px solid var(--line);border-radius:10px;padding:8px 11px;margin-top:12px;background:#0b1016}
-summary{cursor:pointer;color:var(--muted);font-size:.83rem}
+.gate{background:#1c180e;border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:0 0 14px;font-size:.84rem}
+.gate.ok{background:#0f1c16;border-color:var(--good)}
+.checks{display:none}
+.mblock{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;background:#0b1016}
+.mblock h3{margin:0 0 4px;font-size:.88rem;direction:ltr;text-align:left;font-family:Consolas,monospace}
+button.put{
+  width:100%;margin-top:8px;background:#1b3a2e;border:1px solid var(--good);color:#d7f5e7;
+  border-radius:10px;padding:10px;font-family:inherit;cursor:pointer
+}
+.nb{
+  font-family:Consolas,"Cascadia Mono",Tahoma,monospace;direction:ltr;text-align:left;
+  background:#070b10;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+  min-height:120px;white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:#c8f0d8
+}
+.nb .partline{color:#6db3f2;margin:10px 0 4px;font-weight:bold}
+.nb .empty{color:#5f7186}
+.catlab{font-size:.75rem;color:var(--muted);margin:12px 0 6px}
+.alist{display:flex;flex-wrap:wrap;gap:6px}
+.alist button{
+  background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:10px;
+  padding:8px 10px;font-size:.78rem;font-family:Consolas,"Segoe UI",sans-serif;cursor:pointer;
+  direction:ltr;text-align:left
+}
+.alist button.on{border-color:var(--accent);background:#1e2b3c}
+.pick{display:flex;flex-wrap:wrap;gap:8px;direction:ltr;justify-content:flex-start}
+.pick button{
+  min-width:48px;min-height:44px;background:#0b1016;border:1px solid var(--line);color:var(--ink);
+  border-radius:12px;font-family:Consolas,sans-serif;font-size:.95rem;cursor:pointer
+}
+.pick button.on{background:#12312a;border-color:var(--good);color:var(--good);font-weight:bold}
+.flagrow{display:flex;flex-direction:column;gap:8px}
+.flagrow button{
+  background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:12px;
+  padding:14px 12px;font-family:Consolas,monospace;font-size:.92rem;cursor:pointer;
+  direction:ltr;text-align:left
+}
+.flagrow button.on{background:#12312a;border-color:var(--good);color:var(--good)}
+.qchips{direction:ltr;text-align:left}
 </style>
 </head>
 <body>
@@ -157,84 +167,52 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
     </div>
   </div>
   <div class="tabs">
-    <button id="tabSession" class="active" type="button">ثبت نوبت</button>
-    <button id="tabMeta" type="button">متای روز</button>
+    <button id="tabMeta" class="active" type="button">متای روز</button>
+    <button id="tabSession" type="button">دفتر نوبت</button>
     <button id="tabData" type="button">داده‌ها</button>
   </div>
 </header>
 
 <main>
 
-  <!-- ══════════ نوبت ══════════ -->
-  <section id="paneSession">
-    <div class="card">
-      <h2>ثبت یک نوبت</h2>
-      <p class="hint">پارت را بزن، دسته را بزن، فقط مدت همان کار را بگذار. متن داخل پرانتز پیش‌فرض آن کار است، نه فیلد جدا. لایه‌ها و چک‌این دستهٔ جدا هستند.</p>
-
-      <label class="lb">پارت روز</label>
-      <div class="parts" id="sParts"></div>
-
-      <label class="lb">تاریخ</label>
-      <div id="sDate"></div>
-
-      <label class="lb">دسته</label>
-      <select id="s_cat"></select>
-
-      <label class="lb">فعالیت <span class="req">*</span></label>
-      <select id="s_code"></select>
-      <p class="hint" id="codeHint"></p>
-
-      <div id="dynFields"></div>
-
-      <label class="lb">یادداشت</label>
-      <textarea id="s_note" placeholder="اختیاری"></textarea>
-    </div>
-  </section>
-
-  <!-- ══════════ متا ══════════ -->
-  <section id="paneMeta" class="hide">
+  <section id="paneMeta">
+    <div class="gate" id="metaGate">meta …</div>
     <div class="card">
       <h2>متای روز</h2>
-      <p class="hint">یک بار در شبانه‌روز. عدد مبهم نه؛ ساعت و گرم و درصد.</p>
-
       <label class="lb">تاریخ</label>
       <div id="mDate"></div>
+      <div class="checks" id="metaChecks"></div>
+    </div>
+    <div id="metaBlocks"></div>
+  </section>
 
-      <label class="lb">ساعت زنگ</label>
-      <div id="mAlarm"></div>
-
-      <label class="lb">ساعت بیداری</label>
-      <div id="mBid"></div>
-
-      <div class="sum" id="bidDiff">تفاضل: —</div>
-
-      <label class="lb">اوپن‌فست ۱ — ساشه پروتئین</label>
-      <p class="hint">از ساعت ۱۵ تا یک بامداد. پیش‌فرض ۱۵. پایین‌تر از ۱۵ ذخیره نمی‌شود.</p>
-      <div id="mOpf1"></div>
-
-      <label class="lb">اوپن‌فست ۲ — ساعت دقیق</label>
-      <div id="mOpf2"></div>
-
-      <label class="lb">میزان چرت</label>
-      <p class="hint">صفر یعنی چرت نبود. بیشتر از ۲۰ دقیقه ذخیره نمی‌شود.</p>
-      <div id="mNap"></div>
-
-      <label class="lb">مشخص بودن برنامهٔ امروز</label>
-      <p class="hint">از ۵۰ درصد به بالا. کمتر از ۵۰ ذخیره نمی‌شود.</p>
-      <div id="mPlan"></div>
-
-      <label class="lb">گرم قند و کرب و شیرین‌کننده</label>
-      <input id="m_sugar" class="ltr" type="number" inputmode="decimal" min="0" step="1" value="0"/>
-
-      <label class="lb">گرم چیز اشتباه بعد از اوپن‌فست</label>
-      <input id="m_wrong" class="ltr" type="number" inputmode="decimal" min="0" step="1" value="0"/>
-
-      <label class="lb">یادداشت روز</label>
-      <textarea id="m_note" placeholder="اختیاری"></textarea>
+  <section id="paneSession" class="hide">
+    <div class="gate" id="metaGate2">—</div>
+    <div class="card">
+      <h2>دفتر امروز</h2>
+      <p class="hint">خط به خط مثل دفتر. پارت با خط جدا می‌شود. کار تکراری در پارت بعد هم مجاز است. زمان‌ها با ویرگول جمع می‌شوند.</p>
+      <label class="lb">تاریخ</label>
+      <div id="sDate"></div>
+      <div class="nb" id="nbLog">در حال خواندن دفتر…</div>
+    </div>
+    <div class="card">
+      <h2>افزودن به پارت جاری</h2>
+      <label class="lb">پارت</label>
+      <div class="parts" id="sParts"></div>
+      <p class="hint" id="partHint"></p>
+      <div id="nbList"></div>
+      <div id="nbComposer" class="hide">
+        <label class="lb" id="compTitle">—</label>
+        <p class="hint" id="compHint"></p>
+        <div id="dynFields"></div>
+        <label class="lb">پرانتز — با ویرگول جدا کن</label>
+        <input id="s_tags" placeholder="مثلاً فشار، زجر، فلو"/>
+        <label class="lb">یادداشت خط</label>
+        <textarea id="s_note" placeholder="اختیاری"></textarea>
+      </div>
     </div>
   </section>
 
-  <!-- ══════════ داده ══════════ -->
   <section id="paneData" class="hide">
     <div class="card">
       <h2>جمع امروز</h2>
@@ -245,40 +223,35 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
       </div>
       <div class="sum" id="todaySum">—</div>
     </div>
-
     <div class="card">
       <h2>خروجی و پشتیبان</h2>
-      <p class="hint">اگر گوگل‌شیت نمی‌خواهی، همین کافی است. فایل را به خودت ایمیل یا در فایل‌ها ذخیره کن.</p>
       <div class="chips">
         <button type="button" id="btnCsvS">خروجی نوبت‌ها</button>
         <button type="button" id="btnCsvM">خروجی متاها</button>
         <button type="button" id="btnShare">اشتراک‌گذاری فایل</button>
       </div>
     </div>
-
     <div class="card">
       <h2>همگام‌سازی با گوگل‌شیت</h2>
-      <p class="hint">اختیاری. اگر خالی بگذاری، اپ کامل کار می‌کند و فقط آفلاین می‌ماند.</p>
       <label class="lb">آدرس وب‌اپ</label>
       <input id="cfg_url" class="ltr" placeholder="https://script.google.com/macros/s/..../exec"/>
       <label class="lb">کلید مشترک</label>
       <input id="cfg_secret" class="ltr" placeholder="یک رشته که خودت می‌سازی"/>
       <div class="chips">
         <button type="button" id="btnSaveCfg">ذخیره</button>
+        <button type="button" id="btnCheckSheet">نسخهٔ همین آدرس</button>
         <button type="button" id="btnSyncNow">همگام‌سازی الان</button>
         <button type="button" id="btnWipe">پاک‌کردن همه</button>
       </div>
+      <div class="sum" id="syncOut">—</div>
     </div>
-
     <div class="card">
       <h2>نسخه و کش</h2>
-      <p class="hint">اگر تغییری که گفتم را نمی‌بینی، اول اینجا را نگاه کن. اگر شمارهٔ نسخه قدیمی است، دکمهٔ پایین را بزن.</p>
       <div class="sum" id="verBox">—</div>
       <div class="chips">
         <button type="button" id="btnHardReload">پاک‌کردن کش و بارگذاری دوباره</button>
       </div>
     </div>
-
     <div class="card">
       <h2>۲۰ نوبت آخر</h2>
       <table id="tblRecent"><thead><tr><th>تاریخ</th><th>پارت</th><th>فعالیت</th><th>مقدار</th><th></th></tr></thead><tbody></tbody></table>
@@ -289,15 +262,12 @@ summary{cursor:pointer;color:var(--muted);font-size:.83rem}
 
 <div class="bar">
   <div class="inner">
-    <button class="primary" id="btnSave" type="button">ذخیره</button>
-    <button class="ghost" id="btnAgain" type="button">ذخیره و بعدی</button>
+    <button class="primary" id="btnSave" type="button">ثبت</button>
+    <button class="ghost" id="btnAgain" type="button">ثبت و بعدی</button>
   </div>
 </div>
 
 <div id="toast"></div>
-
-<!-- The ?v= is bumped with every release. An old cached app.js can never be
-     served in place of a new one, because the URL itself changes. -->
-<script src="app.js?v=9"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>
