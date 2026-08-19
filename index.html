@@ -99,7 +99,7 @@ button.ghost{
 }
 button:disabled{opacity:.45}
 table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px}
-th,td{border-bottom:1px solid var(--line);padding:7px 5px;text-align:right}
+th,td{border-bottom:1px solid var(--line);padding:7px 5px;text-align:right;overflow-wrap:anywhere;word-break:break-word}
 th{color:var(--muted);font-weight:normal}
 .tag{font-size:.7rem;border-radius:6px;padding:1px 6px;border:1px solid var(--line);color:var(--muted)}
 .tag.pending{border-color:var(--warn);color:var(--warn)}
@@ -260,8 +260,8 @@ button.put{
       </div>
     </div>
     <div class="card">
-      <h2>۲۰ نوبت آخر</h2>
-      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>پارت</th><th>فعالیت</th><th>مقدار</th><th></th></tr></thead><tbody></tbody></table>
+      <h2>آخرین ثبت‌ها</h2>
+      <table id="tblRecent"><thead><tr><th>تاریخ</th><th>نوع</th><th>چیست</th><th>مقدار</th><th></th></tr></thead><tbody></tbody></table>
     </div>
   </section>
 
@@ -274,6 +274,6 @@ button.put{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

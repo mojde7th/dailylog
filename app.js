@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v20 · meta';
+const APP_VERSION = 'v21 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1115,6 +1115,34 @@ function updateNetPill() {
 
 /* ═════════════════════════════ 9. DATA / CSV ═══════════════════════════════ */
 
+async function metaSummary(rec) {
+  if (!rec) return '—';
+  const bits = [];
+  META_ITEMS.forEach(it => {
+    if (it.kind === 'accumDur') {
+      const n = Number(rec[META_STORE[it.id]]) || 0;
+      if (n) bits.push(it.id + '=' + fmtChunk(n));
+    } else if (it.kind === 'flag' && rec[it.id]) {
+      bits.push(it.id);
+    } else if (it.kind === 'xor' && rec.fastMode) {
+      bits.push(rec.fastMode);
+    } else if (it.kind === 'min15' && rec.bidDiffMin !== '' && rec.bidDiffMin != null) {
+      bits.push('tafazol=' + rec.bidDiffMin + 'm');
+    } else if (it.kind === 'opf1' && rec.opf1) {
+      bits.push('opf1=' + rec.opf1);
+    } else if (it.kind === 'opf2' && rec.opf2) {
+      bits.push('opf2=' + rec.opf2);
+    } else if (it.kind === 'secchips' && rec.mintakhir !== '' && rec.mintakhir != null) {
+      bits.push('mintakhir=' + rec.mintakhir + 's');
+    }
+  });
+  return bits.join(' · ') || '—';
+}
+
+function tagCell(synced) {
+  return `<span class="tag ${synced ? 'sent' : 'pending'}">${synced ? 'رفت' : 'صف'}</span>`;
+}
+
 async function refreshData() {
   const s = await getAll('sessions');
   const m = await getAll('meta');
@@ -1146,13 +1174,31 @@ async function refreshData() {
       cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b>`).join('<br/>') + '</div>';
   }
   $('todaySum').innerHTML = html;
-  document.querySelector('#tblRecent tbody').innerHTML = s.slice(-20).reverse().map(r => `
+  const mixed = [];
+  s.forEach(r => mixed.push({
+    at: r.createdAt || '',
+    date: r.dateShamsi || '',
+    kind: 'دفتر',
+    what: r.code || '',
+    val: r.chunk || r.hm || r.count || '',
+    synced: r.synced
+  }));
+  m.forEach(r => mixed.push({
+    at: r.createdAt || '',
+    date: r.dateShamsi || '',
+    kind: 'متا',
+    what: r.dateShamsi || '',
+    val: metaSummary(r),
+    synced: r.synced
+  }));
+  mixed.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  document.querySelector('#tblRecent tbody').innerHTML = mixed.slice(0, 30).map(r => `
     <tr>
-      <td class="ltr">${r.dateShamsi}</td>
-      <td>${r.part || ''}</td>
-      <td class="ltr">${r.code}</td>
-      <td class="ltr">${r.chunk || r.hm || r.count || ''}</td>
-      <td><span class="tag ${r.synced ? 'sent' : 'pending'}">${r.synced ? 'رفت' : 'صف'}</span></td>
+      <td class="ltr">${esc(r.date)}</td>
+      <td>${esc(r.kind)}</td>
+      <td class="ltr">${esc(r.what)}</td>
+      <td class="ltr">${esc(r.val)}</td>
+      <td>${tagCell(r.synced)}</td>
     </tr>`).join('');
 }
 
