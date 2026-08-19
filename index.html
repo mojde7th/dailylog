@@ -130,17 +130,20 @@ button.put{
   border-radius:10px;padding:10px;font-family:inherit;cursor:pointer
 }
 .nb{
-  font-family:Consolas,"Cascadia Mono",Tahoma,monospace;direction:ltr;text-align:left;
+  font-family:Consolas,"Cascadia Mono",Tahoma,sans-serif;direction:rtl;text-align:right;
   background:#070b10;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
   min-height:80px;font-size:.82rem;line-height:1.7;color:#c8f0d8;
   overflow-x:hidden;overflow-wrap:anywhere;word-break:break-word
 }
-.nb .partline{color:#6db3f2;margin:0 0 6px;font-weight:bold}
+.nb .partline{color:#6db3f2;margin:0 0 6px;font-weight:bold;text-align:right}
 .nb .nbpart{margin:0 0 12px}
-.nb .nbline{display:block;margin:0 0 8px}
-.nb .nbcode{display:block;color:#c8f0d8}
-.nb .nbtags{display:block;color:#8fb89a;font-size:.78rem}
-.nb .nbdur{display:block;color:#d7f5e7}
+.nb .nbline{
+  display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:baseline;gap:8px;
+  margin:0 0 8px
+}
+.nb .nbcode{direction:ltr;unicode-bidi:isolate;color:#c8f0d8}
+.nb .nbtags{direction:ltr;unicode-bidi:isolate;color:#8fb89a;font-size:.78rem}
+.nb .nbdur{direction:ltr;unicode-bidi:isolate;color:#d7f5e7}
 .nb .empty{color:#5f7186}
 .catlab{font-size:.75rem;color:var(--muted);margin:12px 0 6px}
 .alist{display:flex;flex-wrap:wrap;gap:6px}
@@ -279,6 +282,6 @@ button.put{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>
