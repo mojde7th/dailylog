@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v26 · meta';
+const APP_VERSION = 'v27 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1210,11 +1210,21 @@ async function refreshData() {
   s.forEach(r => mixed.push({
     at: r.createdAt || '',
     date: r.dateShamsi || '',
-    kind: r.part || '',
-    what: r.code || '',
+    kind: 'دفتر',
+    what: (r.part ? r.part + ' · ' : '') + (r.code || ''),
     val: r.chunk || r.hm || r.count || '',
     synced: r.synced,
     store: 'sessions',
+    uid: r.uid
+  }));
+  m.forEach(r => mixed.push({
+    at: r.createdAt || '',
+    date: r.dateShamsi || '',
+    kind: 'متا',
+    what: 'meta',
+    val: metaSummary(r),
+    synced: r.synced,
+    store: 'meta',
     uid: r.uid
   }));
   mixed.sort((a, b) => String(b.at).localeCompare(String(a.at)));
