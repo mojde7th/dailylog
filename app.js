@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v15 · wrap';
+const APP_VERSION = 'v16 · wrap';
 const SCRIPT_VERSION = 'v6-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -766,7 +766,7 @@ function openComposer() {
       const h = Math.floor(dyn.dur.minutes() / 60);
       dyn.dur.setMinutes(h * 60 + m);
     });
-    quickChips(host, [1,2,3,4,5,6], h => {
+    quickChips(host, [0,1,2,3,4,5,6], h => {
       const m = dyn.dur.minutes() % 60;
       dyn.dur.setMinutes(h * 60 + m);
     });
