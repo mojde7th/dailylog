@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v16 · wrap';
+const APP_VERSION = 'v17 · wrap';
 const SCRIPT_VERSION = 'v6-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -924,7 +924,6 @@ function showTab(name) {
   $('tabMeta').classList.toggle('active',    name === 'meta');
   $('tabData').classList.toggle('active',    name === 'data');
   $('btnSave').disabled  = (name === 'data');
-  $('btnAgain').disabled = (name !== 'session');
   $('btnSave').textContent = name === 'meta' ? 'وضعیت متا' : 'این خط را بنویس';
   settleWheels();
   if (name === 'meta') paintMetaStatus();
@@ -932,7 +931,7 @@ function showTab(name) {
   if (name === 'data') refreshData();
 }
 
-async function doSave(again) {
+async function doSave() {
   if (activeTab === 'session') {
     const rec = collectSession();
     if (!rec) return;
@@ -940,7 +939,7 @@ async function doSave(again) {
     vibrate(25);
     toast('خط نشست · ' + rec.code + ':' + (rec.chunk || rec.count));
     $('s_note').value = '';
-    if (!again) $('s_tags').value = '';
+    $('s_tags').value = '';
     await paintNotebook();
   } else if (activeTab === 'meta') {
     await paintMetaStatus();
@@ -1196,8 +1195,7 @@ async function boot() {
   $('tabSession').addEventListener('click', () => showTab('session'));
   $('tabMeta').addEventListener('click',    () => showTab('meta'));
   $('tabData').addEventListener('click',    () => showTab('data'));
-  $('btnSave').addEventListener('click',  () => doSave(false));
-  $('btnAgain').addEventListener('click', () => doSave(true));
+  $('btnSave').addEventListener('click',  () => doSave());
   $('btnSaveCfg').addEventListener('click', () => {
     cfgSet('url', $('cfg_url').value.trim());
     cfgSet('secret', $('cfg_secret').value.trim());
