@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v28 · meta';
+const APP_VERSION = 'v29 · meta';
 const SCRIPT_VERSION = 'v7-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1150,26 +1150,44 @@ function metaBits(rec) {
   META_ITEMS.forEach(it => {
     if (it.kind === 'accumDur') {
       const n = Number(rec[META_STORE[it.id]]) || 0;
-      if (n) bits.push(it.id + '=' + fmtChunk(n));
+      if (n) bits.push({ id: it.id, text: it.id + '=' + fmtChunk(n) });
     } else if (it.kind === 'flag' && rec[it.id]) {
-      bits.push(it.id);
+      bits.push({ id: it.id, text: it.id });
     } else if (it.kind === 'xor' && rec.fastMode) {
-      bits.push(rec.fastMode);
+      bits.push({ id: it.id, text: rec.fastMode });
     } else if (it.kind === 'min15' && rec.bidDiffMin !== '' && rec.bidDiffMin != null) {
-      bits.push('tafazol=' + rec.bidDiffMin + 'm');
+      bits.push({ id: it.id, text: 'tafazol=' + rec.bidDiffMin + 'm' });
     } else if (it.kind === 'opf1' && rec.opf1) {
-      bits.push('opf1=' + rec.opf1);
+      bits.push({ id: it.id, text: 'opf1=' + rec.opf1 });
     } else if (it.kind === 'opf2' && rec.opf2) {
-      bits.push('opf2=' + rec.opf2);
+      bits.push({ id: it.id, text: 'opf2=' + rec.opf2 });
     } else if (it.kind === 'secchips' && rec.mintakhir !== '' && rec.mintakhir != null) {
-      bits.push('mintakhir=' + rec.mintakhir + 's');
+      bits.push({ id: it.id, text: 'mintakhir=' + rec.mintakhir + 's' });
     }
   });
   return bits;
 }
 function metaSummary(rec) {
   const bits = metaBits(rec);
-  return bits.join(' · ') || '—';
+  return bits.map(b => b.text).join(' · ') || '—';
+}
+function clearMetaField(rec, itemId) {
+  const it = META_ITEMS.find(x => x.id === itemId);
+  if (!rec || !it) return rec;
+  if (it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
+  if (it.kind === 'flag') rec[it.id] = 0;
+  if (it.kind === 'xor') rec.fastMode = '';
+  if (it.kind === 'min15') rec.bidDiffMin = '';
+  if (it.kind === 'opf1') rec.opf1 = '';
+  if (it.kind === 'opf2') rec.opf2 = '';
+  if (it.kind === 'secchips') rec.mintakhir = '';
+  const done = parseDone(rec);
+  delete done[itemId];
+  rec.done = done;
+  rec.doneJson = JSON.stringify(done);
+  rec.complete = isComplete(rec) ? 1 : 0;
+  rec.synced = 0;
+  return rec;
 }
 
 function tagCell(synced) {
@@ -1235,12 +1253,20 @@ async function refreshData() {
   const host = $('logList');
   if (!host) return;
   host.innerHTML = mixed.slice(0, 30).map(r => {
-    const actions = tagCell(r.synced) + (!r.synced && r.uid
-      ? '<button type="button" class="cancel" data-store="' + esc(r.store) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
+    const actions = tagCell(r.synced) + (r.store === 'sessions' && !r.synced && r.uid
+      ? '<button type="button" class="cancel" data-store="sessions" data-uid="' + esc(r.uid) + '">لغو</button>'
       : '');
-    const bits = r.store === 'meta' && r.bits && r.bits.length
-      ? '<div class="logchips">' + r.bits.map(b => '<span>' + esc(b) + '</span>').join('') + '</div>'
-      : (r.val ? '<div class="logval">' + esc(r.val) + '</div>' : '');
+    let body = '';
+    if (r.store === 'meta' && r.bits && r.bits.length) {
+      body = '<div class="logchips">' + r.bits.map(b => {
+        const x = !r.synced
+          ? '<button type="button" class="cancel" data-meta-item="' + esc(b.id) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
+          : '';
+        return '<span>' + esc(b.text) + x + '</span>';
+      }).join('') + '</div>';
+    } else if (r.val) {
+      body = '<div class="logval">' + esc(r.val) + '</div>';
+    }
     return '<div class="logcard">' +
       '<div class="loghead">' +
         '<div class="logmeta"><span class="logkind">' + esc(r.kind) + '</span>' +
@@ -1248,7 +1274,7 @@ async function refreshData() {
         '<div class="logactions">' + actions + '</div>' +
       '</div>' +
       (r.what && r.store !== 'meta' ? '<div class="logwhat">' + esc(r.what) + '</div>' : '') +
-      bits +
+      body +
     '</div>';
   }).join('') || '<div class="empty">خالی</div>';
 }
@@ -1355,6 +1381,23 @@ async function boot() {
   $('btnShare').addEventListener('click', shareCsv);
   $('btnHardReload').addEventListener('click', hardReload);
   $('logList').addEventListener('click', async ev => {
+    const itemBtn = ev.target.closest('[data-meta-item]');
+    if (itemBtn) {
+      const uid = itemBtn.dataset.uid;
+      const itemId = itemBtn.dataset.metaItem;
+      const all = await getAll('meta');
+      const rec = all.find(r => r.uid === uid);
+      if (!rec) return;
+      clearMetaField(rec, itemId);
+      if (!metaBits(rec).length) await delKey('meta', rec.uid);
+      else await put('meta', rec);
+      toast('از متا حذف شد');
+      await refreshData();
+      updateQueueBadge();
+      paintMetaStatus();
+      paintNotebook();
+      return;
+    }
     const b = ev.target.closest('button.cancel');
     if (!b) return;
     const store = b.dataset.store;
