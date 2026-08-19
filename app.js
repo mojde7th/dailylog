@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v14 · sheet';
+const APP_VERSION = 'v15 · wrap';
 const SCRIPT_VERSION = 'v6-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -857,14 +857,11 @@ function collectSession() {
   return rec;
 }
 
-function notebookLine(code, tags, chunks, extra) {
-  const par = tags ? '(' + tags + ')' : '';
-  const body = chunks.join(',');
-  const mins = extra && extra.totalMin && extra.totalMin !== chunks.length
-    ? extra.totalMin : null;
-  let line = code + par + ':' + body;
-  if (chunks.length > 1 && extra && extra.sum != null) line += '  =' + fmtChunk(extra.sum);
-  return line;
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 async function paintNotebook() {
@@ -872,14 +869,12 @@ async function paintNotebook() {
   const rows = (await getAll('sessions'))
     .filter(r => r.dateShamsi === day)
     .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
-  const lines = [];
+  const host = $('nbLog');
+  let html = '';
   PARTS.forEach(p => {
-    lines.push('── ' + p.label + ' ──');
     const here = rows.filter(r => Number(r.partId) === p.id || r.part === p.label);
-    if (!here.length) {
-      lines.push('(خالی)');
-      return;
-    }
+    if (!here.length) return;
+    html += '<div class="nbpart"><div class="partline">' + esc(p.label) + '</div>';
     const order = [];
     const bag = {};
     here.forEach(r => {
@@ -899,15 +894,21 @@ async function paintNotebook() {
     });
     order.forEach(code => {
       const g = bag[code];
-      const tagStr = g.tags.join(',');
-      if (g.count && !g.sum) {
-        lines.push(code + (tagStr ? '(' + tagStr + ')' : '') + ':×' + g.count);
-      } else {
-        lines.push(notebookLine(code, tagStr, g.chunks.length ? g.chunks : ['0m'], { sum: g.sum }));
+      html += '<div class="nbline">';
+      html += '<span class="nbcode">' + esc(code) + '</span>';
+      if (g.tags.length) html += '<span class="nbtags">' + esc(g.tags.join(', ')) + '</span>';
+      let dur = '';
+      if (g.count && !g.sum) dur = '×' + g.count;
+      else {
+        dur = (g.chunks.length ? g.chunks.join(', ') : '0m');
+        if (g.chunks.length > 1) dur += '  =' + fmtChunk(g.sum);
       }
+      html += '<span class="nbdur">' + esc(dur) + '</span>';
+      html += '</div>';
     });
+    html += '</div>';
   });
-  $('nbLog').textContent = lines.join('\n');
+  host.innerHTML = html || '<div class="empty">خالی</div>';
 }
 
 /* ═════════════════════════════ 7. TABS / SAVE ══════════════════════════════ */
