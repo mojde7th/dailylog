@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v33 · meta';
+const APP_VERSION = 'v34 · meta';
 const SCRIPT_VERSION = 'v8-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -592,6 +592,7 @@ function blankMeta(day) {
 let mDate = null;
 const mW = {};
 const flagDraft = {};
+const takhirDraft = [];
 let lastMetaRec = null;
 
 function flagOn(rec, id) {
@@ -601,6 +602,7 @@ function flagOn(rec, id) {
 
 function clearFlagDraft() {
   Object.keys(flagDraft).forEach(k => delete flagDraft[k]);
+  takhirDraft.length = 0;
 }
 
 function selectedMetaDay() {
@@ -623,9 +625,12 @@ function totalLine(it, rec) {
   if (it.kind === 'flag') return flagOn(rec, it.id) ? 'SET' : 'not set';
   if (it.kind === 'avgSec') {
     const n = Number(rec.takhirN) || 0;
-    if (!n) return 'not set';
-    const avg = Number(rec.takhirAvg) || 0;
-    return 'avg ' + avg.toFixed(2) + 's  n=' + n + (avg >= TAKHIR_OK ? '  flag=1' : '  flag=0');
+    const pending = takhirDraft.length;
+    if (!n && !pending) return 'not set';
+    const avg = n ? (Number(rec.takhirAvg) || 0) : 0;
+    let line = n ? ('avg ' + avg.toFixed(2) + 's  n=' + n + (avg >= TAKHIR_OK ? '  flag=1' : '  flag=0')) : 'no avg yet';
+    if (pending) line += '  draft+' + pending;
+    return line;
   }
   return '';
 }
@@ -672,12 +677,10 @@ function groupFlags(gid) {
 function mountMetaItem(host, it) {
   const box = document.createElement('div');
   box.className = 'mblock';
-  const needPut = it.kind === 'accumDur';
   box.innerHTML =
     `<h3>${it.label}</h3>` +
     `<p class="hint" id="tot_${it.id}">—</p>` +
-    `<div id="mw_${it.id}"></div>` +
-    (needPut ? `<button type="button" class="put" data-id="${it.id}">put</button>` : '');
+    `<div id="mw_${it.id}"></div>`;
   host.appendChild(box);
   const h = $('mw_' + it.id);
   if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0);
@@ -695,14 +698,16 @@ function mountMetaItem(host, it) {
   if (it.kind === 'avgSec') {
     const hint = document.createElement('p');
     hint.className = 'hint';
-    hint.textContent = 'har sample put mishavad. avg < 1.5s → flag 0';
+    hint.textContent = 'sample ha montazer put paye daste mimanand';
     h.appendChild(hint);
     const bar = document.createElement('div');
     h.appendChild(bar);
-    pickBar(bar, TAKHIR_SECS, null, v => putMetaItem(it.id, v));
+    pickBar(bar, TAKHIR_SECS, null, v => {
+      takhirDraft.push(Number(v));
+      paintMetaStatus();
+      vibrate(8);
+    });
   }
-  const putBtn = box.querySelector('.put');
-  if (putBtn) putBtn.addEventListener('click', () => putMetaItem(it.id));
 }
 
 function buildMeta() {
@@ -727,17 +732,21 @@ function buildMeta() {
       `<div class="gtitle">${g.title}</div>` +
       (flags.length
         ? `<div class="mall">` +
-          `<button type="button" data-g="${g.id}" data-all="1">select all</button>` +
-          `<button type="button" data-g="${g.id}" data-all="0">unselect all</button>` +
-          `<button type="button" class="putg" data-g="${g.id}" data-put="1">put</button>` +
+          `<button type="button" data-all="1">select all</button>` +
+          `<button type="button" data-all="0">unselect all</button>` +
           `</div>`
         : '');
     host.appendChild(wrap);
     wrap.querySelectorAll('.mall button').forEach(b => {
-      if (b.dataset.put) b.addEventListener('click', () => putGroupFlags(g.id));
-      else b.addEventListener('click', () => draftGroupFlags(g.id, b.dataset.all === '1'));
+      b.addEventListener('click', () => draftGroupFlags(g.id, b.dataset.all === '1'));
     });
     META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
+    const putBtn = document.createElement('button');
+    putBtn.type = 'button';
+    putBtn.className = 'gput';
+    putBtn.textContent = 'put ' + g.title;
+    putBtn.addEventListener('click', () => putGroup(g.id));
+    wrap.appendChild(putBtn);
   });
   paintMetaStatus();
 }
@@ -754,16 +763,39 @@ function toggleFlagDraft(id) {
   vibrate(8);
 }
 
-async function putGroupFlags(gid) {
+async function putGroup(gid) {
   const day = selectedMetaDay();
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
-  groupFlags(gid).forEach(it => {
-    const on = flagOn(rec, it.id);
-    rec[it.id] = on ? 1 : 0;
-    if (on) done[it.id] = 1;
-    else delete done[it.id];
-    delete flagDraft[it.id];
+  META_ITEMS.filter(it => it.group === gid).forEach(it => {
+    if (it.kind === 'flag') {
+      const on = flagOn(rec, it.id);
+      rec[it.id] = on ? 1 : 0;
+      if (on) done[it.id] = 1;
+      else delete done[it.id];
+      delete flagDraft[it.id];
+    }
+    if (it.kind === 'accumDur') {
+      const add = mW[it.id] ? mW[it.id].minutes() : 0;
+      const key = META_STORE[it.id];
+      if (add > 0) {
+        rec[key] = (Number(rec[key]) || 0) + add;
+        mW[it.id].reset();
+      }
+      if (Number(rec[key]) > 0) done[it.id] = 1;
+    }
+    if (it.kind === 'avgSec') {
+      takhirDraft.forEach(sample => {
+        rec.takhirN = (Number(rec.takhirN) || 0) + 1;
+        rec.takhirSum = (Number(rec.takhirSum) || 0) + Number(sample);
+      });
+      takhirDraft.length = 0;
+      if (Number(rec.takhirN) > 0) {
+        rec.takhirAvg = rec.takhirSum / rec.takhirN;
+        if (rec.takhirAvg >= TAKHIR_OK) done[it.id] = 1;
+        else delete done[it.id];
+      }
+    }
   });
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
@@ -773,49 +805,6 @@ async function putGroupFlags(gid) {
   await put('meta', rec);
   vibrate(25);
   toast(gid + ' put');
-  await paintMetaStatus();
-  updateQueueBadge();
-  trySync();
-}
-
-async function putMetaItem(id, picked) {
-  const it = META_ITEMS.find(x => x.id === id);
-  const day = selectedMetaDay();
-  let rec = await metaFor(day) || blankMeta(day);
-  const done = parseDone(rec);
-  let markDone = true;
-
-  if (it.kind === 'accumDur') {
-    const add = mW[id].minutes();
-    const key = META_STORE[id];
-    rec[key] = (Number(rec[key]) || 0) + add;
-    mW[id].reset();
-    toast(id + ' = ' + fmtChunk(rec[key]));
-  }
-  if (it.kind === 'flag') {
-    const on = picked === 0 || picked === 1 ? !!picked : !rec[id];
-    rec[id] = on ? 1 : 0;
-    markDone = on;
-    toast(id + (on ? ' SET' : ' OFF'));
-  }
-  if (it.kind === 'avgSec') {
-    const sample = Number(picked);
-    rec.takhirN = (Number(rec.takhirN) || 0) + 1;
-    rec.takhirSum = (Number(rec.takhirSum) || 0) + sample;
-    rec.takhirAvg = rec.takhirSum / rec.takhirN;
-    markDone = rec.takhirAvg >= TAKHIR_OK;
-    toast('takhir avg ' + rec.takhirAvg.toFixed(2) + 's n=' + rec.takhirN);
-  }
-
-  if (markDone) done[id] = 1;
-  else delete done[id];
-  rec.done = done;
-  rec.doneJson = JSON.stringify(done);
-  rec.complete = isComplete(rec) ? 1 : 0;
-  rec.synced = 0;
-  rec.createdAt = rec.createdAt || new Date().toISOString();
-  await put('meta', rec);
-  vibrate(25);
   await paintMetaStatus();
   updateQueueBadge();
   trySync();
