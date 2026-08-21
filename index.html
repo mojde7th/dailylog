@@ -123,7 +123,7 @@ textarea{min-height:52px;resize:vertical}
   border-radius:10px;padding:9px 2px;font-size:.74rem;font-family:inherit;cursor:pointer
 }
 .parts button.ltr{direction:ltr;unicode-bidi:isolate}
-.parts button.rtl{direction:rtl;unicode-bidi:isolate}
+.parts button.rtl{direction:rtl;unicode-bidi:isolate;text-align:right}
 .parts button.on{background:#1e2b3c;border-color:var(--accent);color:var(--ink);font-weight:bold}
 .accum{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -169,7 +169,7 @@ button.cancel{
   margin-top:6px;min-width:0;direction:ltr
 }
 .logpart{flex-shrink:0;color:#8cc8f5}
-.logpart.rtl{direction:rtl;unicode-bidi:isolate;text-align:left}
+.logpart.rtl{direction:rtl;unicode-bidi:isolate;text-align:right}
 .logpart.ltr{direction:ltr;unicode-bidi:isolate;text-align:left}
 .logcode{font-family:Consolas,monospace;font-size:.86rem;overflow-wrap:anywhere;min-width:0}
 .logdur{font-family:Consolas,monospace;color:#c8f0d8;margin-inline-start:auto;white-space:nowrap}
@@ -223,7 +223,7 @@ button.cancel{
   direction:ltr;unicode-bidi:isolate;text-align:left
 }
 .sumtile .tilab.rtl,.sumtile .tinote.rtl{
-  direction:rtl;unicode-bidi:isolate;text-align:left
+  direction:rtl;unicode-bidi:isolate;text-align:right
 }
 .sumtile .tilab{font-size:.68rem;color:var(--muted);line-height:1.3}
 .sumtile .tival{
@@ -438,8 +438,8 @@ button.gput{
   font:11px Consolas,Tahoma,sans-serif;color:#93a4b8;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;unicode-bidi:isolate
 }
-.hbar-lab.ltr{direction:ltr;text-align:left}
-.hbar-lab.rtl{direction:rtl;text-align:left}
+.hbar-lab.ltr{direction:ltr;unicode-bidi:isolate;text-align:left}
+.hbar-lab.rtl{direction:rtl;unicode-bidi:isolate;text-align:right}
 .hbar-track{
   display:block;height:12px;background:#121820;border-radius:99px;overflow:hidden;min-width:0
 }
@@ -627,6 +627,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=54"></script>
+<script src="app.js?v=55"></script>
 </body>
 </html>

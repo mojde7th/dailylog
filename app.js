@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v54 · bidi';
+const APP_VERSION = 'v55 · scale';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1697,10 +1697,16 @@ function tileTitle(it) {
 function svgBars(rows) {
   rows = (rows || []).filter(r => r && r.lab);
   if (!rows.length) return '<p class="muted" style="margin:0">—</p>';
-  const max = Math.max(1, ...rows.map(r => Number(r.n) || 0));
+  const HOUR_FULL = 10 * 60;
+  const SEC_FULL = 10;
+  const maxOf = (pred, floor) => Math.max(floor, ...rows.filter(pred).map(r => Number(r.n) || 0), 0) || floor;
+  const maxMin = maxOf(r => r.unit !== 'n' && r.unit !== 's', HOUR_FULL);
+  const maxN = maxOf(r => r.unit === 'n', 1);
+  const maxS = maxOf(r => r.unit === 's', SEC_FULL);
   return '<div class="hbars">' + rows.map(r => {
     const n = Number(r.n) || 0;
-    const pct = Math.max(0, Math.min(100, Math.round(100 * n / max)));
+    const den = r.unit === 'n' ? maxN : (r.unit === 's' ? maxS : maxMin);
+    const pct = Math.max(0, Math.min(100, Math.round(100 * n / (den || 1))));
     const val = esc(r.val || (r.unit === 'n' ? String(n) : fmtChunk(n)));
     const fill = r.fill || '#3a6288';
     return '<div class="hbar">' +
@@ -1729,7 +1735,7 @@ function paintDayChart(el, rec, work) {
     bars.push({ lab: tileTitle(it), n: Number(rec && rec[META_STORE[it.id]]) || 0, fill: '#6a4a8a' });
   });
   const avg = rec && Number(rec.takhirN) ? Number(rec.takhirAvg) : 0;
-  bars.push({ lab: 'takhir', n: avg || 0, val: rec && Number(rec.takhirN) ? avg.toFixed(2) + 's' : '—', fill: '#7a5a18' });
+  bars.push({ lab: 'takhir', n: avg || 0, val: rec && Number(rec.takhirN) ? avg.toFixed(2) + 's' : '—', fill: '#7a5a18', unit: 's' });
   bars.push({ lab: 'ghanoonMohem', n: laws.length, val: String(laws.length) + (lawMin ? ' · ' + fmtChunk(lawMin) : ''), fill: '#c9a0ff', unit: 'n' });
   bars.push({ lab: 'flags', n: flagOk, val: flagOk + '/' + flags.length, fill: '#3ecf8e', unit: 'n' });
   META_GROUPS.filter(g => g.id !== 'laws').forEach(g => {
@@ -1900,7 +1906,7 @@ async function paintDashboard() {
     lab: tileTitle(it), n: durSum[it.id] || 0, fill: '#6a4a8a'
   }));
   metaBars.push({ lab: 'ghanoonMohem', n: lawN, val: String(lawN) + (lawMin ? ' · ' + fmtChunk(lawMin) : ''), fill: '#c9a0ff', unit: 'n' });
-  metaBars.push({ lab: 'takhir', n: takhirN ? takhirW / takhirN : 0, val: takhirN ? (takhirW / takhirN).toFixed(2) + 's' : '—', fill: '#7a5a18' });
+  metaBars.push({ lab: 'takhir', n: takhirN ? takhirW / takhirN : 0, val: takhirN ? (takhirW / takhirN).toFixed(2) + 's' : '—', fill: '#7a5a18', unit: 's' });
   hostM.innerHTML = svgBars(metaBars);
   if (hostF) {
     const fb = flagItems.map(it => ({
@@ -1940,10 +1946,7 @@ async function paintDashboard() {
 }
 
 function dirOf(s) {
-  const t = String(s || '');
-  if (!/[\u0600-\u06FF]/.test(t)) return 'ltr';
-  if (/[0-9\u06F0-\u06F9]/.test(t) && t.indexOf('تا') !== -1) return 'ltr';
-  return 'rtl';
+  return /[\u0600-\u06FF]/.test(String(s || '')) ? 'rtl' : 'ltr';
 }
 function sumTile(title, value, note, tone, off) {
   return '<div class="sumtile ' + tone + (off ? ' off' : '') + '">' +
