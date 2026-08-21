@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v31 · meta';
+const APP_VERSION = 'v32 · meta';
 const SCRIPT_VERSION = 'v8-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -32,9 +32,8 @@ const CODES = [
   { cat:'arastegi', code:'arasmoratakhshose', metric:'dur', from:0, def:{h:0,m:30} },
   { cat:'arastegi', code:'arasmor', metric:'dur', from:0, def:{h:0,m:25} },
   { cat:'kar',      code:'itpr', metric:'dur', from:0, def:{h:2,m:40} },
-  { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15}, stick:true },
-  { cat:'mali',     code:'vam', metric:'dur', from:0, def:{h:0,m:20}, stick:true },
-  { cat:'mali',     code:'sarmayegozari', metric:'dur', from:0, def:{h:0,m:20}, stick:true },
+  { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15} },
+  { cat:'mali',     code:'vam,sarmayegozari', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'analyseslahibadan', metric:'dur', from:0, def:{h:0,m:40} },
   { cat:'sehat',    code:'drazmayesh,sono,clinici', metric:'dur', from:0, def:{h:2,m:30} },
   { cat:'sobh',     code:'bankhozuri', metric:'dur', from:0, def:{h:0,m:20} },
@@ -1170,7 +1169,8 @@ async function checkSheet(loud) {
       ok
         ? ('شیت درست · ' + ver + (tab ? (' · ' + tab) : '') + ' · ' + execHint(url))
         : ('وب‌اپ شیت کهنه است نه گیت‌هاب · آمده: ' + (ver || 'بدون‌نسخه') +
-           ' · باید: ' + SCRIPT_VERSION + ' · ' + execHint(url))
+           ' · باید: ' + SCRIPT_VERSION + ' · ' + execHint(url) +
+           ' · کد را در ویرایشگر ذخیره کن بعد روی همان استقرار مداد بزن نسخهٔ جدید')
     );
     if (loud) toast(ok ? 'شیت درست است' : 'همین آدرس کهنه است', !ok);
     return ok;
