@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DailyLog · surface topology</title>
+<style>
+:root{
+  --bg:#070b10;--ink:#d7e4f2;--dim:#6f8296;--line:#1e2a36;
+  --a:#6db3f2;--g:#3ecf8e;--w:#f0b429;--p:#c9a0ff
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 "Segoe UI",Tahoma,sans-serif}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(800px 380px at 12% -10%, rgba(109,179,242,.08), transparent 50%),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(255,255,255,.015) 23px 24px),
+    var(--bg)
+}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 18px 48px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.sig{font:11px Consolas,monospace;letter-spacing:.18em;color:var(--a);text-transform:uppercase}
+h1{margin:4px 0 0;font-size:22px;font-weight:600}
+.meta{font:11px Consolas,monospace;color:var(--dim);text-align:right;direction:ltr}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:14px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.p{
+  border:1px solid var(--line);background:#0d141c;padding:14px 14px 12px;position:relative
+}
+.p:before,.p:after{content:"";position:absolute;width:8px;height:8px}
+.p:before{top:6px;left:6px;border-top:1px solid var(--a);border-left:1px solid var(--a)}
+.p:after{bottom:6px;right:6px;border-bottom:1px solid var(--a);border-right:1px solid var(--a);opacity:.4}
+.k{font:10px Consolas,monospace;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);padding:5px 8px;font:11px Consolas,monospace;color:#c5d4e4;direction:ltr}
+.chip b{color:var(--g);font-weight:600}
+svg{width:100%;height:auto;display:block}
+.tbl{width:100%;border-collapse:collapse;font:11px Consolas,monospace;direction:ltr}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left;vertical-align:top}
+.tbl th{color:var(--dim);font-weight:500}
+.note{color:var(--dim);font-size:12px;margin:8px 0 0}
+code{font-family:Consolas,monospace;color:var(--p)}
+.span2{grid-column:1 / -1}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media (max-width:860px){.flow{grid-template-columns:1fr 1fr}}
+.node{border:1px solid var(--line);padding:10px;min-height:78px;background:#0a1118}
+.node .k{margin-bottom:4px}
+.node b{display:block;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="sig">layer 0 · client runtime</div>
+      <h1>DailyLog surface topology</h1>
+    </div>
+    <div class="meta">
+      PWA · IndexedDB · Apps Script upsert<br/>
+      SCRIPT_VERSION lock · network-first SW
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="p">
+      <p class="k">control plane</p>
+      <svg viewBox="0 0 640 220" role="img" aria-label="runtime stack">
+        <rect x="8" y="16" width="150" height="188" fill="#0a1118" stroke="#2a3542"/>
+        <text x="20" y="36" fill="#6db3f2" font-size="11" font-family="Consolas">index.html</text>
+        <text x="20" y="54" fill="#8fa3b8" font-size="10" font-family="Consolas">DOM IDs as ABI</text>
+        <text x="20" y="72" fill="#c5d4e4" font-size="10" font-family="Consolas">#paneMeta</text>
+        <text x="20" y="88" fill="#c5d4e4" font-size="10" font-family="Consolas">#paneSession</text>
+        <text x="20" y="104" fill="#c5d4e4" font-size="10" font-family="Consolas">#paneDash</text>
+        <text x="20" y="120" fill="#c5d4e4" font-size="10" font-family="Consolas">#paneData</text>
+        <rect x="178" y="16" width="150" height="188" fill="#0a1118" stroke="#2a3542"/>
+        <text x="190" y="36" fill="#c9a0ff" font-size="11" font-family="Consolas">app.js</text>
+        <text x="190" y="54" fill="#8fa3b8" font-size="10" font-family="Consolas">ES2017 · no bundler</text>
+        <text x="190" y="72" fill="#c5d4e4" font-size="10" font-family="Consolas">wheels / IDB / put</text>
+        <text x="190" y="88" fill="#c5d4e4" font-size="10" font-family="Consolas">Jalali date ABI</text>
+        <text x="190" y="104" fill="#c5d4e4" font-size="10" font-family="Consolas">bidi isolate</text>
+        <rect x="348" y="16" width="150" height="88" fill="#0a1118" stroke="#2a3542"/>
+        <text x="360" y="36" fill="#3ecf8e" font-size="11" font-family="Consolas">sw.js</text>
+        <text x="360" y="54" fill="#8fa3b8" font-size="10" font-family="Consolas">network-first GET</text>
+        <text x="360" y="70" fill="#c5d4e4" font-size="10" font-family="Consolas">POST /exec bypass</text>
+        <rect x="348" y="116" width="150" height="88" fill="#0a1118" stroke="#2a3542"/>
+        <text x="360" y="136" fill="#f0b429" font-size="11" font-family="Consolas">manifest.json</text>
+        <text x="360" y="154" fill="#8fa3b8" font-size="10" font-family="Consolas">display:standalone</text>
+        <rect x="518" y="16" width="114" height="188" fill="#0a1118" stroke="#2a3542"/>
+        <text x="530" y="36" fill="#6db3f2" font-size="11" font-family="Consolas">IDB</text>
+        <text x="530" y="54" fill="#c5d4e4" font-size="10" font-family="Consolas">sessions</text>
+        <text x="530" y="70" fill="#c5d4e4" font-size="10" font-family="Consolas">meta</text>
+        <text x="530" y="86" fill="#c5d4e4" font-size="10" font-family="Consolas">cfg</text>
+        <text x="530" y="110" fill="#8fa3b8" font-size="10" font-family="Consolas">tombstone</text>
+        <text x="530" y="126" fill="#c5d4e4" font-size="10" font-family="Consolas">del_sessions</text>
+        <line x1="158" y1="110" x2="178" y2="110" stroke="#6db3f2"/>
+        <line x1="328" y1="60" x2="348" y2="60" stroke="#3ecf8e"/>
+        <line x1="328" y1="160" x2="348" y2="160" stroke="#f0b429"/>
+        <line x1="498" y1="110" x2="518" y2="110" stroke="#6db3f2"/>
+      </svg>
+      <p class="note">HTML این‌جا ABI است، نه دکور. هر <code>id</code> قرارداد <code>app.js</code> است. عوض‌کردن برچسب بدون دست‌زدن به <code>id</code> مجاز است؛ شکستن <code>id</code> یعنی runtime از هم می‌پاشد.</p>
+    </div>
+    <div class="p">
+      <p class="k">write path</p>
+      <div class="flow" style="grid-template-columns:1fr">
+        <div class="node"><div class="k">01 composer</div><b>DOM form → collectSession / lawFormRow</b></div>
+        <div class="node"><div class="k">02 local commit</div><b>IDB put · synced=0 · queue badge</b></div>
+        <div class="node"><div class="k">03 transport</div><b>POST text/plain JSON · type meta|session|sessionDelete</b></div>
+        <div class="node"><div class="k">04 sheet</div><b>upsert by dateShamsi · replaceLawsForDay · rebuildReports</b></div>
+      </div>
+    </div>
+
+    <div class="p span2">
+      <p class="k">stores · why they exist</p>
+      <table class="tbl">
+        <tr><th>surface</th><th>role</th><th>why not a single table</th></tr>
+        <tr><td>SESSIONS</td><td>append-only lines · uid immutable</td><td>دفتر نوبت event-sourced است؛ merge روی روز غلط است</td></tr>
+        <tr><td>META</td><td>one row / Shamsi day · upsert</td><td>پرچم و accumDur state هستند نه event</td></tr>
+        <tr><td>LAWS</td><td>exploded lawsJson</td><td>گزارش سطری؛ JSON فقط payload compact</td></tr>
+        <tr><td>GOZARESH_*</td><td>derived, rebuilt</td><td>منبع حقیقت نیست؛ از META+SESSIONS ساخته می‌شود</td></tr>
+      </table>
+    </div>
+
+    <div class="p">
+      <p class="k">pane map</p>
+      <div class="row">
+        <span class="chip">meta <b>write</b></span>
+        <span class="chip">session <b>write</b></span>
+        <span class="chip">dash <b>read aggregate</b></span>
+        <span class="chip">data <b>read + undo</b></span>
+      </div>
+      <p class="note">کارت مدت فقط در data. meta فقط telemetry همان روز. dash بازه. این تفکیک برای این است که write-surface شلوغ نشود و read-surface شاخص بدهد.</p>
+    </div>
+    <div class="p">
+      <p class="k">bidi contract</p>
+      <p class="note">صفحه <code>dir=rtl</code> است. شناسه‌های finglish باید <code>unicode-bidi:isolate</code> + LTR بگیرند. برچسب فارسی isolate RTL. اگر کل کارت را LTR کنی، «۲ تا ۶» می‌شکند. ایزولهٔ تک‌فیلد، نه ایزولهٔ کل ویجت.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
