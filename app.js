@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v45 · meta';
+const APP_VERSION = 'v46 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -34,14 +34,14 @@ const CODES = [
   { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15} },
   { cat:'mali',     code:'vam,sarmayegozari', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'analyseslahibadan', metric:'dur', from:0, def:{h:0,m:40} },
-  { cat:'sehat',    code:'drazmayesh,sono,clinici(prepln)', metric:'dur', from:0, def:{h:2,m:30} },
+  { cat:'badan',    code:'drazmayesh,sono,clinici(prepln)', metric:'dur', from:0, def:{h:2,m:30} },
   { cat:'sobh',     code:'bankhozuri', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'tayinsathzaban', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'ghors', metric:'dur', from:0, def:{h:0,m:5} },
   { cat:'rutin',    code:'rout', metric:'dur', from:0, def:{h:0,m:40} },
 
   { cat:'kharid',   code:'kharidzarur(preplan)', metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'sehat',    code:'ab', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'badan',    code:'ab', metric:'dur', from:1, def:{h:0,m:20} },
   { cat:'kar',      code:'assessvisaplnb', metric:'dur', from:1, def:{h:0,m:30} },
   { cat:'edari',    code:'pardakhpei,bimebargoz,malizar', metric:'dur', from:1, def:{h:0,m:25}, stick:true },
   { cat:'edari',    code:'peigirimajazighanoon', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
@@ -49,22 +49,28 @@ const CODES = [
 
   { cat:'hafte',    code:'akharehafte(preregistKelastakh,zaban)', metric:'dur', from:2, def:{h:0,m:40} },
   { cat:'ravan',    code:'moshv,ravanpp,kargahravanp', metric:'dur', from:2, def:{h:0,m:45}, stick:true },
-  { cat:'div',      code:'div(forushzaruri,didnmelkpreplan)', metric:'dur', from:2, def:{h:0,m:25} },
+  { cat:'divar',    code:'divar(forushzaruri,didnmelkpreplan)', metric:'dur', from:2, def:{h:0,m:25} },
   { cat:'varzesh',  code:'rah<=25m', metric:'dur', from:2, def:{h:0,m:25} },
   { cat:'varzesh',  code:'do<=40m', metric:'dur', from:2, def:{h:0,m:40} },
   { cat:'varzesh',  code:'azkesh', metric:'dur', from:2, def:{h:1,m:0} },
   { cat:'khane',    code:'otu', metric:'dur', from:2, def:{h:0,m:20} },
   { cat:'khane',    code:'shosmort', metric:'dur', from:2, def:{h:0,m:20} },
-  { cat:'sehat',    code:'mokamel', metric:'reps', from:2, def:{r:1,pr:5} },
+  { cat:'badan',    code:'mokamel', metric:'reps', from:2, def:{r:1,pr:5} },
 
   { cat:'yadgiri',  code:'reswch', metric:'dur', from:2, def:{h:1,m:50} },
 
   { cat:'sabtnam',  code:'sabtnam(tur,kargahravn,kelstakh,zaban,bashgahengh,hamneshin)', metric:'dur', from:3, def:{h:0,m:15} },
   { cat:'aff',      code:'afflog,affplan,affevenlog', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
-  { cat:'sehat',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
-  { cat:'sehat',    code:'ket<=25m(ketabedast)', metric:'dur', from:3, def:{h:0,m:25} },
-  { cat:'sehat',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
+  { cat:'badan',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
+  { cat:'badan',    code:'ket<=25m(ketabedast)', metric:'dur', from:3, def:{h:0,m:25} },
+  { cat:'badan',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
 ];
+
+const CAT_RENAME = { div: 'divar', sehat: 'badan' };
+function catName(c) {
+  const k = String(c || '').trim();
+  return CAT_RENAME[k] || k || '—';
+}
 
 const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category','code','metric',
                         'minutes','hm','chunk','tags','reactSec','count','reps','perRep','kind','note'];
@@ -1233,7 +1239,7 @@ async function paintNotebook() {
     here.forEach(r => {
       if (!bag[r.code]) {
         const hit = CODES.find(c => c.code === r.code);
-        bag[r.code] = { cat: r.category || (hit && hit.cat) || '', tags:[], chunks:[], sum:0, count:0 };
+        bag[r.code] = { cat: catName(r.category || (hit && hit.cat) || ''), tags:[], chunks:[], sum:0, count:0 };
         order.push(r.code);
       }
       const g = bag[r.code];
@@ -1542,7 +1548,7 @@ async function sessionWork(day) {
       byPart[pid].min += mi;
       byPart[pid].n++;
     }
-    const cat = r.category || '—';
+    const cat = catName(r.category || '—');
     if (!catMap[cat]) catMap[cat] = { cat, min: 0, n: 0 };
     catMap[cat].min += mi;
     catMap[cat].n++;
@@ -1656,15 +1662,15 @@ async function refreshData() {
   rows.forEach(r => {
     const mi = Number(r.minutes) || 0;
     totalMin += mi;
-    if (!byCat[r.category]) byCat[r.category] = { min:0, n:0 };
-    byCat[r.category].min += mi;
-    byCat[r.category].n++;
+    if (!byCat[catName(r.category)]) byCat[catName(r.category)] = { min:0, n:0 };
+    byCat[catName(r.category)].min += mi;
+    byCat[catName(r.category)].n++;
   });
   let html = `<b>${today}</b> — جمع دفتر: <b>${fmtHM(totalMin)}</b> · خط: <b>${rows.length}</b>`;
   const cats = Object.keys(byCat);
   if (cats.length) {
-    html += '<div style="margin-top:8px">' +
-      cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b>`).join('<br/>') + '</div>';
+    html += '<div class="catlines">' +
+      cats.map(c => esc(c) + ': <b>' + esc(fmtHM(byCat[c].min)) + '</b>').join('<br/>') + '</div>';
   }
   const todayMeta = m.find(r => r.dateShamsi === today);
   const hold = document.createElement('div');
