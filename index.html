@@ -163,18 +163,49 @@ button.cancel{
 .stat{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
 .stat b{color:var(--ink)}
 .sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
-.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:8px;margin-top:10px}
+.sumdash{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:8px;margin-top:10px}
+.sumhero{
+  grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px
+}
+@media (min-width:640px){
+  .sumhero{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+.sumstat{
+  background:#0b1016;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+  min-width:0
+}
+.sumstat span{display:block;font-size:.72rem;color:var(--muted);margin-bottom:2px}
+.sumstat b{display:block;font-size:1.15rem;line-height:1.2;color:#e8eef5}
+.sumstat small{display:block;color:#93a4b8;font-size:.72rem;margin-top:4px}
+.sumbar{height:8px;background:#1a222c;border-radius:99px;overflow:hidden;margin-top:8px}
+.sumbar i{display:block;height:100%;background:linear-gradient(90deg,#3ecf8e,#6db3f2);border-radius:99px}
 .sumcard{
   background:#0b1016;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
   direction:ltr;text-align:left;min-width:0
 }
-.sumcard h4{margin:0 0 8px;font-size:.72rem;color:var(--muted);font-weight:normal;letter-spacing:.02em}
+.sumcard h4{margin:0 0 8px;font-size:.78rem;color:var(--muted);font-weight:bold;display:flex;justify-content:space-between;gap:8px}
+.sumcard h4 span{font-weight:normal;color:#c5d4e4}
 .sumcard.empty{color:var(--muted)}
 .sumline{
-  font-family:Consolas,"Cascadia Mono",monospace;font-size:.78rem;line-height:1.45;
-  color:#d7e6f5;overflow-wrap:anywhere;word-break:break-word;margin:0 0 6px
+  display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+  font-family:Consolas,"Cascadia Mono",monospace;font-size:.74rem;line-height:1.4;
+  overflow-wrap:anywhere;word-break:break-word;margin:0 0 6px
 }
-.sumline:last-child{margin:0}
+.sumline .sumname{min-width:0}
+.sumline .sumval{flex-shrink:0;color:#c8f0d8;font-weight:bold}
+.sumline.ok{color:#c8f0d8}
+.sumline.ok .sumname::before{content:"✓ ";color:#3ecf8e}
+.sumline.draft{color:#ffe7b3}
+.sumline.draft .sumname::before{content:"~ ";color:#f0b429}
+.sumline.miss{color:#93a4b8}
+.summisslab{margin:8px 0 4px;font-size:.7rem;color:#f0b429}
+.summiss{display:flex;flex-wrap:wrap;gap:6px}
+.misschip{
+  display:inline-block;max-width:100%;overflow-wrap:anywhere;
+  border:1px solid #7a5a18;background:#2a2214;color:#ffe7b3;
+  border-radius:8px;padding:4px 8px;font-size:.68rem;
+  font-family:Consolas,monospace;direction:ltr
+}
 .flaggrid{display:grid;grid-template-columns:1fr;gap:8px;margin:8px 0}
 .flaggrid button{
   background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:12px;
@@ -330,9 +361,10 @@ button.gput{
     <div class="gate" id="metaGate">meta …</div>
     <div class="card">
       <h2>متای روز</h2>
+      <p class="hint">با یک نگاه: جمع کار، انجام‌شده، مانده.</p>
       <label class="lb">تاریخ</label>
       <div id="mDate"></div>
-      <div class="sumgrid" id="metaSum"><article class="sumcard empty">—</article></div>
+      <div class="sumdash" id="metaSum"></div>
       <div class="checks" id="metaChecks"></div>
     </div>
     <div id="metaBlocks"></div>
@@ -342,10 +374,10 @@ button.gput{
     <div class="gate" id="metaGate2">—</div>
     <div class="card">
       <h2>دفتر امروز</h2>
-      <p class="hint">خط به خط مثل دفتر. پارت با خط جدا می‌شود. کار تکراری در پارت بعد هم مجاز است. زمان‌ها با ویرگول جمع می‌شوند.</p>
+      <p class="hint">خلاصه بالا نشان می‌دهد چقدر کار شده و چه چیزی مانده. پارت‌ها کارت رنگی‌اند.</p>
       <label class="lb">تاریخ</label>
       <div id="sDate"></div>
-      <div class="sumgrid" id="nbMetaSum"><article class="sumcard empty">—</article></div>
+      <div class="sumdash" id="nbMetaSum"></div>
       <div class="nb" id="nbLog">در حال خواندن دفتر…</div>
     </div>
     <div class="card">
@@ -421,6 +453,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=39"></script>
+<script src="app.js?v=40"></script>
 </body>
 </html>

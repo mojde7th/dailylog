@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v39 · meta';
+const APP_VERSION = 'v40 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -701,8 +701,9 @@ async function paintMetaStatus() {
   const day = mDate ? selectedMetaDay() : '';
   const rec = day ? await metaFor(day) : null;
   lastMetaRec = rec;
-  renderMetaCards($('metaSum'), rec);
-  renderMetaCards($('nbMetaSum'), rec);
+  const work = await sessionWork(day);
+  paintSummary($('metaSum'), rec, work);
+  paintSummary($('nbMetaSum'), rec, work);
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
@@ -1230,7 +1231,7 @@ async function paintNotebook() {
     html += '</div>';
   });
   const rec = day ? await metaFor(day) : null;
-  renderMetaCards($('nbMetaSum'), rec);
+  paintSummary($('nbMetaSum'), rec, await sessionWork(day));
   host.innerHTML = html || '<div class="empty">خالی</div>';
 }
 
@@ -1459,37 +1460,99 @@ function metaBits(rec) {
   });
   return bits;
 }
-function groupedMetaBits(rec) {
-  const by = {};
-  META_GROUPS.forEach(g => { by[g.id] = { id: g.id, title: g.title, bits: [] }; });
-  metaBits(rec).forEach(b => {
-    let gid = 'laws';
-    if (String(b.id).indexOf('law:') !== 0) {
-      const it = META_ITEMS.find(x => x.id === b.id);
-      if (it) gid = it.group;
+function metaItemView(rec, it) {
+  if (it.kind === 'flag') {
+    const draft = Object.prototype.hasOwnProperty.call(flagDraft, it.id);
+    const saved = !!(rec && rec[it.id]);
+    const on = flagOn(rec, it.id);
+    let state = 'miss';
+    if (saved) state = 'ok';
+    else if (draft && on) state = 'draft';
+    return { id: it.id, group: it.group, kind: it.kind, label: it.label, state, val: '', min: 0 };
+  }
+  if (it.kind === 'accumDur') {
+    const n = Number(rec && rec[META_STORE[it.id]]) || 0;
+    return {
+      id: it.id, group: it.group, kind: it.kind, label: it.label,
+      state: n > 0 ? 'ok' : 'miss', val: n > 0 ? fmtChunk(n) : '0m', min: n
+    };
+  }
+  if (it.kind === 'avgSec') {
+    const n = Number(rec && rec.takhirN) || 0;
+    if (!n) {
+      return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '—', min: 0 };
     }
-    if (!by[gid]) by[gid] = { id: gid, title: gid, bits: [] };
-    by[gid].bits.push(b);
-  });
-  return META_GROUPS.map(g => by[g.id]).filter(g => g.bits.length);
+    const avg = Number(rec.takhirAvg) || 0;
+    return {
+      id: it.id, group: it.group, kind: it.kind, label: it.label,
+      state: avg >= TAKHIR_OK ? 'ok' : 'miss',
+      val: avg.toFixed(2) + 's n=' + n,
+      min: 0
+    };
+  }
+  return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '', min: 0 };
 }
-function renderMetaCards(el, rec) {
+async function sessionWork(day) {
+  if (!day) return { sessionMin: 0, sessionN: 0 };
+  const rows = (await getAll('sessions')).filter(r => r.dateShamsi === day);
+  let sessionMin = 0;
+  rows.forEach(r => { sessionMin += Number(r.minutes) || 0; });
+  return { sessionMin, sessionN: rows.length };
+}
+function sumLineHtml(v) {
+  const val = v.val ? '<span class="sumval">' + esc(v.val) + '</span>' : '';
+  return '<div class="sumline ' + v.state + '"><span class="sumname">' + esc(v.label) + '</span>' + val + '</div>';
+}
+function paintSummary(el, rec, work) {
   if (!el) return;
-  if (!rec) {
-    el.innerHTML = '<article class="sumcard empty">—</article>';
-    return;
-  }
-  const groups = groupedMetaBits(rec);
-  if (!groups.length) {
-    el.innerHTML = '<article class="sumcard empty">khali</article>';
-    return;
-  }
-  el.innerHTML = groups.map(g =>
-    '<article class="sumcard tone-' + esc(g.id) + '">' +
-      '<h4>' + esc(g.title) + '</h4>' +
-      g.bits.map(b => '<div class="sumline">' + esc(b.text) + '</div>').join('') +
-    '</article>'
-  ).join('');
+  el.classList.add('sumdash');
+  work = work || { sessionMin: 0, sessionN: 0 };
+  const views = META_ITEMS.map(it => metaItemView(rec, it));
+  const laws = rec ? parseLaws(rec) : [];
+  const okN = views.filter(v => v.state === 'ok').length;
+  const missN = views.filter(v => v.state === 'miss').length;
+  const draftN = views.filter(v => v.state === 'draft').length;
+  let metaMin = laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
+  views.forEach(v => { metaMin += v.min || 0; });
+  const totalMin = (work.sessionMin || 0) + metaMin;
+  const pct = views.length ? Math.round(100 * okN / views.length) : 0;
+  el.innerHTML =
+    '<div class="sumhero">' +
+      '<div class="sumstat"><span>جمع کار</span><b>' + esc(fmtChunk(totalMin)) + '</b>' +
+        '<small>دفتر ' + esc(fmtChunk(work.sessionMin || 0)) + ' · متا ' + esc(fmtChunk(metaMin)) + '</small></div>' +
+      '<div class="sumstat"><span>دفتر</span><b>' + (work.sessionN || 0) + '</b><small>خط</small></div>' +
+      '<div class="sumstat"><span>متا</span><b>' + okN + '/' + views.length + '</b>' +
+        '<small>' + missN + ' مانده' + (draftN ? (' · ' + draftN + ' پیش‌نویس') : '') + '</small></div>' +
+      '<div class="sumstat"><span>پیشرفت</span><b>' + pct + '%</b>' +
+        '<div class="sumbar"><i style="width:' + pct + '%"></i></div></div>' +
+    '</div>' +
+    META_GROUPS.map(g => {
+      const items = views.filter(v => v.group === g.id);
+      const gok = items.filter(v => v.state === 'ok').length;
+      const done = items.filter(v => v.state !== 'miss');
+      const miss = items.filter(v => v.state === 'miss');
+      let body = done.map(sumLineHtml).join('');
+      if (g.id === 'laws') {
+        if (laws.length) {
+          body += laws.map(x =>
+            '<div class="sumline ok"><span class="sumname">' + esc(x.name) + '</span>' +
+            '<span class="sumval">' + esc(fmtChunk(x.min)) + '</span></div>'
+          ).join('');
+        } else {
+          body += '<div class="sumline miss"><span class="sumname">ghanoon nist</span></div>';
+        }
+      }
+      if (miss.length) {
+        body += '<div class="summisslab">مانده</div><div class="summiss">' +
+          miss.map(v => '<span class="misschip">' + esc(v.label) + '</span>').join('') +
+        '</div>';
+      }
+      const head = g.id === 'laws' ? String(laws.length) : (gok + '/' + items.length);
+      return '<article class="sumcard tone-' + esc(g.id) + '">' +
+        '<h4>' + esc(g.title) + ' <span>' + head + '</span></h4>' +
+        body +
+      '</article>';
+    }).join('');
 }
 function metaSummary(rec) {
   const bits = metaBits(rec);
@@ -1553,8 +1616,8 @@ async function refreshData() {
   }
   const todayMeta = m.find(r => r.dateShamsi === today);
   const hold = document.createElement('div');
-  renderMetaCards(hold, todayMeta || null);
-  html += '<div class="sumgrid" style="margin-top:8px">' + hold.innerHTML + '</div>';
+  paintSummary(hold, todayMeta || null, { sessionMin: totalMin, sessionN: rows.length });
+  html += hold.innerHTML;
   $('todaySum').innerHTML = html;
   const mixed = [];
   s.forEach(r => mixed.push({
