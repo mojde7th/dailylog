@@ -210,14 +210,28 @@ button.gput{
 }
 .nb{
   font-family:Consolas,"Cascadia Mono",Tahoma,monospace;direction:ltr;text-align:left;
-  background:#070b10;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
-  min-height:80px;font-size:.82rem;line-height:1.7;color:#c8f0d8;
+  background:transparent;border:0;padding:0;min-height:80px;font-size:.84rem;line-height:1.55;color:#e8eef5;
   overflow-x:hidden;overflow-wrap:anywhere;word-break:break-word
 }
-.nb .partline{direction:rtl;text-align:right;color:#6db3f2;margin:0 0 6px;font-weight:bold;font-family:Tahoma,sans-serif}
-.nb .nbpart{margin:0 0 12px}
-.nb .nbline{display:block;direction:ltr;text-align:left;margin:0 0 4px}
-.nb .empty{color:#5f7186}
+.nb .empty{color:#93a4b8;padding:12px;background:#0b1016;border:1px dashed var(--line);border-radius:12px}
+.nbpart{border:1px solid var(--line);border-radius:14px;padding:10px;margin:0 0 12px;background:#121820}
+.nbpart.p0{border-color:#7a5a18;background:linear-gradient(180deg,#2a2214,#121820 55%)}
+.nbpart.p1{border-color:#3a6288;background:linear-gradient(180deg,#152033,#121820 55%)}
+.nbpart.p2{border-color:#5a3d78;background:linear-gradient(180deg,#241833,#121820 55%)}
+.nbpart.p3{border-color:#2f6b4e;background:linear-gradient(180deg,#12312a,#121820 55%)}
+.nb .partline{direction:rtl;text-align:right;margin:0 0 8px;font-weight:bold;font-family:Tahoma,sans-serif;font-size:.9rem}
+.nbpart.p0 .partline{color:#f0b429}
+.nbpart.p1 .partline{color:#8cc8f5}
+.nbpart.p2 .partline{color:#d2b3ff}
+.nbpart.p3 .partline{color:#5ee0a8}
+.nbline{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 10px;
+  direction:ltr;text-align:left;margin:0 0 8px;padding:8px 10px;
+  border:1px solid var(--bd, var(--line));background:var(--bg,#0b1016);border-radius:10px
+}
+.nbcode{color:var(--c,#e8eef5);font-weight:bold;overflow-wrap:anywhere}
+.nbtags{color:#c5d4e4;font-size:.78rem}
+.nbdur{margin-inline-start:auto;color:#c8f0d8;font-weight:bold;white-space:nowrap}
 .catlab{font-size:.75rem;color:var(--muted);margin:12px 0 6px}
 .alist{display:flex;flex-wrap:wrap;gap:6px}
 .alist.stick{
@@ -230,7 +244,7 @@ button.gput{
   direction:ltr;text-align:left;overflow-wrap:anywhere;word-break:break-word
 }
 .alist.stick button{background:#152033}
-.alist button.on{border-color:var(--accent);background:#1e2b3c}
+.alist button.on{border-color:var(--c, var(--accent));background:#1e2b3c;color:var(--c, var(--ink))}
 .pick{display:flex;flex-wrap:wrap;gap:8px;direction:ltr;justify-content:flex-start}
 .pick button{
   min-width:48px;min-height:44px;background:#0b1016;border:1px solid var(--line);color:var(--ink);
@@ -246,6 +260,47 @@ button.gput{
 .flagrow button.on{background:#12312a;border-color:var(--good);color:var(--good)}
 .qchips{direction:ltr;text-align:left}
 .qchips button{overflow-wrap:anywhere;word-break:break-word;max-width:100%}
+.tabs button#tabMeta.active{border-color:#f0b429;background:#2a2214;color:#ffe7b3}
+.tabs button#tabSession.active{border-color:#6db3f2;background:#152033;color:#d6ebff}
+.mgrp.tone-openfa,.sumcard.tone-openfa{background:linear-gradient(180deg,#2c2116,#171d25 42%);border-color:#7a5428}
+.mgrp.tone-raayat,.sumcard.tone-raayat{background:linear-gradient(180deg,#163024,#171d25 42%);border-color:#2f6b4e}
+.mgrp.tone-andaze,.sumcard.tone-andaze{background:linear-gradient(180deg,#15263a,#171d25 42%);border-color:#3a6288}
+.mgrp.tone-laws,.sumcard.tone-laws{background:linear-gradient(180deg,#241833,#171d25 42%);border-color:#6a4a8a}
+.mgrp.tone-openfa .gtitle,.sumcard.tone-openfa h4{color:#f0b429}
+.mgrp.tone-raayat .gtitle,.sumcard.tone-raayat h4{color:#5ee0a8}
+.mgrp.tone-andaze .gtitle,.sumcard.tone-andaze h4{color:#8cc8f5}
+.mgrp.tone-laws .gtitle,.sumcard.tone-laws h4{color:#d2b3ff}
+.mgrp.tone-openfa .flaggrid button.on,.mgrp.tone-openfa button.gput{border-color:#f0b429;background:#3a2a12;color:#ffe7b3}
+.mgrp.tone-raayat .flaggrid button.on,.mgrp.tone-raayat button.gput{border-color:#3ecf8e;background:#12312a;color:#c8f0d8}
+.mgrp.tone-andaze .flaggrid button.on,.mgrp.tone-andaze button.gput{border-color:#6db3f2;background:#152033;color:#d6ebff}
+.mgrp.tone-laws button.gput,.mgrp.tone-laws .put{border-color:#c9a0ff;background:#2a1a3a;color:#ead9ff}
+.catbox{
+  border:1px solid var(--bd, var(--line));background:var(--bg,#0b1016);
+  border-radius:14px;padding:8px;margin:10px 0
+}
+.catbox .catlab{margin:0 0 6px;color:var(--c,var(--muted));font-family:Consolas,monospace;direction:ltr;text-align:left}
+.catbox .alist.stick{margin:0;border:0;padding:0;background:transparent}
+.cat-takhsis{--c:#c9a0ff;--bg:rgba(160,110,220,.12);--bd:#5a3d78}
+.cat-arastegi{--c:#7ee0d6;--bg:rgba(70,190,180,.12);--bd:#2f6a66}
+.cat-kar{--c:#8cc8f5;--bg:rgba(109,179,242,.12);--bd:#3a6288}
+.cat-mali{--c:#f0b429;--bg:rgba(240,180,41,.12);--bd:#7a5a18}
+.cat-sobh{--c:#f0a05a;--bg:rgba(240,160,90,.12);--bd:#7a4a22}
+.cat-sehat{--c:#5ee0a8;--bg:rgba(62,207,142,.12);--bd:#2f6b4e}
+.cat-rutin{--c:#b8c4d4;--bg:rgba(147,164,184,.1);--bd:#3a4654}
+.cat-kharid{--c:#f0c36a;--bg:rgba(240,195,106,.12);--bd:#7a5e22}
+.cat-edari{--c:#f0a0b4;--bg:rgba(240,113,120,.12);--bd:#7a3a48}
+.cat-hafte{--c:#6ad4e8;--bg:rgba(80,200,220,.12);--bd:#2f6470}
+.cat-ravan{--c:#d2b3ff;--bg:rgba(180,140,255,.12);--bd:#5a3d78}
+.cat-div{--c:#f0a0d0;--bg:rgba(230,120,190,.12);--bd:#7a3a62}
+.cat-varzesh{--c:#9ee07a;--bg:rgba(140,210,90,.12);--bd:#4a6a2e}
+.cat-khane{--c:#d4c4a8;--bg:rgba(200,180,140,.1);--bd:#5a4e3a}
+.cat-sabtnam{--c:#9bb8f0;--bg:rgba(120,150,230,.12);--bd:#3a4a78}
+.cat-aff{--c:#f0b0e0;--bg:rgba(230,140,210,.12);--bd:#6a3a62}
+.cat-yadgiri{--c:#7ec8f0;--bg:rgba(90,180,230,.12);--bd:#2f5a78}
+.parts button.p0.on{background:#2a2214;border-color:#f0b429;color:#ffe7b3}
+.parts button.p1.on{background:#152033;border-color:#6db3f2;color:#d6ebff}
+.parts button.p2.on{background:#241833;border-color:#c9a0ff;color:#ead9ff}
+.parts button.p3.on{background:#12312a;border-color:#3ecf8e;color:#c8f0d8}
 </style>
 </head>
 <body>
@@ -366,6 +421,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=38"></script>
+<script src="app.js?v=39"></script>
 </body>
 </html>

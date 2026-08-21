@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v38 · meta';
+const APP_VERSION = 'v39 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -870,7 +870,7 @@ function buildMeta() {
   host.className = 'mgrids';
   META_GROUPS.forEach(g => {
     const wrap = document.createElement('div');
-    wrap.className = 'mgrp' + ((g.id === 'andaze' || g.id === 'laws') ? ' span2' : '');
+    wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws') ? ' span2' : '');
     const flags = groupFlags(g.id);
     wrap.innerHTML =
       `<div class="gtitle">${g.title}</div>` +
@@ -992,7 +992,7 @@ function buildParts() {
   activePart = partFromClock();
   const host = $('sParts');
   host.innerHTML = PARTS.map(p =>
-    `<button type="button" data-p="${p.id}">${p.label}</button>`).join('');
+    `<button type="button" data-p="${p.id}" class="p${p.id}">${p.label}</button>`).join('');
   const paint = () => host.querySelectorAll('button').forEach(b =>
     b.classList.toggle('on', Number(b.dataset.p) === activePart));
   host.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
@@ -1014,10 +1014,10 @@ function fillActivityList() {
   $('nbList').innerHTML = cats.map(cat => {
     const items = allowed.filter(c => c.cat === cat);
     const stick = items.some(c => c.stick);
-    const lab = stick ? '' : `<div class="catlab">${cat}</div>`;
-    return lab + `<div class="alist${stick ? ' stick' : ''}">` +
+    return `<div class="catbox cat-${cat}"><div class="catlab">${cat}</div>` +
+      `<div class="alist${stick ? ' stick' : ''}">` +
       items.map(c => `<button type="button" data-code="${c.code}">${c.code}</button>`).join('') +
-      `</div>`;
+      `</div></div>`;
   }).join('');
   $('nbList').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     picked = CODES.find(c => c.code === b.dataset.code);
@@ -1194,12 +1194,13 @@ async function paintNotebook() {
   PARTS.forEach(p => {
     const here = rows.filter(r => Number(r.partId) === p.id || r.part === p.label);
     if (!here.length) return;
-    html += '<div class="nbpart"><div class="partline">' + esc(p.label) + '</div>';
+    html += '<div class="nbpart p' + p.id + '"><div class="partline">' + esc(p.label) + '</div>';
     const order = [];
     const bag = {};
     here.forEach(r => {
       if (!bag[r.code]) {
-        bag[r.code] = { tags:[], chunks:[], sum:0, count:0 };
+        const hit = CODES.find(c => c.code === r.code);
+        bag[r.code] = { cat: r.category || (hit && hit.cat) || '', tags:[], chunks:[], sum:0, count:0 };
         order.push(r.code);
       }
       const g = bag[r.code];
@@ -1220,14 +1221,16 @@ async function paintNotebook() {
         dur = (g.chunks.length ? g.chunks.join(',') : '0m');
         if (g.chunks.length > 1) dur += ' =' + fmtChunk(g.sum);
       }
-      const tags = g.tags.length ? '(' + g.tags.join(',') + ')' : '';
-      html += '<div class="nbline">' + esc(code + tags + ':' + dur) + '</div>';
+      html += '<div class="nbline' + (g.cat ? ' cat-' + g.cat : '') + '">' +
+        '<span class="nbcode">' + esc(code) + '</span>' +
+        (g.tags.length ? '<span class="nbtags">' + esc(g.tags.join(', ')) + '</span>' : '') +
+        '<span class="nbdur">' + esc(dur) + '</span>' +
+      '</div>';
     });
     html += '</div>';
   });
   const rec = day ? await metaFor(day) : null;
-  const sumEl = $('nbMetaSum');
-  if (sumEl) sumEl.textContent = rec ? ('meta · ' + metaSummary(rec)) : 'meta · —';
+  renderMetaCards($('nbMetaSum'), rec);
   host.innerHTML = html || '<div class="empty">خالی</div>';
 }
 
@@ -1458,14 +1461,14 @@ function metaBits(rec) {
 }
 function groupedMetaBits(rec) {
   const by = {};
-  META_GROUPS.forEach(g => { by[g.id] = { title: g.title, bits: [] }; });
+  META_GROUPS.forEach(g => { by[g.id] = { id: g.id, title: g.title, bits: [] }; });
   metaBits(rec).forEach(b => {
     let gid = 'laws';
     if (String(b.id).indexOf('law:') !== 0) {
       const it = META_ITEMS.find(x => x.id === b.id);
       if (it) gid = it.group;
     }
-    if (!by[gid]) by[gid] = { title: gid, bits: [] };
+    if (!by[gid]) by[gid] = { id: gid, title: gid, bits: [] };
     by[gid].bits.push(b);
   });
   return META_GROUPS.map(g => by[g.id]).filter(g => g.bits.length);
@@ -1482,7 +1485,7 @@ function renderMetaCards(el, rec) {
     return;
   }
   el.innerHTML = groups.map(g =>
-    '<article class="sumcard">' +
+    '<article class="sumcard tone-' + esc(g.id) + '">' +
       '<h4>' + esc(g.title) + '</h4>' +
       g.bits.map(b => '<div class="sumline">' + esc(b.text) + '</div>').join('') +
     '</article>'
