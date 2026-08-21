@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v36 · meta';
+const APP_VERSION = 'v37 · meta';
 const SCRIPT_VERSION = 'v9-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -63,7 +63,7 @@ const CODES = [
   { cat:'sabtnam',  code:'sabtnam(tur,kargahravn,kelstakh,zaban,bashgahengh,hamneshin)', metric:'dur', from:3, def:{h:0,m:15} },
   { cat:'aff',      code:'afflog,affplan,affevenlog', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
   { cat:'sehat',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
-  { cat:'sehat',    code:'ket<=25m', metric:'dur', from:3, def:{h:0,m:25} },
+  { cat:'sehat',    code:'ket<=25m(ketabedast)', metric:'dur', from:3, def:{h:0,m:25} },
   { cat:'sehat',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
 ];
 
@@ -78,6 +78,8 @@ const META_GROUPS = [
 ];
 
 const META_ITEMS = [
+  { id:'moodToFlow', group:'openfa', kind:'accumDur',
+    label:'moodtoflowbeforeopenfa2' },
   { id:'openfa1h', group:'openfa', kind:'flag',
     label:'openfa2<=30m' },
   { id:'nchort', group:'openfa', kind:'flag',
@@ -87,7 +89,7 @@ const META_ITEMS = [
   { id:'twoHourAras', group:'openfa', kind:'flag',
     label:'2saatarasmortakhshoseghableSnapeshose' },
   { id:'opf1', group:'openfa', kind:'flag',
-    label:'openaf1after15(15g sachetprotein)' },
+    label:'openfa1after15(15g sachetprot)' },
   { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
     label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
   { id:'opf2', group:'openfa', kind:'flag',
@@ -99,12 +101,8 @@ const META_ITEMS = [
     label:'takhghmojaz<=0' },
   { id:'takhmojmotns', group:'raayat', kind:'flag',
     label:'takhmojmotns' },
-  { id:'mohtmoj100', group:'raayat', kind:'flag',
-    label:'mohtmoj100%' },
   { id:'budandarjayemojaz100', group:'raayat', kind:'flag',
-    label:'budandarjayemojaz100%' },
-  { id:'kharidemojaz100', group:'raayat', kind:'flag',
-    label:'kharidemojaz100%' },
+    label:'budandarjayemojaz,kharidemojaz,mohtavayemojaz' },
   { id:'raatayeghavanineakhlaghietayinshode100', group:'raayat', kind:'flag',
     label:'raatayeghavanineakhlaghietayinshode100%' },
   { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
@@ -118,8 +116,6 @@ const META_ITEMS = [
   { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
-  { id:'moodToFlow', group:'andaze', kind:'accumDur',
-    label:'moodtoflow' },
   { id:'ghanoon', group:'andaze', kind:'accumDur',
     label:'ghanoonfarayeman' },
   { id:'layers', group:'andaze', kind:'accumDur',
@@ -129,6 +125,31 @@ const META_ITEMS = [
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
+
+const FLAG_BUNDLES = {
+  noghahveyebiruni: ['noghahveyebiruni', 'nolimunadbiruni'],
+  budandarjayemojaz100: ['budandarjayemojaz100', 'kharidemojaz100', 'mohtmoj100']
+};
+
+function flagBundleKeys(id) {
+  return FLAG_BUNDLES[id] || [id];
+}
+function applyFlagBundle(rec, id, on) {
+  const v = on ? 1 : 0;
+  flagBundleKeys(id).forEach(k => { rec[k] = v; });
+}
+function migrateFlagBundles(rec) {
+  const done = parseDone(rec);
+  Object.keys(FLAG_BUNDLES).forEach(primary => {
+    const keys = FLAG_BUNDLES[primary];
+    const any = keys.some(k => rec[k] || done[k]);
+    keys.forEach(k => { rec[k] = any ? 1 : 0; });
+    if (any) done[primary] = 1;
+    keys.forEach(k => { if (k !== primary) delete done[k]; });
+  });
+  rec.done = done;
+  rec.doneJson = JSON.stringify(done);
+}
 
 const META_FIELDS = ['uid','createdAt','dateShamsi',
   'moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin',
@@ -515,6 +536,11 @@ function fillMetaGaps(keep, extra) {
   META_FLAG_IDS.forEach(k => {
     if (!keep[k] && extra[k]) keep[k] = extra[k];
   });
+  Object.keys(FLAG_BUNDLES).forEach(p => {
+    FLAG_BUNDLES[p].forEach(k => {
+      if (!keep[k] && extra[k]) keep[k] = extra[k];
+    });
+  });
   if (!(Number(keep.takhirN) > 0) && Number(extra.takhirN) > 0) {
     keep.takhirN = extra.takhirN;
     keep.takhirSum = extra.takhirSum;
@@ -545,13 +571,7 @@ function migrateMeta(rec) {
     rec.takhirSum = Number(rec.mintakhir);
     rec.takhirAvg = Number(rec.mintakhir);
   }
-  if (rec.noghahveyebiruni || rec.nolimunadbiruni) {
-    rec.noghahveyebiruni = 1;
-    rec.nolimunadbiruni = 1;
-  } else {
-    rec.noghahveyebiruni = rec.noghahveyebiruni ? 1 : 0;
-    rec.nolimunadbiruni = rec.nolimunadbiruni ? 1 : 0;
-  }
+  migrateFlagBundles(rec);
   return rec;
 }
 async function metaFor(day) {
@@ -590,6 +610,9 @@ function blankMeta(day) {
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
   META_FLAG_IDS.forEach(k => { rec[k] = 0; });
+  Object.keys(FLAG_BUNDLES).forEach(p => {
+    FLAG_BUNDLES[p].forEach(k => { rec[k] = 0; });
+  });
   return rec;
 }
 
@@ -910,7 +933,7 @@ async function putGroup(gid) {
     if (it.kind === 'flag') {
       const on = flagOn(rec, it.id);
       rec[it.id] = on ? 1 : 0;
-      if (it.id === 'noghahveyebiruni') rec.nolimunadbiruni = rec[it.id];
+      applyFlagBundle(rec, it.id, on);
       if (on) done[it.id] = 1;
       else delete done[it.id];
       delete flagDraft[it.id];
@@ -1267,13 +1290,13 @@ async function doSave() {
 /* ═════════════════════════════ 8. SYNC ═════════════════════════════════════ */
 
 async function forceMetaResyncOnce() {
-  if (cfgGet('meta_resync') === 'v36') return;
+  if (cfgGet('meta_resync') === 'v37') return;
   const all = await getAll('meta');
   for (const r of all) {
     r.synced = 0;
     await put('meta', r);
   }
-  cfgSet('meta_resync', 'v36');
+  cfgSet('meta_resync', 'v37');
 }
 
 function execHint(url) {
@@ -1448,10 +1471,7 @@ function clearMetaField(rec, itemId) {
     lawDraft = left.slice();
   } else if (!it) return rec;
   if (it && it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
-  if (it && it.kind === 'flag') {
-    rec[it.id] = 0;
-    if (it.id === 'noghahveyebiruni') rec.nolimunadbiruni = 0;
-  }
+  if (it && it.kind === 'flag') applyFlagBundle(rec, it.id, 0);
   if (it && it.kind === 'avgSec') { rec.takhirAvg = ''; rec.takhirN = 0; rec.takhirSum = 0; }
   const done = parseDone(rec);
   delete done[itemId];
