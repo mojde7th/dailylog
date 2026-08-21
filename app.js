@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v32 · meta';
+const APP_VERSION = 'v33 · meta';
 const SCRIPT_VERSION = 'v8-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -591,6 +591,17 @@ function blankMeta(day) {
 
 let mDate = null;
 const mW = {};
+const flagDraft = {};
+let lastMetaRec = null;
+
+function flagOn(rec, id) {
+  if (Object.prototype.hasOwnProperty.call(flagDraft, id)) return !!flagDraft[id];
+  return !!(rec && rec[id]);
+}
+
+function clearFlagDraft() {
+  Object.keys(flagDraft).forEach(k => delete flagDraft[k]);
+}
 
 function selectedMetaDay() {
   if (!mDate) return '';
@@ -609,7 +620,7 @@ function selectedMetaDay() {
 function totalLine(it, rec) {
   if (!rec) return '—';
   if (it.kind === 'accumDur') return 'today: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
-  if (it.kind === 'flag') return rec[it.id] ? 'SET' : 'not set';
+  if (it.kind === 'flag') return flagOn(rec, it.id) ? 'SET' : 'not set';
   if (it.kind === 'avgSec') {
     const n = Number(rec.takhirN) || 0;
     if (!n) return 'not set';
@@ -622,6 +633,7 @@ function totalLine(it, rec) {
 async function paintMetaStatus() {
   const day = mDate ? selectedMetaDay() : '';
   const rec = day ? await metaFor(day) : null;
+  lastMetaRec = rec;
   const sum = rec ? metaSummary(rec) : '—';
   const sumEl = $('metaSum');
   if (sumEl) sumEl.textContent = 'meta · ' + sum;
@@ -630,7 +642,7 @@ async function paintMetaStatus() {
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
-    if (it.kind === 'flag' && it._btn) it._btn.classList.toggle('on', !!(rec && rec[it.id]));
+    if (it.kind === 'flag' && it._btn) it._btn.classList.toggle('on', flagOn(rec, it.id));
   });
 }
 
@@ -675,7 +687,7 @@ function mountMetaItem(host, it) {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = it.label;
-    b.addEventListener('click', () => putMetaItem(it.id));
+    b.addEventListener('click', () => toggleFlagDraft(it.id));
     row.appendChild(b);
     h.appendChild(row);
     it._btn = b;
@@ -696,6 +708,7 @@ function mountMetaItem(host, it) {
 function buildMeta() {
   let paintT = null;
   mDate = makeDateWheel($('mDate'), () => {
+    clearFlagDraft();
     clearTimeout(paintT);
     paintT = setTimeout(() => paintMetaStatus(), 220);
   });
@@ -716,25 +729,41 @@ function buildMeta() {
         ? `<div class="mall">` +
           `<button type="button" data-g="${g.id}" data-all="1">select all</button>` +
           `<button type="button" data-g="${g.id}" data-all="0">unselect all</button>` +
+          `<button type="button" class="putg" data-g="${g.id}" data-put="1">put</button>` +
           `</div>`
         : '');
     host.appendChild(wrap);
     wrap.querySelectorAll('.mall button').forEach(b => {
-      b.addEventListener('click', () => setGroupFlags(g.id, b.dataset.all === '1'));
+      if (b.dataset.put) b.addEventListener('click', () => putGroupFlags(g.id));
+      else b.addEventListener('click', () => draftGroupFlags(g.id, b.dataset.all === '1'));
     });
     META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
   });
   paintMetaStatus();
 }
 
-async function setGroupFlags(gid, on) {
+function draftGroupFlags(gid, on) {
+  groupFlags(gid).forEach(it => { flagDraft[it.id] = on ? 1 : 0; });
+  paintMetaStatus();
+  vibrate(8);
+}
+
+function toggleFlagDraft(id) {
+  flagDraft[id] = flagOn(lastMetaRec, id) ? 0 : 1;
+  paintMetaStatus();
+  vibrate(8);
+}
+
+async function putGroupFlags(gid) {
   const day = selectedMetaDay();
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
   groupFlags(gid).forEach(it => {
+    const on = flagOn(rec, it.id);
     rec[it.id] = on ? 1 : 0;
     if (on) done[it.id] = 1;
     else delete done[it.id];
+    delete flagDraft[it.id];
   });
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
@@ -743,7 +772,7 @@ async function setGroupFlags(gid, on) {
   rec.createdAt = rec.createdAt || new Date().toISOString();
   await put('meta', rec);
   vibrate(25);
-  toast(on ? gid + ' all' : gid + ' none');
+  toast(gid + ' put');
   await paintMetaStatus();
   updateQueueBadge();
   trySync();
@@ -1052,7 +1081,7 @@ async function paintNotebook() {
 
 /* ═════════════════════════════ 7. TABS / SAVE ══════════════════════════════ */
 
-let activeTab = 'meta';
+let activeTab = 'session';
 
 function pinHeader() {
   const h = document.querySelector('header');
@@ -1069,7 +1098,9 @@ function ensureSessionUi() {
 }
 
 function showTab(name) {
+  if (name !== 'session' && name !== 'meta' && name !== 'data') name = 'session';
   activeTab = name;
+  cfgSet('tab', name);
   $('paneSession').classList.toggle('hide', name !== 'session');
   $('paneMeta').classList.toggle('hide',    name !== 'meta');
   $('paneData').classList.toggle('hide',    name !== 'data');
@@ -1520,7 +1551,13 @@ async function boot() {
 
   window.addEventListener('online',  () => { updateNetPill(); trySync(); });
   window.addEventListener('offline', updateNetPill);
-  window.addEventListener('pageshow', settleWheels);
+  window.addEventListener('pageshow', () => {
+    settleWheels();
+    const last = cfgGet('tab');
+    if (last === 'session' || last === 'data' || last === 'meta') {
+      if (last !== activeTab) showTab(last);
+    }
+  });
   window.addEventListener('resize',  () => { pinHeader(); settleWheels(); });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -1539,7 +1576,8 @@ async function boot() {
   await forceMetaResyncOnce();
   checkSheet(false);
   trySync();
-  showTab('meta');
+  const last = cfgGet('tab');
+  showTab(last === 'session' || last === 'data' || last === 'meta' ? last : 'session');
 
   if (location.search.indexOf('diag=meta') >= 0) {
     setTimeout(() => showTab('meta'), 1200);
