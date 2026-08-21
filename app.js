@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v44 · meta';
+const APP_VERSION = 'v45 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -653,8 +653,20 @@ function clearFlagDraft() {
 function parseLaws(rec) {
   try {
     const a = JSON.parse((rec && rec.lawsJson) || '[]');
-    return Array.isArray(a) ? a : [];
+    if (!Array.isArray(a)) return [];
+    return a.filter(x => x && String(x.name || '').trim()).map(x => ({
+      name: String(x.name).trim(),
+      desc: String(x.desc || ''),
+      min: Number(x.min) || 0
+    }));
   } catch (e) { return []; }
+}
+function lawsForSummary(rec) {
+  const saved = rec ? parseLaws(rec) : [];
+  const day = rec ? rec.dateShamsi : (mDate ? selectedMetaDay() : '');
+  if (mDate && day && day === selectedMetaDay()) return lawDraft.slice();
+  if (mDate && !rec) return lawDraft.slice();
+  return saved;
 }
 function lawCatalog() {
   try {
@@ -803,7 +815,7 @@ function paintLawList() {
   host.innerHTML = lawDraft.map((x, i) =>
     `<div class="lawcard">` +
       `<b>${esc(x.name)}</b>` +
-      `<span class="desc">${esc(x.desc || '')}</span>` +
+      (x.desc ? `<span class="desc">${esc(x.desc)}</span>` : '') +
       `<span class="desc">${fmtChunk(x.min)}</span>` +
       `<button type="button" class="cancel" data-law="${i}">hazf</button>` +
     `</div>`
@@ -812,6 +824,7 @@ function paintLawList() {
     b.addEventListener('click', () => {
       lawDraft.splice(Number(b.dataset.law), 1);
       paintLawList();
+      scheduleSummary();
       vibrate(8);
     });
   });
@@ -840,12 +853,12 @@ function mountLawsPanel(wrap) {
   const box = document.createElement('div');
   box.className = 'mblock';
   box.innerHTML =
-    `<h3>name + tozih + saat — bedune taghire app</h3>` +
-    `<p class="hint">nam ra yekbar besaz. ruzhaye baad az chipha bardar. ta put paye daste, saf nemishavad.</p>` +
+    `<h3>name + saat — tozih ekhtiari</h3>` +
+    `<p class="hint">tozih lazeme nist. nam kafist. ta put, dar kart pishnevis shomaresh mishavad.</p>` +
     `<div class="chips qchips" id="lawCat"></div>` +
     `<label class="lb">nam</label>` +
     `<input id="lawName" class="ltr" placeholder="masalan: sokut-12"/>` +
-    `<label class="lb">tozih</label>` +
+    `<label class="lb">tozih — ekhtiari</label>` +
     `<textarea id="lawDesc" class="ltr" placeholder="in ghanoon chist"></textarea>` +
     `<label class="lb">saat</label>` +
     `<div id="lawDur"></div>` +
@@ -1550,7 +1563,7 @@ function paintSummary(el, rec, work) {
   el.classList.add('sumdash');
   work = work || { sessionMin: 0, sessionN: 0, byPart: PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 })), byCat: [] };
   const views = META_ITEMS.map(it => metaItemView(rec, it));
-  const laws = rec ? parseLaws(rec) : [];
+  const laws = lawsForSummary(rec);
   const durs = views.filter(v => v.kind === 'accumDur');
   const lawMin = laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
   const okN = views.filter(v => v.state === 'ok').length;
@@ -1563,7 +1576,7 @@ function paintSummary(el, rec, work) {
     '</div>' +
     '<div class="sumhero durs">' +
       durs.map(v => sumTile(v.id === 'layers' ? 'layers' : v.label, v.val, v.min ? '' : 'خالی', 'tone-' + v.group, !v.min)).join('') +
-      sumTile('ghanoon mohem', fmtChunk(lawMin), laws.length ? (laws.length + ' law') : 'خالی', 'tone-laws', !lawMin) +
+      sumTile('ghanoon mohem', String(laws.length), fmtChunk(lawMin), 'tone-laws', !laws.length) +
       (function () {
         const avg = views.find(v => v.kind === 'avgSec');
         return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok' : '>1.5s', 'tone-andaze', avg.state !== 'ok') : '';
@@ -1582,14 +1595,12 @@ function paintSummary(el, rec, work) {
           '<span class="chip ' + v.state + '">' + esc(v.label) + (v.val ? ' ' + v.val : '') + '</span>'
         ).join('');
         if (g.id === 'laws') {
-          const live = (mDate && rec && rec.dateShamsi === selectedMetaDay() && lawDraft.length)
-            ? lawDraft : laws;
-          chips = live.length
-            ? live.map(x => '<span class="chip ok">' + esc(x.name) + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
+          chips = laws.length
+            ? laws.map(x => '<span class="chip ok">' + esc(x.name) + (x.desc ? ' — ' + esc(x.desc) : '') + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
             : '<span class="chip miss">nist</span>';
         }
         return '<article class="sumcard tone-' + esc(g.id) + '">' +
-          '<h4>' + esc(g.title) + ' <span>' + (g.id === 'laws' ? String((lawDraft.length && rec && rec.dateShamsi === selectedMetaDay()) ? lawDraft.length : laws.length) : (gok + '/' + items.length)) + '</span></h4>' +
+          '<h4>' + esc(g.title) + ' <span>' + (g.id === 'laws' ? String(laws.length) : (gok + '/' + items.length)) + '</span></h4>' +
           '<div class="flagchips">' + chips + '</div>' +
         '</article>';
       }).join('') +
