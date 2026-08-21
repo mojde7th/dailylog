@@ -7,7 +7,7 @@
    always get the newest file when there is a connection, and the cache is
    only there for the aeroplane case. */
 
-const CACHE = 'dailylog-v35';
+const CACHE = 'dailylog-v36';
 
 const SHELL = [
   './',

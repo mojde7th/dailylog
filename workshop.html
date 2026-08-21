@@ -8,22 +8,34 @@
 <style>
 :root{
   --bg:#0f1419;--panel:#171d25;--ink:#e8eef5;--muted:#93a4b8;
-  --line:#2a3542;--accent:#6db3f2;--good:#3ecf8e;--warn:#f0b429;--bad:#f07178
+  --line:#2a3542;--accent:#6db3f2;--good:#3ecf8e;--warn:#f0b429;--bad:#f07178;
+  --fs:16px
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;background:var(--bg);color-scheme:dark}
-body{margin:0;font-family:Tahoma,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.9}
-.wrap{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+body{margin:0;font-family:Tahoma,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.9;font-size:var(--fs)}
+.top{
+  position:sticky;top:0;z-index:50;background:#101820;border-bottom:1px solid var(--line);
+  padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center
+}
+.top input[type=search]{
+  flex:1;min-width:160px;background:#0b1016;border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:8px 10px;font-family:inherit
+}
+.prog{flex:1;min-width:120px;height:8px;background:#1d242e;border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--good)}
+.wrap{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 52px)}
 nav{
-  position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+  position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);overflow:auto;
   background:#131922;border-left:1px solid var(--line);padding:16px 12px
 }
-nav a{display:block;color:var(--muted);text-decoration:none;font-size:.82rem;padding:5px 8px;border-radius:8px}
+nav a{display:flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.82rem;padding:5px 8px;border-radius:8px}
 nav a:hover,nav a.on{background:#1e2b3c;color:var(--ink)}
+nav a.done{color:var(--good)}
 nav .g{color:#6db3f2;font-size:.72rem;margin:12px 8px 4px}
-main{max-width:860px;padding:28px 28px 80px}
+main{max-width:900px;padding:28px 28px 80px}
 h1{font-size:1.45rem;margin:0 0 8px}
-h2{font-size:1.15rem;margin:36px 0 10px;border-top:1px solid var(--line);padding-top:22px}
+h2{font-size:1.15rem;margin:36px 0 10px;border-top:1px solid var(--line);padding-top:22px;scroll-margin-top:64px}
 h3{font-size:1rem;margin:22px 0 8px;color:#cfe3f7}
 p,li{color:#d5deea}
 .muted{color:var(--muted)}
@@ -34,29 +46,63 @@ p,li{color:#d5deea}
 .bad{border-color:var(--bad)}
 .kicker{font-size:.78rem;color:var(--accent)}
 pre,code{font-family:Consolas,"Cascadia Mono",monospace}
+.prewrap{position:relative}
 pre{
   direction:ltr;text-align:left;background:#070b10;border:1px solid var(--line);
   border-radius:12px;padding:12px;overflow:auto;font-size:.8rem;line-height:1.55;color:#c8f0d8
 }
+.copy{
+  position:absolute;top:8px;left:8px;font-size:.7rem;padding:3px 8px
+}
 code{direction:ltr;unicode-bidi:isolate}
+mark.hit{background:#3a4a20;color:#e8eef5;border-radius:3px}
 table{width:100%;border-collapse:collapse;font-size:.84rem;margin:10px 0}
 th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:right;vertical-align:top}
 th{color:var(--muted);font-weight:normal}
-.sw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 14px}
-.sw b{font-size:1.2rem;direction:ltr}
-button{
+.sw,.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 14px}
+.sw b,.clock{font-size:1.2rem;direction:ltr}
+button, .top button{
   background:#1e2b3c;border:1px solid var(--line);color:var(--ink);
   border-radius:10px;padding:7px 12px;font-family:inherit;cursor:pointer
 }
 button.good{background:#1b3a2e;border-color:var(--good)}
 .chk{margin:6px 0}
 .chk input{margin-left:8px}
-.tocmini{font-size:.85rem}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}nav{height:auto;position:relative}}
-@media print{nav,.sw,button{display:none}main{max-width:none;padding:0}h2{break-before:page}}
+.play{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.play .box{margin:0}
+.flag{display:block;width:100%;text-align:right;margin:4px 0;padding:10px}
+.flag.on{background:#12312a;border-color:var(--good);color:var(--good)}
+.note{
+  width:100%;min-height:70px;background:#0b1016;border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:10px;font-family:inherit
+}
+.toast{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#12312a;
+  border:1px solid var(--good);color:#bff0dc;padding:8px 14px;border-radius:10px;
+  opacity:0;transition:opacity .2s;pointer-events:none;z-index:80
+}
+.toast.show{opacity:1}
+body.focus nav{display:none}
+body.focus .wrap{grid-template-columns:1fr}
+.hide{display:none}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}nav{height:auto;position:relative;top:0}.play{grid-template-columns:1fr}}
+@media print{.top,nav,button,.toast{display:none}main{max-width:none;padding:0}h2{break-before:page}}
 </style>
 </head>
 <body>
+<div class="top">
+  <input id="q" type="search" placeholder="جستجو در کارگاه — میانبر اسلش"/>
+  <div class="prog" title="پیشرفت فصل‌ها"><i id="bar"></i></div>
+  <span id="pct" class="muted">۰٪</span>
+  <b id="clk" class="clock">00:00</b>
+  <button type="button" id="go">شروع</button>
+  <button type="button" id="stop">توقف</button>
+  <button type="button" id="rst">صفر</button>
+  <button type="button" id="fsA">درشت</button>
+  <button type="button" id="fsB">ریز</button>
+  <button type="button" id="focus">تمرکز</button>
+  <button type="button" id="exp">خروجی پیشرفت</button>
+</div>
 <div class="wrap">
 <nav>
   <div class="g">شروع</div>
@@ -79,7 +125,11 @@ button.good{background:#1b3a2e;border-color:var(--good)}
   <div class="g">جنگ واقعی</div>
   <a href="#bugs">دیباگ‌هایی که خوردیم</a>
   <a href="#deploy">استقرار گیت‌هاب و شیت</a>
+  <div class="g">تمرین</div>
   <a href="#labs">آزمایش‌ها</a>
+  <a href="#play">آزمایش زنده</a>
+  <a href="#quiz">آزمون</a>
+  <a href="#keys">میانبر و واژه</a>
   <a href="#end">چک‌لیست پایان</a>
 </nav>
 <main>
@@ -92,7 +142,7 @@ D:\tech-lab\habit-pwa\
 </pre>
 
 <h1>از مرورگر تا برنامهٔ ویندوز، و از یک دکمه تا شیت</h1>
-<p>این صفحه را ذخیره کن. به آن گفتگو برنگرد. هر فصل یک هدف، یک زمان پیشنهادی، یک آزمایش «این را عوض کن این را ببین»، و اثر خط‌به‌خط همان کدی است که الان زنده است. کل کد اینجا کپی نشده؛ چون کپیِ کامل حسِ اثر را می‌کشد. به‌جایش مسیر اجرا را با دست لمس می‌کنی.</p>
+<p>بالای صفحه جستجو، کرنومتر، پیشرفت، درشتی متن و حالت تمرکز هست. هر فصل دکمهٔ تمام دارد. کدها دکمهٔ کپی دارند. آزمایش زنده و آزمون ته پرونده است. پیشرفت در همین مرورگر می‌ماند.</p>
 
 <div class="box warn">
 <p>رمز مشترک و شناسهٔ شیت را در هیچ کارگاهی ننویس. در پروندهٔ محلی اسکریپت می‌مانند و آن پرونده داخل گیت نیست.</p>
@@ -153,14 +203,9 @@ Pin to taskbar</pre>
 <p>برنامه را نصب کن. ببند. از منوی شروع باز کن. باید بدون نوار آدرس باز شود. تب مرورگر را جداگانه باز کن و به گوگل‌شیت برو، بعد به برنامه برگرد. باید همان تبی که آخر بودی بماند نه اجباری متای روز. این همان ذخیرهٔ تب در حافظهٔ محلی است که پایین می‌آید.</p>
 </div>
 
-<h2 id="clock">کرنومتر همین صفحه</h2>
-<div class="sw">
-  <b id="clk">00:00</b>
-  <button type="button" id="go">شروع</button>
-  <button type="button" id="stop">توقف</button>
-  <button type="button" id="rst">صفر</button>
-</div>
-<p class="muted">برای هر فصل صفر کن، شروع کن، آزمایش را تمام کن، زمان را در جدول پایین بنویس.</p>
+<h2 id="clock">کرنومتر و پیشرفت</h2>
+<p class="muted">کرنومتر بالا همیشه هست. هر فصل که تمام شد در فهرست کناره تیک بزن. پیشرفت ذخیره می‌شود.</p>
+<p class="muted">زمان پیشنهادی هر فصل را در جدول بنویس. هدف کل کارگاه حدود شش ساعت است، نه یک نشست اجباری.</p>
 <table>
 <thead><tr><th>فصل</th><th>هدف دقیقه</th><th>زمان تو</th></tr></thead>
 <tbody>
@@ -211,10 +256,10 @@ Pin to taskbar</pre>
 </pre>
 <p>چرا یک پروندهٔ جاوااسکریپت بدون باندلر؟ چون روی گیت‌هاب‌پیجز باید همان را که می‌فرستی همان را مرورگر بخورد. هیچ مرحلهٔ ساخت نیست. نسخهٔ زبان تعمداً قدیم است تا گوشی کهنه هم بفهمد.</p>
 <p>دو عدد نسخه جدا هستند. قاطی‌شان نکن.</p>
-<pre>APP_VERSION     = 'v34 · meta'   // روی کپسول اپ
-SCRIPT_VERSION  = 'v8-meta'      // باید با Code.gs یکی باشد
-CACHE           = 'dailylog-v34' // نام کش سرویس‌ورکر
-app.js?v=34                     // ضربه به کش مرورگر
+<pre>APP_VERSION     = 'v35 · meta'
+SCRIPT_VERSION  = 'v9-meta'
+CACHE           = 'dailylog-v35'
+app.js?v=35
 </pre>
 <p>اثر را حس کن: اگر فقط</p>
 <pre>APP_VERSION</pre>
@@ -259,7 +304,7 @@ meta</pre>
 <ol start="4">
 <li>زبانهٔ برنامه، سرویس‌ورکر: نام کش باید</li>
 </ol>
-<pre>dailylog-v34</pre>
+<pre>dailylog-v35</pre>
 <p>باشد.</p>
 <div class="box lab">
 <p>آزمایش: اف۱۲ را باز کن. یک خط دفتر ثبت کن. در شبکه آن پست را پیدا کن. بدنه را باز کن. باید جیسان داخل متن ساده باشد نه فرم. اگر مرورگر گزینه‌پیش‌پرواز فرستاد و گوگل رد کرد، همان دلیل انتخاب متن ساده است. پایین در همگام‌سازی می‌آید.</p>
@@ -528,7 +573,7 @@ doPost()  احراز، بعد upsert متا یا درج نوبت
 <li>کل متن ویرایشگر را با پروندهٔ محلی عوض کن.</li>
 <li>در ویرایشگر باید ببینی:</li>
 </ol>
-<pre>var VERSION = 'v8-meta';</pre>
+<pre>var VERSION = 'v9-meta';</pre>
 <ol start="4">
 <li>ذخیره.</li>
 <li>استقرار، مدیریت استقرار، مداد روی همان وب‌اپی که نشانی‌اش در تب داده‌ها است، نسخهٔ جدید. استقرار تازه نساز.</li>
@@ -626,10 +671,89 @@ git push origin HEAD
 <p>باید در یک قاب باشند بدون برچسب جدا. روان هم همین‌طور.</p>
 </div>
 
+<h2 id="play">آزمایش زنده روی همین صفحه — حس کن، نه حفظ کن</h2>
+<p>این‌ها شبیه همان منطق اپ‌اند. صف اینجا ساختگی است تا ببینی انتخاب همه نباید بفرستد.</p>
+<div class="play">
+  <div class="box lab">
+    <h3>پیش‌نویس پرچم</h3>
+    <p class="muted">انتخاب همه صف را زیاد نمی‌کند. ثبت ته دسته می‌فرستد.</p>
+    <button type="button" class="flag" data-f="a">openfa&lt;=1h</button>
+    <button type="button" class="flag" data-f="b">nchort</button>
+    <button type="button" class="flag" data-f="c">saatbidari&lt;=5m</button>
+    <div class="row">
+      <button type="button" id="all1">select all</button>
+      <button type="button" id="all0">unselect all</button>
+      <button type="button" class="good" id="putf">put</button>
+    </div>
+    <p>صف ساختگی: <b id="qsim">۰</b></p>
+    <p class="muted" id="qmsg">هنوز ثبت نشده</p>
+  </div>
+  <div class="box lab">
+    <h3>میانگین تأخیر</h3>
+    <p class="muted">هر عدد یک نمونه است. میانگین زیر یک‌و‌نیم پرچم را صفر می‌کند.</p>
+    <div class="row" id="secs"></div>
+    <p>جمع <b id="tsum">۰</b> · تعداد <b id="tn">۰</b> · میانگین <b id="tavg">—</b> · پرچم <b id="tflag">۰</b></p>
+    <button type="button" id="treset">صفر نمونه‌ها</button>
+  </div>
+</div>
+<div class="box">
+  <h3>دروازهٔ نسخه</h3>
+  <p>اگر نسخهٔ شیت با اپ یکی نباشد ارسال باید بایستد.</p>
+  <div class="row">
+    <span>اپ</span>
+    <code>v9-meta</code>
+    <span>شیت</span>
+    <select id="verSim">
+      <option>v7-meta</option>
+      <option>v8-meta</option>
+      <option selected>v9-meta</option>
+    </select>
+    <button type="button" id="verGo">شبیه‌سازی ارسال</button>
+  </div>
+  <p id="verOut" class="muted">هنوز نزدی</p>
+</div>
+<div class="box">
+  <h3>یادداشت شخصی این کارگاه</h3>
+  <textarea id="mynote" class="note" placeholder="هر چیزی که خودت کشف کردی اینجا بگذار. در همین مرورگر می‌ماند."></textarea>
+</div>
+
+<h2 id="quiz">آزمون ده سوالی — اگر هشت تا درست بود کارگاه ته نشست</h2>
+<div class="box" id="quizBox"></div>
+<p>نمره: <b id="score">—</b></p>
+<button type="button" class="good" id="grade">نمره‌دهی</button>
+
+<h2 id="keys">میانبر، پارامتر، واژه</h2>
+<pre> /     جستجو
+ j k   فصل بعد و قبل
+ n     فصل انجام‌شده
+ f     حالت تمرکز
+ + -   درشتی متن
+</pre>
+<table>
+<thead><tr><th>واژه</th><th>یعنی چه در این پروژه</th></tr></thead>
+<tbody>
+<tr><td>پیش‌نویس</td><td>روی صفحه هست، هنوز ایندکس‌دی‌بی و شیت خبر ندارند</td></tr>
+<tr><td>صف</td><td>ردیف با پرچم ارسال‌نشده</td></tr>
+<tr><td>ثبت دسته</td><td>یک نوشتن برای همهٔ همان گروه</td></tr>
+<tr><td>شبکه‌اول</td><td>کارگر اول اینترنت را می‌پرسد، کش فقط پشتیبان است</td></tr>
+<tr><td>مداد</td><td>نسخهٔ جدید روی همان نشانی اجرا، نه استقرار تازه</td></tr>
+<tr><td>کاتالوگ قانون</td><td>نام‌های قبلی در حافظهٔ محلی برای فردا</td></tr>
+</tbody>
+</table>
+<p>پارامترهایی که اگر عوض شوند کل سیستم را حس می‌کنی:</p>
+<pre>APP_VERSION
+SCRIPT_VERSION
+CACHE
+app.js?v=
+TAKHIR_OK = 1.5
+dl_tab
+dl_law_catalog
+</pre>
+
 <h2 id="end">چک‌لیست پایان — وقتی این‌ها سبز است کارگاه تمام است</h2>
 <div class="chk"><label><input type="checkbox"/> برنامه روی منوی شروع ویندوز است</label></div>
 <div class="chk"><label><input type="checkbox"/> از منوی شروع باز می‌شود نه فقط از تب</label></div>
-<div class="chk"><label><input type="checkbox"/> لینک اجرای گوگل نسخهٔ هشت را نشان می‌دهد</label></div>
+<div class="chk"><label><input type="checkbox"/> لینک اجرای گوگل نسخهٔ نه را نشان می‌دهد</label></div>
 <div class="chk"><label><input type="checkbox"/> انتخاب همه صف را زیاد نمی‌کند</label></div>
 <div class="chk"><label><input type="checkbox"/> ثبت ته دسته یک متا به صف می‌برد</label></div>
 <div class="chk"><label><input type="checkbox"/> آفلاین می‌نویسم، آنلاین می‌رود</label></div>
@@ -645,27 +769,206 @@ git push origin HEAD
 <p class="muted">پایان کارگاه. این پرونده کنار خود اپ است. هر وقت شک کردی از فصل دیباگ شروع کن نه از بازنویسی همه‌چیز.</p>
 </main>
 </div>
+<div class="toast" id="toast"></div>
 <script>
 (function(){
+  const K = 'dl_workshop_v2';
+  const st = JSON.parse(localStorage.getItem(K) || '{}');
+  st.done = st.done || {};
+  st.times = st.times || {};
+  st.checks = st.checks || {};
+  st.note = st.note || '';
+  st.fs = st.fs || 16;
+  const save = () => localStorage.setItem(K, JSON.stringify(st));
+  const toast = m => {
+    const t = document.getElementById('toast');
+    t.textContent = m; t.className = 'toast show';
+    clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 1600);
+  };
+
+  document.documentElement.style.setProperty('--fs', st.fs + 'px');
+  const note = document.getElementById('mynote');
+  if (note) { note.value = st.note; note.oninput = () => { st.note = note.value; save(); }; }
+
+  document.querySelectorAll('pre').forEach(p => {
+    const w = document.createElement('div');
+    w.className = 'prewrap';
+    p.parentNode.insertBefore(w, p);
+    w.appendChild(p);
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'copy'; b.textContent = 'copy';
+    b.onclick = () => navigator.clipboard.writeText(p.textContent).then(() => toast('کپی شد'));
+    w.appendChild(b);
+  });
+
+  const heads = [...document.querySelectorAll('main h2')];
+  heads.forEach(h => {
+    const id = h.id || h.textContent;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = st.done[id] ? 'انجام شد' : 'فصل را تمام کردم';
+    if (st.done[id]) b.className = 'good';
+    b.onclick = () => {
+      st.done[id] = !st.done[id];
+      b.textContent = st.done[id] ? 'انجام شد' : 'فصل را تمام کردم';
+      b.className = st.done[id] ? 'good' : '';
+      save(); paintNav();
+    };
+    h.after(b);
+  });
+
+  document.querySelectorAll('.chk input').forEach((inp, i) => {
+    inp.checked = !!st.checks[i];
+    inp.onchange = () => { st.checks[i] = inp.checked; save(); };
+  });
+
+  function paintNav() {
+    const as = document.querySelectorAll('nav a');
+    as.forEach(a => {
+      const id = (a.getAttribute('href') || '').slice(1);
+      a.classList.toggle('done', !!st.done[id]);
+    });
+    const n = heads.length || 1;
+    const d = heads.filter(h => st.done[h.id]).length;
+    const pct = Math.round(d * 100 / n);
+    document.getElementById('pct').textContent = pct + '٪';
+    document.getElementById('bar').style.width = pct + '%';
+  }
+  paintNav();
+
   const el = document.getElementById('clk');
-  const go = document.getElementById('go');
-  const stop = document.getElementById('stop');
-  const rst = document.getElementById('rst');
-  let t0 = 0, acc = 0, h = null;
+  let t0 = 0, acc = Number(st.acc || 0), htm = null;
   const pad = n => String(n).padStart(2,'0');
   const draw = () => {
-    const s = Math.floor(((h ? Date.now() - t0 : 0) + acc) / 1000);
+    const s = Math.floor(((htm ? Date.now() - t0 : 0) + acc) / 1000);
     el.textContent = pad(Math.floor(s/60)) + ':' + pad(s%60);
   };
-  go.onclick = () => { if (h) return; t0 = Date.now(); h = setInterval(draw, 250); };
-  stop.onclick = () => { if (!h) return; acc += Date.now() - t0; clearInterval(h); h = null; draw(); };
-  rst.onclick = () => { acc = 0; t0 = Date.now(); if (!h) el.textContent = '00:00'; else draw(); };
-  document.querySelectorAll('nav a').forEach(a => {
-    a.addEventListener('click', () => {
-      document.querySelectorAll('nav a').forEach(x => x.classList.remove('on'));
-      a.classList.add('on');
+  draw();
+  document.getElementById('go').onclick = () => { if (htm) return; t0 = Date.now(); htm = setInterval(draw, 250); };
+  document.getElementById('stop').onclick = () => {
+    if (!htm) return; acc += Date.now() - t0; st.acc = acc; save();
+    clearInterval(htm); htm = null; draw();
+  };
+  document.getElementById('rst').onclick = () => { acc = 0; st.acc = 0; save(); t0 = Date.now(); if (!htm) el.textContent = '00:00'; else draw(); };
+
+  document.getElementById('fsA').onclick = () => { st.fs = Math.min(22, st.fs + 1); document.documentElement.style.setProperty('--fs', st.fs + 'px'); save(); };
+  document.getElementById('fsB').onclick = () => { st.fs = Math.max(13, st.fs - 1); document.documentElement.style.setProperty('--fs', st.fs + 'px'); save(); };
+  document.getElementById('focus').onclick = () => document.body.classList.toggle('focus');
+  document.getElementById('exp').onclick = () => {
+    const blob = new Blob([JSON.stringify(st, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'workshop-progress.json'; a.click();
+  };
+
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const s = q.value.trim();
+    document.querySelectorAll('main mark.hit').forEach(m => m.replaceWith(m.textContent));
+    if (!s) { document.querySelectorAll('main h2, main p, main li').forEach(n => n.closest('h2,p,li,div') && (n.style.opacity = '')); return; }
+    const rx = new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    document.querySelectorAll('main p, main li, main h2, main h3').forEach(n => {
+      if (n.querySelector('pre')) return;
+      const t = n.textContent;
+      n.style.opacity = t.indexOf(s) >= 0 || t.toLowerCase().indexOf(s.toLowerCase()) >= 0 ? '1' : '.35';
     });
   });
+
+  const navs = [...document.querySelectorAll('nav a')];
+  navs.forEach(a => a.addEventListener('click', () => {
+    navs.forEach(x => x.classList.remove('on')); a.classList.add('on');
+  }));
+
+  document.addEventListener('keydown', ev => {
+    if (ev.target.matches('input,textarea,select')) {
+      if (ev.key === '/' && ev.target.id !== 'q') return;
+      if (ev.target.id === 'q') return;
+    }
+    if (ev.key === '/' && !ev.target.matches('input,textarea')) { ev.preventDefault(); q.focus(); return; }
+    const ids = heads.map(h => h.id).filter(Boolean);
+    const cur = ids.findIndex(id => {
+      const r = document.getElementById(id).getBoundingClientRect();
+      return r.top >= 40 && r.top < 180;
+    });
+    const i = cur < 0 ? 0 : cur;
+    if (ev.key === 'j') { ev.preventDefault(); location.hash = ids[Math.min(ids.length-1, i+1)]; }
+    if (ev.key === 'k') { ev.preventDefault(); location.hash = ids[Math.max(0, i-1)]; }
+    if (ev.key === 'f' && !ev.ctrlKey) document.body.classList.toggle('focus');
+  });
+
+  const draft = {a:0,b:0,c:0};
+  let queued = 0;
+  const paintF = () => document.querySelectorAll('.flag').forEach(b => b.classList.toggle('on', !!draft[b.dataset.f]));
+  document.querySelectorAll('.flag').forEach(b => b.onclick = () => { draft[b.dataset.f] = draft[b.dataset.f] ? 0 : 1; paintF(); });
+  document.getElementById('all1').onclick = () => { draft.a=draft.b=draft.c=1; paintF(); toast('هنوز صف صفر است'); };
+  document.getElementById('all0').onclick = () => { draft.a=draft.b=draft.c=0; paintF(); };
+  document.getElementById('putf').onclick = () => {
+    queued += 1;
+    document.getElementById('qsim').textContent = String(queued);
+    document.getElementById('qmsg').textContent = 'یک متا به صف رفت با ' + (draft.a+draft.b+draft.c) + ' پرچم روشن';
+    toast('put');
+  };
+
+  let samples = [];
+  const TAKHIR_OK = 1.5;
+  const secs = document.getElementById('secs');
+  [1,1.5,2,3,5].forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = String(v);
+    b.onclick = () => {
+      samples.push(v);
+      const n = samples.length, sum = samples.reduce((a,x)=>a+x,0), avg = sum/n;
+      document.getElementById('tsum').textContent = String(sum);
+      document.getElementById('tn').textContent = String(n);
+      document.getElementById('tavg').textContent = avg.toFixed(2);
+      document.getElementById('tflag').textContent = avg >= TAKHIR_OK ? '۱' : '۰';
+    };
+    secs.appendChild(b);
+  });
+  document.getElementById('treset').onclick = () => {
+    samples = [];
+    document.getElementById('tsum').textContent = '0';
+    document.getElementById('tn').textContent = '0';
+    document.getElementById('tavg').textContent = '—';
+    document.getElementById('tflag').textContent = '0';
+  };
+
+  document.getElementById('verGo').onclick = () => {
+    const got = document.getElementById('verSim').value;
+    const ok = got === 'v9-meta';
+    const o = document.getElementById('verOut');
+    o.textContent = ok ? 'ارسال مجاز' : ('وب‌اپ کهنه است · آمده: ' + got + ' · باید: v9-meta');
+    o.style.color = ok ? '#3ecf8e' : '#f0b429';
+  };
+
+  const qs = [
+    ['کارگر پست همگام‌سازی را باید بقاپد؟', ['بله','خیر، فقط گت همان مبدأ'], 1],
+    ['انتخاب همه باید همان لحظه به صف برود؟', ['بله','خیر، فقط پیش‌نویس تا ثبت ته دسته'], 1],
+    ['کد اسکریپت را کجا می‌گذاری؟', ['مدیریت استقرار','ویرایشگر، بعد مداد همان نشانی'], 1],
+    ['شناسهٔ متای یک روز چیست؟', ['تصادفی','meta- به‌علاوه تاریخ شمسی'], 1],
+    ['نوع محتوا برای پست گوگل؟', ['جیسان','متن ساده با بدنهٔ جیسان'], 1],
+    ['اگر میانگین تأخیر زیر آستانه شود؟', ['نادیده','پرچم انجام صفر می‌شود'], 1],
+    ['قانون مهم تازه نیاز به نسخهٔ جدید اپ دارد؟', ['بله','خیر، نام و ساعت را روی قالب خالی می‌گذاری'], 1],
+    ['سه نسخه که باید با هم بالا بروند؟', ['فقط عنوان','اپ، پارامتر اسکریپت، نام کش'], 1],
+    ['تب بعد از خروج کجا ذخیره می‌شود؟', ['شیت','حافظهٔ محلی'], 1],
+    ['استقرار تازه با نشانی جدید یعنی؟', ['درست است','غلط است، همان نشانی با نسخهٔ جدید'], 1]
+  ];
+  const qb = document.getElementById('quizBox');
+  qs.forEach((q, i) => {
+    const d = document.createElement('div');
+    d.className = 'box';
+    d.innerHTML = '<p><b>' + (i+1) + '. ' + q[0] + '</b></p>' +
+      q[1].map((opt, j) => '<label class="chk"><input type="radio" name="q'+i+'" value="'+j+'"/> '+opt+'</label>').join('');
+    qb.appendChild(d);
+  });
+  document.getElementById('grade').onclick = () => {
+    let n = 0;
+    qs.forEach((q, i) => {
+      const hit = document.querySelector('input[name="q'+i+'"]:checked');
+      if (hit && Number(hit.value) === q[2]) n++;
+    });
+    document.getElementById('score').textContent = n + ' از ۱۰' + (n >= 8 ? ' — کارگاه ته نشست' : ' — فصل دیباگ را دوباره بزن');
+    toast(n + ' / 10');
+  };
 })();
 </script>
 </body>
