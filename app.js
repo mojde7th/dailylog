@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v49 · meta';
+const APP_VERSION = 'v50 · meta';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -937,7 +937,6 @@ function mountLawsPanel(wrap) {
     `<div id="lawDur"></div>` +
     `<div class="mall">` +
       `<button type="button" id="lawAdd">add be pishnevis</button>` +
-      `<button type="button" class="putg" id="lawNow">add be in ruz</button>` +
     `</div>` +
     `<div class="lawlist" id="lawSaved"></div>` +
     `<div class="lawlist" id="lawList"></div>`;
@@ -957,17 +956,6 @@ function mountLawsPanel(wrap) {
     if (mW.lawDur) mW.lawDur.reset();
     vibrate(8);
     toast(row.name + ' pishnevis');
-  });
-  $('lawNow').addEventListener('click', async () => {
-    const row = lawFormRow();
-    if (!row) { toast('nam khali ast', true); return; }
-    const items = mergeLawRows(parseLaws(lastMetaRec), [row]);
-    await saveDayLaws(items);
-    $('lawName').value = '';
-    $('lawDesc').value = '';
-    if (mW.lawDur) mW.lawDur.reset();
-    vibrate(25);
-    toast(row.name + ' ruz');
   });
   paintLawCatalog();
   paintSavedLaws();
@@ -1032,7 +1020,11 @@ async function putGroup(gid) {
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
   if (gid === 'laws') {
-    const items = mergeLawRows(parseLaws(rec), lawDraft);
+    const extra = lawDraft.slice();
+    const form = lawFormRow();
+    if (form) extra.push(form);
+    if (!extra.length) { toast('nam khali ast', true); return; }
+    const items = mergeLawRows(parseLaws(rec), extra);
     rec.lawsJson = JSON.stringify(items);
     rec.lawsMin = items.reduce((s, x) => s + (Number(x.min) || 0), 0);
     items.forEach(x => lawCatalogSave(x.name, x.desc));
@@ -1043,11 +1035,15 @@ async function putGroup(gid) {
     rec.createdAt = rec.createdAt || new Date().toISOString();
     await put('meta', rec);
     lastMetaRec = rec;
-    const n = lawDraft.length;
     lawDraft = [];
+    if ($('lawName')) $('lawName').value = '';
+    if ($('lawDesc')) $('lawDesc').value = '';
+    if (mW.lawDur) mW.lawDur.reset();
     vibrate(25);
-    toast('laws put n=' + n);
+    toast('laws put n=' + items.length);
     await paintMetaStatus();
+    await refreshData();
+    paintDashboard();
     updateQueueBadge();
     trySync();
     return;
@@ -1702,30 +1698,62 @@ function svgBars(rows) {
   rows = (rows || []).filter(r => r && r.lab);
   if (!rows.length) return '';
   const max = Math.max(1, ...rows.map(r => Number(r.n) || 0));
-  const w = 360, barH = 18, gap = 8, labW = 108, pad = 8;
+  const w = 360, barH = 16, gap = 7, labW = 118, pad = 8;
+  const track = w - labW - pad * 2 - 52;
   const h = pad * 2 + rows.length * (barH + gap) - gap;
   let y = pad;
   const parts = rows.map(r => {
     const n = Number(r.n) || 0;
-    const bw = Math.max(n ? 4 : 0, Math.round((w - labW - pad * 2) * n / max));
-    const line = `<text x="${pad}" y="${y + 13}" fill="#93a4b8" font-size="10" font-family="Consolas,monospace">${esc(r.lab)}</text>` +
-      `<rect x="${labW}" y="${y}" width="${bw}" height="${barH}" rx="4" fill="${r.fill || '#3a6288'}"/>` +
-      `<text x="${labW + bw + 6}" y="${y + 13}" fill="#c8f0d8" font-size="10" font-family="Consolas,monospace">${esc(r.val || fmtChunk(n))}</text>`;
+    const bw = Math.round(track * n / max);
+    const val = esc(r.val || (r.unit === 'n' ? String(n) : fmtChunk(n)));
+    const line =
+      `<rect x="${labW}" y="${y}" width="${track}" height="${barH}" rx="4" fill="#121820"/>` +
+      `<text x="${pad}" y="${y + 12}" fill="#93a4b8" font-size="10" font-family="Consolas,monospace">${esc(r.lab)}</text>` +
+      (bw ? `<rect x="${labW}" y="${y}" width="${Math.max(4, bw)}" height="${barH}" rx="4" fill="${r.fill || '#3a6288'}"/>` : '') +
+      `<text x="${labW + track + 6}" y="${y + 12}" fill="#c8f0d8" font-size="10" font-family="Consolas,monospace">${val}</text>`;
     y += barH + gap;
     return line;
   }).join('');
   return `<svg viewBox="0 0 ${w} ${h}" role="img">${parts}</svg>`;
 }
+function flagScore(rec, gid) {
+  const items = META_ITEMS.filter(it => it.group === gid && it.kind === 'flag');
+  const ok = items.filter(it => flagOn(rec, it.id)).length;
+  return { ok, n: items.length };
+}
 function paintDayChart(el, rec, work) {
   if (!el) return;
   work = work || { sessionMin: 0 };
-  const bars = [{ lab: 'daftar', n: work.sessionMin || 0, fill: '#3a6288' }];
+  const laws = parseLaws(rec);
+  const lawMin = laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
+  const flags = META_ITEMS.filter(it => it.kind === 'flag');
+  const flagOk = flags.filter(it => flagOn(rec, it.id)).length;
+  const bars = [
+    { lab: 'daftar', n: work.sessionMin || 0, fill: '#3a6288' }
+  ];
   META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => {
     bars.push({ lab: tileTitle(it), n: Number(rec && rec[META_STORE[it.id]]) || 0, fill: '#6a4a8a' });
   });
   const avg = rec && Number(rec.takhirN) ? Number(rec.takhirAvg) : 0;
-  if (avg) bars.push({ lab: 'takhir', n: avg, val: avg.toFixed(2) + 's', fill: '#7a5a18' });
-  el.innerHTML = svgBars(bars);
+  bars.push({ lab: 'takhir', n: avg || 0, val: rec && Number(rec.takhirN) ? avg.toFixed(2) + 's' : '—', fill: '#7a5a18' });
+  bars.push({ lab: 'ghanoonMohem', n: laws.length, val: String(laws.length) + (lawMin ? ' · ' + fmtChunk(lawMin) : ''), fill: '#c9a0ff', unit: 'n' });
+  bars.push({ lab: 'flags', n: flagOk, val: flagOk + '/' + flags.length, fill: '#3ecf8e', unit: 'n' });
+  META_GROUPS.filter(g => g.id !== 'laws').forEach(g => {
+    const s = flagScore(rec, g.id);
+    if (!s.n) return;
+    bars.push({ lab: g.id, n: s.ok, val: s.ok + '/' + s.n, fill: '#7a5428', unit: 'n' });
+  });
+  const chips = flags.map(it => {
+    const on = flagOn(rec, it.id);
+    return '<span class="chip ' + (on ? 'ok' : 'miss') + '">' + esc(it.label) + ' ' + (on ? '1' : '0') + '</span>';
+  }).join('');
+  const lawChips = laws.length
+    ? laws.map(x => '<span class="chip ok">' + esc(x.name) + (x.min ? ' ' + esc(fmtChunk(x.min)) : '') + '</span>').join('')
+    : '';
+  el.innerHTML =
+    svgBars(bars) +
+    '<div class="flagchips dayflags">' + chips + '</div>' +
+    (lawChips ? '<div class="flagchips daylaws">' + lawChips + '</div>' : '');
 }
 async function resetMetaItem(id) {
   const day = selectedMetaDay();
@@ -1757,17 +1785,22 @@ function daysAgoJ(n) {
   d.setDate(d.getDate() - n);
   return fmtJ(...toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate()));
 }
-let dashDays = 14;
+function dashSpan() {
+  const [ty, tm, td] = todayJ();
+  const to = fmtJ(ty, tm, td);
+  if (dashDays === 'fasl') return { from: fmtJ(ty, 5, 31), to: fmtJ(ty, 6, 31) };
+  const n = Math.max(1, Number(dashDays) || 7);
+  return { from: daysAgoJ(n - 1), to };
+}
+let dashDays = 7;
 async function paintDashboard() {
   const hostS = $('dashStat');
   const hostB = $('dashBars');
   const hostM = $('dashMeta');
+  const hostF = $('dashFlags');
   if (!hostS) return;
-  const [ty, tm, td] = todayJ();
-  const to = fmtJ(ty, tm, td);
-  let from;
-  if (dashDays === 'mah') from = ty + '/' + pad2(tm) + '/01';
-  else from = daysAgoJ(Number(dashDays) || 14);
+  const span = dashSpan();
+  const from = span.from, to = span.to;
   const sess = (await getAll('sessions')).filter(r => r.dateShamsi >= from && r.dateShamsi <= to);
   const meta = (await getAll('meta')).filter(r => r.dateShamsi >= from && r.dateShamsi <= to);
   const byDay = {};
@@ -1781,33 +1814,65 @@ async function paintDashboard() {
   Object.keys(byDay).forEach(d => { daftar += byDay[d].daftar; });
   const durSum = {};
   META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => { durSum[it.id] = 0; });
-  let lawN = 0;
+  const flagItems = META_ITEMS.filter(it => it.kind === 'flag');
+  const flagSum = {};
+  flagItems.forEach(it => { flagSum[it.id] = 0; });
+  let lawN = 0, lawMin = 0, takhirW = 0, takhirN = 0;
   meta.forEach(r => {
     META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => {
       durSum[it.id] += Number(r[META_STORE[it.id]]) || 0;
     });
-    lawN += parseLaws(r).length;
+    flagItems.forEach(it => { if (flagOn(r, it.id)) flagSum[it.id]++; });
+    const laws = parseLaws(r);
+    lawN += laws.length;
+    lawMin += laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
+    const tn = Number(r.takhirN) || 0;
+    if (tn) { takhirW += (Number(r.takhirAvg) || 0) * tn; takhirN += tn; }
   });
+  const dayN = meta.length || Object.keys(byDay).length || 1;
   hostS.innerHTML =
     `<span>از <b class="ltr">${from}</b></span>` +
     `<span>تا <b class="ltr">${to}</b></span>` +
     `<span>دفتر <b>${fmtChunk(daftar)}</b></span>` +
     `<span>خط <b>${sess.length}</b></span>` +
-    `<span>قانون <b>${lawN}</b></span>`;
+    `<span>قانون <b>${lawN}</b></span>` +
+    `<span>پرچم <b>${flagItems.reduce((s, it) => s + flagSum[it.id], 0)}</b></span>`;
   const dayKeys = Object.keys(byDay).sort();
   hostB.innerHTML = svgBars(dayKeys.map(d => ({
     lab: d.slice(5), n: byDay[d].daftar, fill: '#3a6288'
   })));
-  hostM.innerHTML = svgBars(META_ITEMS.filter(it => it.kind === 'accumDur').map(it => ({
+  const metaBars = META_ITEMS.filter(it => it.kind === 'accumDur').map(it => ({
     lab: tileTitle(it), n: durSum[it.id] || 0, fill: '#6a4a8a'
-  })));
+  }));
+  metaBars.push({ lab: 'ghanoonMohem', n: lawN, val: String(lawN) + (lawMin ? ' · ' + fmtChunk(lawMin) : ''), fill: '#c9a0ff', unit: 'n' });
+  metaBars.push({ lab: 'takhir', n: takhirN ? takhirW / takhirN : 0, val: takhirN ? (takhirW / takhirN).toFixed(2) + 's' : '—', fill: '#7a5a18' });
+  hostM.innerHTML = svgBars(metaBars);
+  if (hostF) {
+    const fb = flagItems.map(it => ({
+      lab: it.id.length > 18 ? it.id.slice(0, 16) + '…' : it.id,
+      n: flagSum[it.id] || 0,
+      val: (flagSum[it.id] || 0) + '/' + dayN,
+      fill: '#3ecf8e',
+      unit: 'n'
+    }));
+    META_GROUPS.filter(g => g.id !== 'laws').forEach(g => {
+      const items = flagItems.filter(it => it.group === g.id);
+      if (!items.length) return;
+      const ok = items.reduce((s, it) => s + (flagSum[it.id] || 0), 0);
+      fb.unshift({ lab: g.id, n: ok, val: ok + '/' + (items.length * dayN), fill: '#7a5428', unit: 'n' });
+    });
+    hostF.innerHTML = svgBars(fb);
+  }
 }
 
+function dirOf(s) {
+  return /[\u0600-\u06FF]/.test(String(s || '')) ? 'rtl' : 'ltr';
+}
 function sumTile(title, value, note, tone, off) {
   return '<div class="sumtile ' + tone + (off ? ' off' : '') + '">' +
-    '<span>' + esc(title) + '</span>' +
-    '<b>' + esc(value) + '</b>' +
-    (note ? '<small>' + esc(note) + '</small>' : '') +
+    '<span class="tilab ' + dirOf(title) + '">' + esc(title) + '</span>' +
+    '<b class="tival ltr">' + esc(value) + '</b>' +
+    (note ? '<small class="tinote ' + dirOf(note) + '">' + esc(note) + '</small>' : '') +
   '</div>';
 }
 function paintSummary(el, rec, work) {
@@ -2061,7 +2126,7 @@ async function boot() {
   if ($('tabDash')) $('tabDash').addEventListener('click', () => showTab('dash'));
   if ($('dashRange')) {
     $('dashRange').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      dashDays = b.dataset.d === 'mah' ? 'mah' : Number(b.dataset.d);
+      dashDays = b.dataset.d === 'fasl' ? 'fasl' : Number(b.dataset.d);
       $('dashRange').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
       paintDashboard();
     }));
