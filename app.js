@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v53 · dash';
+const APP_VERSION = 'v54 · bidi';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1111,7 +1111,7 @@ function buildParts() {
   activePart = partFromClock();
   const host = $('sParts');
   host.innerHTML = PARTS.map(p =>
-    `<button type="button" data-p="${p.id}" class="p${p.id}">${p.label}</button>`).join('');
+    `<button type="button" data-p="${p.id}" class="p${p.id} ${dirOf(p.label)}">${p.label}</button>`).join('');
   const paint = () => host.querySelectorAll('button').forEach(b =>
     b.classList.toggle('on', Number(b.dataset.p) === activePart));
   host.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
@@ -1335,7 +1335,7 @@ async function paintNotebook() {
   PARTS.forEach(p => {
     const here = rows.filter(r => Number(r.partId) === p.id || r.part === p.label);
     if (!here.length) return;
-    html += '<div class="nbpart p' + p.id + '"><div class="partline">' + esc(p.label) + '</div>';
+    html += '<div class="nbpart p' + p.id + '"><div class="partline ' + dirOf(p.label) + '">' + esc(p.label) + '</div>';
     const order = [];
     const bag = {};
     here.forEach(r => {
@@ -1704,9 +1704,9 @@ function svgBars(rows) {
     const val = esc(r.val || (r.unit === 'n' ? String(n) : fmtChunk(n)));
     const fill = r.fill || '#3a6288';
     return '<div class="hbar">' +
-      '<span class="hbar-lab ltr" title="' + esc(r.lab) + '">' + esc(r.lab) + '</span>' +
+      '<span class="hbar-lab ' + dirOf(r.lab) + '" title="' + esc(r.lab) + '">' + esc(r.lab) + '</span>' +
       '<span class="hbar-track"><i style="width:' + pct + '%;background:' + fill + '"></i></span>' +
-      '<span class="hbar-val ltr">' + val + '</span>' +
+      '<span class="hbar-val">' + val + '</span>' +
       '</div>';
   }).join('') + '</div>';
 }
@@ -1739,10 +1739,10 @@ function paintDayChart(el, rec, work) {
   });
   const chips = flags.map(it => {
     const on = flagOn(rec, it.id);
-    return '<span class="chip ' + (on ? 'ok' : 'miss') + '">' + esc(it.label) + ' ' + (on ? '1' : '0') + '</span>';
+    return '<span class="chip ' + dirOf(it.label) + ' ' + (on ? 'ok' : 'miss') + '">' + esc(it.label) + ' ' + (on ? '1' : '0') + '</span>';
   }).join('');
   const lawChips = laws.length
-    ? laws.map(x => '<span class="chip ok">' + esc(x.name) + (x.min ? ' ' + esc(fmtChunk(x.min)) : '') + '</span>').join('')
+    ? laws.map(x => '<span class="chip ' + dirOf(x.name) + ' ok">' + esc(x.name) + (x.min ? ' ' + esc(fmtChunk(x.min)) : '') + '</span>').join('')
     : '';
   el.innerHTML =
     svgBars(bars) +
@@ -1940,12 +1940,17 @@ async function paintDashboard() {
 }
 
 function dirOf(s) {
-  return /[\u0600-\u06FF]/.test(String(s || '')) ? 'rtl' : 'ltr';
+  const t = String(s || '');
+  if (!/[\u0600-\u06FF]/.test(t)) return 'ltr';
+  if (/[0-9\u06F0-\u06F9]/.test(t) && t.indexOf('تا') !== -1) return 'ltr';
+  return 'rtl';
 }
 function sumTile(title, value, note, tone, off) {
   return '<div class="sumtile ' + tone + (off ? ' off' : '') + '">' +
-    '<span class="tilab ' + dirOf(title) + '">' + esc(title) + '</span>' +
-    '<b class="tival ltr">' + esc(value) + '</b>' +
+    '<div class="tirow">' +
+      '<span class="tilab ' + dirOf(title) + '">' + esc(title) + '</span>' +
+      '<b class="tival">' + esc(value) + '</b>' +
+    '</div>' +
     (note ? '<small class="tinote ' + dirOf(note) + '">' + esc(note) + '</small>' : '') +
   '</div>';
 }
@@ -1983,11 +1988,11 @@ function paintSummary(el, rec, work) {
         const items = views.filter(v => v.group === g.id);
         const gok = items.filter(v => v.state === 'ok').length;
         let chips = items.map(v =>
-          '<span class="chip ' + v.state + '">' + esc(v.label) + (v.val ? ' ' + v.val : '') + '</span>'
+          '<span class="chip ' + dirOf(v.label) + ' ' + v.state + '">' + esc(v.label) + (v.val ? ' ' + v.val : '') + '</span>'
         ).join('');
         if (g.id === 'laws') {
           chips = laws.length
-            ? laws.map(x => '<span class="chip ok">' + esc(x.name) + (x.desc ? ' — ' + esc(x.desc) : '') + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
+            ? laws.map(x => '<span class="chip ' + dirOf(x.name) + ' ok">' + esc(x.name) + (x.desc ? ' — ' + esc(x.desc) : '') + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
             : '<span class="chip miss">0</span>';
         }
         return '<article class="sumcard tone-' + esc(g.id) + '">' +
@@ -2078,7 +2083,7 @@ async function refreshData() {
       }).join('') + '</div>';
     } else if (r.store === 'sessions') {
       body = '<div class="logline">' +
-        (r.part ? '<span class="logpart">' + esc(r.part) + '</span>' : '') +
+        (r.part ? '<span class="logpart ' + dirOf(r.part) + '">' + esc(r.part) + '</span>' : '') +
         (r.code ? '<span class="logcode">' + esc(r.code) + '</span>' : '') +
         (r.val ? '<span class="logdur">' + esc(r.val) + '</span>' : '') +
       '</div>';
