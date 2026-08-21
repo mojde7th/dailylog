@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v40 · meta';
+const APP_VERSION = 'v41 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -20,9 +20,8 @@ const PARTS = [
 ];
 
 const QUALITY_TAGS = [
-  'bighar','zajr','dard','fesharshad','karesakht','flowshadid',
-  'tamrkzshadid','amighshadid','thinkshadid','withinshadi',
-  'sakhte','fesharziad','khastegishadid','shadid'
+  'bigharrshadid','zajrshadid','dardshadid','fesharshadi','karesakht',
+  'flowshadid','tamarkozshaid','amighshadid','withthinkshadid'
 ];
 
 const CODES = [
@@ -119,7 +118,7 @@ const META_ITEMS = [
   { id:'ghanoon', group:'andaze', kind:'accumDur',
     label:'ghanoonfarayeman' },
   { id:'layers', group:'andaze', kind:'accumDur',
-    label:'bighar,zajr,dard,fesharshad,karesakht,flowshadid,sakhte' },
+    label:'bigharrshadid,zajrshadid,dardshadid,fesharshadi,karesakht,flowshadid,tamarkozshaid,amighshadid,withthinkshadid' },
   { id:'takhirAvg', group:'andaze', kind:'avgSec',
     label:'takhirinputoutput3thout>=1.5s' }
 ];
@@ -1493,66 +1492,82 @@ function metaItemView(rec, it) {
   return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '', min: 0 };
 }
 async function sessionWork(day) {
-  if (!day) return { sessionMin: 0, sessionN: 0 };
+  const byPart = PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 }));
+  const out = { sessionMin: 0, sessionN: 0, byPart, byCat: [] };
+  if (!day) return out;
   const rows = (await getAll('sessions')).filter(r => r.dateShamsi === day);
-  let sessionMin = 0;
-  rows.forEach(r => { sessionMin += Number(r.minutes) || 0; });
-  return { sessionMin, sessionN: rows.length };
+  const catMap = {};
+  rows.forEach(r => {
+    const mi = Number(r.minutes) || 0;
+    out.sessionMin += mi;
+    const pid = Number(r.partId);
+    if (byPart[pid]) {
+      byPart[pid].min += mi;
+      byPart[pid].n++;
+    }
+    const cat = r.category || '—';
+    if (!catMap[cat]) catMap[cat] = { cat, min: 0, n: 0 };
+    catMap[cat].min += mi;
+    catMap[cat].n++;
+  });
+  out.sessionN = rows.length;
+  out.byCat = Object.keys(catMap).map(k => catMap[k]).sort((a, b) => b.min - a.min);
+  return out;
 }
-function sumLineHtml(v) {
-  const val = v.val ? '<span class="sumval">' + esc(v.val) + '</span>' : '';
-  return '<div class="sumline ' + v.state + '"><span class="sumname">' + esc(v.label) + '</span>' + val + '</div>';
+function sumTile(title, value, note, tone, off) {
+  return '<div class="sumtile ' + tone + (off ? ' off' : '') + '">' +
+    '<span>' + esc(title) + '</span>' +
+    '<b>' + esc(value) + '</b>' +
+    (note ? '<small>' + esc(note) + '</small>' : '') +
+  '</div>';
 }
 function paintSummary(el, rec, work) {
   if (!el) return;
   el.classList.add('sumdash');
-  work = work || { sessionMin: 0, sessionN: 0 };
+  work = work || { sessionMin: 0, sessionN: 0, byPart: PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 })), byCat: [] };
   const views = META_ITEMS.map(it => metaItemView(rec, it));
   const laws = rec ? parseLaws(rec) : [];
+  const durs = views.filter(v => v.kind === 'accumDur');
+  const lawMin = laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
   const okN = views.filter(v => v.state === 'ok').length;
-  const missN = views.filter(v => v.state === 'miss').length;
-  const draftN = views.filter(v => v.state === 'draft').length;
-  let metaMin = laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
-  views.forEach(v => { metaMin += v.min || 0; });
-  const totalMin = (work.sessionMin || 0) + metaMin;
   const pct = views.length ? Math.round(100 * okN / views.length) : 0;
+  const parts = (work.byPart || PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 })));
   el.innerHTML =
-    '<div class="sumhero">' +
-      '<div class="sumstat"><span>جمع کار</span><b>' + esc(fmtChunk(totalMin)) + '</b>' +
-        '<small>دفتر ' + esc(fmtChunk(work.sessionMin || 0)) + ' · متا ' + esc(fmtChunk(metaMin)) + '</small></div>' +
-      '<div class="sumstat"><span>دفتر</span><b>' + (work.sessionN || 0) + '</b><small>خط</small></div>' +
-      '<div class="sumstat"><span>متا</span><b>' + okN + '/' + views.length + '</b>' +
-        '<small>' + missN + ' مانده' + (draftN ? (' · ' + draftN + ' پیش‌نویس') : '') + '</small></div>' +
-      '<div class="sumstat"><span>پیشرفت</span><b>' + pct + '%</b>' +
-        '<div class="sumbar"><i style="width:' + pct + '%"></i></div></div>' +
+    '<div class="sumhero work">' +
+      sumTile('دفتر', fmtChunk(work.sessionMin || 0), (work.sessionN || 0) + ' خط · ' + pct + '% متا', 'tone-nb', !(work.sessionMin)) +
+      parts.map(p => sumTile(p.label, fmtChunk(p.min), p.n + ' خط', 'p' + p.id, !p.min)).join('') +
     '</div>' +
-    META_GROUPS.map(g => {
-      const items = views.filter(v => v.group === g.id);
-      const gok = items.filter(v => v.state === 'ok').length;
-      const done = items.filter(v => v.state !== 'miss');
-      const miss = items.filter(v => v.state === 'miss');
-      let body = done.map(sumLineHtml).join('');
-      if (g.id === 'laws') {
-        if (laws.length) {
-          body += laws.map(x =>
-            '<div class="sumline ok"><span class="sumname">' + esc(x.name) + '</span>' +
-            '<span class="sumval">' + esc(fmtChunk(x.min)) + '</span></div>'
-          ).join('');
-        } else {
-          body += '<div class="sumline miss"><span class="sumname">ghanoon nist</span></div>';
+    '<div class="sumhero durs">' +
+      durs.map(v => sumTile(v.id === 'layers' ? 'layers' : v.label, v.val, v.min ? '' : 'خالی', 'tone-' + v.group, !v.min)).join('') +
+      sumTile('ghanoon mohem', fmtChunk(lawMin), laws.length ? (laws.length + ' law') : 'خالی', 'tone-laws', !lawMin) +
+      (function () {
+        const avg = views.find(v => v.kind === 'avgSec');
+        return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok' : 'خالی', 'tone-andaze', avg.state !== 'ok') : '';
+      }()) +
+    '</div>' +
+    ((work.byCat && work.byCat.length)
+      ? ('<div class="sumhero cats">' +
+          work.byCat.map(c => sumTile(c.cat, fmtChunk(c.min), c.n + ' خط', 'cat-' + c.cat, !c.min)).join('') +
+        '</div>')
+      : '') +
+    '<div class="sumflags">' +
+      META_GROUPS.map(g => {
+        const items = views.filter(v => v.group === g.id && v.kind === 'flag');
+        const gok = items.filter(v => v.state === 'ok').length;
+        let chips = items.map(v =>
+          '<span class="chip ' + v.state + '">' + esc(v.label) + '</span>'
+        ).join('');
+        if (g.id === 'laws') {
+          chips = laws.length
+            ? laws.map(x => '<span class="chip ok">' + esc(x.name) + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
+            : '<span class="chip miss">nist</span>';
         }
-      }
-      if (miss.length) {
-        body += '<div class="summisslab">مانده</div><div class="summiss">' +
-          miss.map(v => '<span class="misschip">' + esc(v.label) + '</span>').join('') +
-        '</div>';
-      }
-      const head = g.id === 'laws' ? String(laws.length) : (gok + '/' + items.length);
-      return '<article class="sumcard tone-' + esc(g.id) + '">' +
-        '<h4>' + esc(g.title) + ' <span>' + head + '</span></h4>' +
-        body +
-      '</article>';
-    }).join('');
+        return '<article class="sumcard tone-' + esc(g.id) + '">' +
+          '<h4>' + esc(g.title) + ' <span>' + (g.id === 'laws' ? String(laws.length) : (gok + '/' + items.length)) + '</span></h4>' +
+          '<div class="flagchips">' + chips + '</div>' +
+        '</article>';
+      }).join('') +
+    '</div>';
 }
 function metaSummary(rec) {
   const bits = metaBits(rec);
@@ -1616,7 +1631,7 @@ async function refreshData() {
   }
   const todayMeta = m.find(r => r.dateShamsi === today);
   const hold = document.createElement('div');
-  paintSummary(hold, todayMeta || null, { sessionMin: totalMin, sessionN: rows.length });
+  paintSummary(hold, todayMeta || null, await sessionWork(today));
   html += hold.innerHTML;
   $('todaySum').innerHTML = html;
   const mixed = [];
