@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v30 · meta';
+const APP_VERSION = 'v31 · meta';
 const SCRIPT_VERSION = 'v8-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -22,41 +22,39 @@ const PARTS = [
 const QUALITY_TAGS = [
   'bighar','zajr','dard','fesharshad','karesakht','flowshadid',
   'tamrkzshadid','amighshadid','thinkshadid','withinshadi',
-  'sakhte','fesharziad','khastegishadid','bihavasali','ghalbshad','shadid','narm','motavaset'
+  'sakhte','fesharziad','khastegishadid','shadid'
 ];
 
 const CODES = [
   { cat:'takhsis',  code:'takhkhod', metric:'dur', from:0, def:{h:0,m:30} },
   { cat:'takhsis',  code:'takhshose', metric:'dur', from:0, def:{h:0,m:30} },
-  { cat:'takhsis',  code:'takhmojaz', metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'takhsis',  code:'takhmojmotn', metric:'dur', from:0, def:{h:0,m:40} },
   { cat:'arastegi', code:'arasmoratakhshose', metric:'dur', from:0, def:{h:0,m:30} },
   { cat:'arastegi', code:'arasmor', metric:'dur', from:0, def:{h:0,m:25} },
   { cat:'kar',      code:'itpr', metric:'dur', from:0, def:{h:2,m:40} },
-  { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15} },
-  { cat:'mali',     code:'vam', metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'mali',     code:'sarmayegozari', metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'analiz',   code:'analyseslahibadan', metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15}, stick:true },
+  { cat:'mali',     code:'vam', metric:'dur', from:0, def:{h:0,m:20}, stick:true },
+  { cat:'mali',     code:'sarmayegozari', metric:'dur', from:0, def:{h:0,m:20}, stick:true },
+  { cat:'sobh',     code:'analyseslahibadan', metric:'dur', from:0, def:{h:0,m:40} },
   { cat:'sehat',    code:'drazmayesh,sono,clinici', metric:'dur', from:0, def:{h:2,m:30} },
   { cat:'sobh',     code:'bankhozuri', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'tayinsathzaban', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'ghors', metric:'dur', from:0, def:{h:0,m:5} },
-  { cat:'hafte',    code:'akharehafte(preregistKelastakh,zaban)', metric:'dur', from:0, def:{h:0,m:40} },
   { cat:'rutin',    code:'rout', metric:'dur', from:0, def:{h:0,m:40} },
 
   { cat:'kharid',   code:'kharidzarur(preplan)', metric:'dur', from:1, def:{h:0,m:20} },
   { cat:'sehat',    code:'ab', metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'assessvisa', metric:'dur', from:1, def:{h:0,m:30} },
-  { cat:'edari',    code:'pardpei', metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'edari',    code:'bimebargoz', metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'edari',    code:'malizar', metric:'dur', from:1, def:{h:0,m:25} },
-  { cat:'edari',    code:'peigmajazghanoonie', metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'peigiri', metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'peigirimaj', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'kar',      code:'assessvisaplnb', metric:'dur', from:1, def:{h:0,m:30} },
+  { cat:'edari',    code:'pardakhpei', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
+  { cat:'edari',    code:'bimebargoz', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
+  { cat:'edari',    code:'malizar', metric:'dur', from:1, def:{h:0,m:25}, stick:true },
+  { cat:'edari',    code:'peigirimajazighanoon', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
   { cat:'kar',      code:'kartakh2', metric:'dur', from:1, def:{h:0,m:40} },
 
-  { cat:'ravan',    code:'moshv', metric:'dur', from:2, def:{h:0,m:45} },
-  { cat:'ravan',    code:'kargahravanp', metric:'dur', from:2, def:{h:1,m:0} },
-  { cat:'ravan',    code:'ravanpp', metric:'dur', from:2, def:{h:0,m:45} },
+  { cat:'hafte',    code:'akharehafte(preregistKelastakh,zaban)', metric:'dur', from:2, def:{h:0,m:40} },
+  { cat:'ravan',    code:'moshv', metric:'dur', from:2, def:{h:0,m:45}, stick:true },
+  { cat:'ravan',    code:'kargahravanp', metric:'dur', from:2, def:{h:1,m:0}, stick:true },
+  { cat:'ravan',    code:'ravanpp', metric:'dur', from:2, def:{h:0,m:45}, stick:true },
   { cat:'div',      code:'div(forushzaruri,didnmelkpreplan)', metric:'dur', from:2, def:{h:0,m:25} },
   { cat:'varzesh',  code:'rah', metric:'dur', from:2, def:{h:0,m:30} },
   { cat:'varzesh',  code:'do', metric:'dur', from:2, def:{h:0,m:30} },
@@ -66,9 +64,9 @@ const CODES = [
   { cat:'sehat',    code:'mokamel', metric:'reps', from:2, def:{r:1,pr:5} },
 
   { cat:'sabtnam',  code:'sabtnam(tur,kargahravn,kelstakh,zaban,bashgahengh,hamneshin)', metric:'dur', from:3, def:{h:0,m:15} },
-  { cat:'aff',      code:'afflog', metric:'dur', from:3, def:{h:0,m:10} },
-  { cat:'aff',      code:'affplan', metric:'dur', from:3, def:{h:0,m:20} },
-  { cat:'aff',      code:'affevenlog', metric:'dur', from:3, def:{h:0,m:15} },
+  { cat:'aff',      code:'afflog', metric:'dur', from:3, def:{h:0,m:10}, stick:true },
+  { cat:'aff',      code:'affplan', metric:'dur', from:3, def:{h:0,m:20}, stick:true },
+  { cat:'aff',      code:'affevenlog', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
   { cat:'sehat',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
   { cat:'yadgiri',  code:'reswch', metric:'dur', from:3, def:{h:1,m:50} },
   { cat:'sehat',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
@@ -78,16 +76,9 @@ const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category
                         'minutes','hm','chunk','tags','reactSec','count','reps','perRep','kind','note'];
 
 const META_GROUPS = [
-  { id:'openfa',  title:'openfa / fasting' },
-  { id:'opfa1',   title:'opfa1' },
-  { id:'opfa2',   title:'opfa2 / after open' },
-  { id:'takhsis', title:'takhsis' },
-  { id:'mojaz',   title:'mojaz' },
-  { id:'raayat',  title:'raayat' },
-  { id:'no',      title:'no' },
-  { id:'qabl12',  title:'qabl 12pm' },
-  { id:'flow',    title:'flow' },
-  { id:'rule',    title:'ghanoon / layers / takhir', hr:true }
+  { id:'openfa', title:'openfa' },
+  { id:'raayat', title:'raayat / mojaz / no' },
+  { id:'andaze', title:'andaze / ghanoon', hr:true }
 ];
 
 const META_ITEMS = [
@@ -99,54 +90,47 @@ const META_ITEMS = [
     label:'saatbidari<=5m' },
   { id:'twoHourAras', group:'openfa', kind:'flag',
     label:'2saatarasmortakhshoseghableSnapeshose' },
-
-  { id:'opf1', group:'opfa1', kind:'flag',
+  { id:'opf1', group:'openfa', kind:'flag',
     label:'opfaafter15 (15g sachetprotein)' },
-
-  { id:'chizayemojazbadeopfa2', group:'opfa2', kind:'flag',
+  { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
     label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
-  { id:'opf2', group:'opfa2', kind:'flag',
+  { id:'opf2', group:'openfa', kind:'flag',
     label:'openfaaft18' },
-  { id:'afterFastMood', group:'opfa2', kind:'accumDur',
+  { id:'afterFastMood', group:'openfa', kind:'accumDur',
     label:'afterfastmoodtoflow' },
 
-  { id:'takhghmojaz0', group:'takhsis', kind:'flag',
+  { id:'takhghmojaz0', group:'raayat', kind:'flag',
     label:'takhghmojaz<=0' },
-  { id:'takhmojmotns', group:'takhsis', kind:'flag',
+  { id:'takhmojmotns', group:'raayat', kind:'flag',
     label:'takhmojmotns' },
-
-  { id:'mohtmoj100', group:'mojaz', kind:'flag',
+  { id:'mohtmoj100', group:'raayat', kind:'flag',
     label:'mohtmoj100%' },
-  { id:'budandarjayemojaz100', group:'mojaz', kind:'flag',
+  { id:'budandarjayemojaz100', group:'raayat', kind:'flag',
     label:'budandarjayemojaz100%' },
-  { id:'kharidemojaz100', group:'mojaz', kind:'flag',
+  { id:'kharidemojaz100', group:'raayat', kind:'flag',
     label:'kharidemojaz100%' },
-
   { id:'raatayeghavanineakhlaghietayinshode100', group:'raayat', kind:'flag',
     label:'raatayeghavanineakhlaghietayinshode100%' },
   { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
     label:'rayyatepartbandieruz100%' },
-
-  { id:'noCarb', group:'no', kind:'flag',
+  { id:'noCarb', group:'raayat', kind:'flag',
     label:'no(noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajil)' },
-  { id:'noghahveyebiruni', group:'no', kind:'flag',
+  { id:'noghahveyebiruni', group:'raayat', kind:'flag',
     label:'noghahveyebiruni' },
-  { id:'nolimunadbiruni', group:'no', kind:'flag',
+  { id:'nolimunadbiruni', group:'raayat', kind:'flag',
     label:'nolimunadbiruni' },
-
-  { id:'nocopypasteazaighable12pm', group:'qabl12', kind:'flag',
+  { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
     label:'nocopypasteazaighable12pm' },
-  { id:'preplan12', group:'qabl12', kind:'flag',
+  { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
-  { id:'moodToFlow', group:'flow', kind:'accumDur',
+  { id:'moodToFlow', group:'andaze', kind:'accumDur',
     label:'moodtoflow' },
-
-  { id:'ghanoon', group:'rule', kind:'accumDur',
+  { id:'ghanoon', group:'andaze', kind:'accumDur',
     label:'ghanoonfarayeman' },
-  { id:'layers', group:'rule', kind:'accumDur',
+  { id:'layers', group:'andaze', kind:'accumDur',
     label:'bighar,zajr,dard,fesharshad,karesakht,flowshadid,sakhte' },
-  { id:'takhirAvg', group:'rule', kind:'avgSec',
+  { id:'takhirAvg', group:'andaze', kind:'avgSec',
     label:'takhirinputoutput3thout>=1.5s' }
 ];
 
@@ -849,7 +833,9 @@ function fillActivityList() {
   const cats = [...new Set(allowed.map(c => c.cat))];
   $('nbList').innerHTML = cats.map(cat => {
     const items = allowed.filter(c => c.cat === cat);
-    return `<div class="catlab">${cat}</div><div class="alist">` +
+    const stick = items.some(c => c.stick);
+    const lab = stick ? '' : `<div class="catlab">${cat}</div>`;
+    return lab + `<div class="alist${stick ? ' stick' : ''}">` +
       items.map(c => `<button type="button" data-code="${c.code}">${c.code}</button>`).join('') +
       `</div>`;
   }).join('');
@@ -933,13 +919,20 @@ function openComposer() {
     $('s_tags').insertAdjacentElement('afterend', qh);
   }
   qh.innerHTML = QUALITY_TAGS.map(t => `<button type="button" data-t="${t}">${t}</button>`).join('');
+  const paintQ = () => {
+    const cur = $('s_tags').value.split(',').map(s => s.trim()).filter(Boolean);
+    qh.querySelectorAll('button').forEach(b => b.classList.toggle('on', cur.indexOf(b.dataset.t) >= 0));
+  };
   qh.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     const cur = $('s_tags').value.split(',').map(s => s.trim()).filter(Boolean);
-    if (cur.indexOf(b.dataset.t) < 0) cur.push(b.dataset.t);
+    const i = cur.indexOf(b.dataset.t);
+    if (i >= 0) cur.splice(i, 1);
+    else cur.push(b.dataset.t);
     $('s_tags').value = cur.join(',');
-    b.classList.add('on');
+    paintQ();
     vibrate(8);
   }));
+  paintQ();
   let qdurHost = $('qDurHost');
   if (!qdurHost) {
     qdurHost = document.createElement('div');
@@ -1313,8 +1306,8 @@ async function refreshData() {
     `نسخهٔ اپ: <b>${APP_VERSION}</b><br/>` +
     `نسخهٔ شیت باید: <b>${SCRIPT_VERSION}</b><br/>` +
     `امروز به شمسی: <b>${today}</b><br/>` +
-    `آدرس اپ: <span class="ltr">${location.origin + location.pathname}</span><br/>` +
-    `آدرس وب‌اپ شیت: <span class="ltr">${cfgGet('url') || 'خالی'}</span>`;
+    `آدرس اپ: <span class="brk">${location.origin + location.pathname}</span><br/>` +
+    `آدرس وب‌اپ شیت: <span class="brk">${cfgGet('url') || 'خالی'}</span>`;
   const byCat = {};
   let totalMin = 0;
   rows.forEach(r => {

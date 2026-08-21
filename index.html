@@ -144,7 +144,12 @@ button.cancel{
 .hide{display:none}
 .stat{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
 .stat b{color:var(--ink)}
-.sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem}
+.sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
+.brk{display:block;direction:ltr;text-align:left;overflow-wrap:anywhere;word-break:break-all;max-width:100%}
+.urlbox{
+  min-height:72px;resize:vertical;overflow-wrap:anywhere;word-break:break-all;
+  white-space:pre-wrap;max-width:100%;font-size:.78rem
+}
 .gate{display:none}
 .gate.ok{background:#0f1c16;border-color:var(--good)}
 .checks{display:none}
@@ -166,11 +171,16 @@ button.put{
 .nb .empty{color:#5f7186}
 .catlab{font-size:.75rem;color:var(--muted);margin:12px 0 6px}
 .alist{display:flex;flex-wrap:wrap;gap:6px}
+.alist.stick{
+  display:flex;flex-wrap:wrap;gap:4px;margin:10px 0;
+  border:1px solid var(--line);border-radius:12px;padding:8px;background:#0b1016
+}
 .alist button{
   background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:10px;
   padding:8px 10px;font-size:.78rem;font-family:Consolas,"Segoe UI",sans-serif;cursor:pointer;
-  direction:ltr;text-align:left
+  direction:ltr;text-align:left;overflow-wrap:anywhere;word-break:break-word
 }
+.alist.stick button{background:#152033}
 .alist button.on{border-color:var(--accent);background:#1e2b3c}
 .pick{display:flex;flex-wrap:wrap;gap:8px;direction:ltr;justify-content:flex-start}
 .pick button{
@@ -270,7 +280,7 @@ button.put{
     <div class="card">
       <h2>همگام‌سازی با گوگل‌شیت</h2>
       <label class="lb">آدرس وب‌اپ</label>
-      <input id="cfg_url" class="ltr" placeholder="https://script.google.com/macros/s/..../exec"/>
+      <textarea id="cfg_url" class="ltr urlbox" rows="3" placeholder="https://script.google.com/macros/s/..../exec"></textarea>
       <label class="lb">کلید مشترک</label>
       <input id="cfg_secret" class="ltr" placeholder="یک رشته که خودت می‌سازی"/>
       <div class="chips">
@@ -303,6 +313,6 @@ button.put{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=30"></script>
+<script src="app.js?v=31"></script>
 </body>
 </html>
