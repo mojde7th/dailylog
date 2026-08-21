@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v41 · meta';
+const APP_VERSION = 'v43 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -120,7 +120,7 @@ const META_ITEMS = [
   { id:'layers', group:'andaze', kind:'accumDur',
     label:'bigharrshadid,zajrshadid,dardshadid,fesharshadi,karesakht,flowshadid,tamarkozshaid,amighshadid,withthinkshadid' },
   { id:'takhirAvg', group:'andaze', kind:'avgSec',
-    label:'takhirinputoutput3thout>=1.5s' }
+    label:'takhirinputoutput3thout<=1.5s' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
@@ -426,12 +426,13 @@ function makeClockWheel(host, defH, defM, hourList, onChange) {
   wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
   return { value: () => hh[wh.get()] + ':' + mm[wm.get()] };
 }
-function makeDurWheel(host, defH, defM) {
+function makeDurWheel(host, defH, defM, onChange) {
   const hh = [];
   for (let i = 0; i <= 24; i++) hh.push(String(i));
   const mm = minuteItems();
-  const wh = wheelColumn(hh, Math.min(24, defH || 0), null, { loop: true });
-  const wm = wheelColumn(mm, minuteIndex(defM), null, { loop: true });
+  const notify = () => { if (onChange) onChange(); };
+  const wh = wheelColumn(hh, Math.min(24, defH || 0), notify, { loop: true });
+  const wm = wheelColumn(mm, minuteIndex(defM), notify, { loop: true });
   wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
   return {
     minutes: () => Number(hh[wh.get()]) * 60 + Number(mm[wm.get()]),
@@ -524,9 +525,21 @@ function parseDone(rec) {
   if (rec.done && typeof rec.done === 'object') return rec.done;
   try { return JSON.parse(rec.doneJson || '{}'); } catch (e) { return {}; }
 }
+function takhirIsOk(rec, extra) {
+  extra = extra || [];
+  const n = Number(rec && rec.takhirN) || 0;
+  if (!n && !extra.length) return true;
+  let sum = Number(rec && rec.takhirSum) || 0;
+  extra.forEach(s => { sum += Number(s) || 0; });
+  const avg = (n + extra.length) ? (sum / (n + extra.length)) : 0;
+  return avg <= TAKHIR_OK;
+}
 function isComplete(rec) {
   const d = parseDone(rec);
-  return META_ITEMS.every(it => d[it.id]);
+  return META_ITEMS.every(it => {
+    if (it.kind === 'avgSec') return takhirIsOk(rec);
+    return !!d[it.id];
+  });
 }
 
 function metaUid(day) {
@@ -687,9 +700,9 @@ function totalLine(it, rec) {
   if (it.kind === 'avgSec') {
     const n = Number(rec.takhirN) || 0;
     const pending = takhirDraft.length;
-    if (!n && !pending) return 'not set';
+    if (!n && !pending) return 'ok <=1.5s';
     const avg = n ? (Number(rec.takhirAvg) || 0) : 0;
-    let line = n ? ('avg ' + avg.toFixed(2) + 's  n=' + n + (avg >= TAKHIR_OK ? '  flag=1' : '  flag=0')) : 'no avg yet';
+    let line = n ? ('avg ' + avg.toFixed(2) + 's  n=' + n + (takhirIsOk(rec, takhirDraft) ? '  flag=1' : '  flag=0')) : 'no avg yet';
     if (pending) line += '  draft+' + pending;
     return line;
   }
@@ -709,6 +722,12 @@ async function paintMetaStatus() {
     if (it.kind === 'flag' && it._btn) it._btn.classList.toggle('on', flagOn(rec, it.id));
   });
   paintLawList();
+}
+
+let sumTimer = null;
+function scheduleSummary() {
+  clearTimeout(sumTimer);
+  sumTimer = setTimeout(() => { paintMetaStatus(); }, 180);
 }
 
 function pickBar(host, values, selected, onPick) {
@@ -758,7 +777,7 @@ function mountMetaItem(host, it) {
     `<div id="mw_${it.id}"></div>`;
   host.appendChild(box);
   const h = $('mw_' + it.id);
-  if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0);
+  if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0, scheduleSummary);
   if (it.kind === 'avgSec') {
     const hint = document.createElement('p');
     hint.className = 'hint';
@@ -768,7 +787,7 @@ function mountMetaItem(host, it) {
     h.appendChild(bar);
     pickBar(bar, TAKHIR_SECS, null, v => {
       takhirDraft.push(Number(v));
-      paintMetaStatus();
+      scheduleSummary();
       vibrate(8);
     });
   }
@@ -851,6 +870,7 @@ function mountLawsPanel(wrap) {
     if (mW.lawDur) mW.lawDur.reset();
     vibrate(8);
     toast(name + ' draft');
+    scheduleSummary();
   });
   paintLawCatalog();
   paintLawList();
@@ -955,9 +975,9 @@ async function putGroup(gid) {
       takhirDraft.length = 0;
       if (Number(rec.takhirN) > 0) {
         rec.takhirAvg = rec.takhirSum / rec.takhirN;
-        if (rec.takhirAvg >= TAKHIR_OK) done[it.id] = 1;
-        else delete done[it.id];
       }
+      if (takhirIsOk(rec)) done[it.id] = 1;
+      else delete done[it.id];
     }
   });
   rec.done = done;
@@ -1451,7 +1471,7 @@ function metaBits(rec) {
       bits.push({ id: it.id, text: it.label });
     } else if (it.kind === 'avgSec' && Number(rec.takhirN) > 0) {
       const avg = Number(rec.takhirAvg) || 0;
-      bits.push({ id: it.id, text: 'takhirAvg=' + avg.toFixed(2) + 's' + (avg >= TAKHIR_OK ? '' : ' flag0') });
+      bits.push({ id: it.id, text: 'takhirAvg=' + avg.toFixed(2) + 's' + (takhirIsOk(rec) ? '' : ' flag0') });
     }
   });
   parseLaws(rec).forEach(x => {
@@ -1478,14 +1498,18 @@ function metaItemView(rec, it) {
   }
   if (it.kind === 'avgSec') {
     const n = Number(rec && rec.takhirN) || 0;
-    if (!n) {
-      return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '—', min: 0 };
+    const pending = takhirDraft.length;
+    const ok = takhirIsOk(rec, takhirDraft);
+    if (!n && !pending) {
+      return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'ok', val: '<=1.5s', min: 0 };
     }
-    const avg = Number(rec.takhirAvg) || 0;
+    let sum = Number(rec && rec.takhirSum) || 0;
+    takhirDraft.forEach(s => { sum += Number(s) || 0; });
+    const avg = (n + pending) ? (sum / (n + pending)) : 0;
     return {
       id: it.id, group: it.group, kind: it.kind, label: it.label,
-      state: avg >= TAKHIR_OK ? 'ok' : 'miss',
-      val: avg.toFixed(2) + 's n=' + n,
+      state: ok ? 'ok' : 'miss',
+      val: avg.toFixed(2) + 's n=' + (n + pending),
       min: 0
     };
   }
@@ -1542,7 +1566,7 @@ function paintSummary(el, rec, work) {
       sumTile('ghanoon mohem', fmtChunk(lawMin), laws.length ? (laws.length + ' law') : 'خالی', 'tone-laws', !lawMin) +
       (function () {
         const avg = views.find(v => v.kind === 'avgSec');
-        return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok' : 'خالی', 'tone-andaze', avg.state !== 'ok') : '';
+        return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok' : '>1.5s', 'tone-andaze', avg.state !== 'ok') : '';
       }()) +
     '</div>' +
     ((work.byCat && work.byCat.length)
@@ -1552,18 +1576,20 @@ function paintSummary(el, rec, work) {
       : '') +
     '<div class="sumflags">' +
       META_GROUPS.map(g => {
-        const items = views.filter(v => v.group === g.id && v.kind === 'flag');
+        const items = views.filter(v => v.group === g.id);
         const gok = items.filter(v => v.state === 'ok').length;
         let chips = items.map(v =>
-          '<span class="chip ' + v.state + '">' + esc(v.label) + '</span>'
+          '<span class="chip ' + v.state + '">' + esc(v.label) + (v.val ? ' ' + v.val : '') + '</span>'
         ).join('');
         if (g.id === 'laws') {
-          chips = laws.length
-            ? laws.map(x => '<span class="chip ok">' + esc(x.name) + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
+          const live = (mDate && rec && rec.dateShamsi === selectedMetaDay() && lawDraft.length)
+            ? lawDraft : laws;
+          chips = live.length
+            ? live.map(x => '<span class="chip ok">' + esc(x.name) + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
             : '<span class="chip miss">nist</span>';
         }
         return '<article class="sumcard tone-' + esc(g.id) + '">' +
-          '<h4>' + esc(g.title) + ' <span>' + (g.id === 'laws' ? String(laws.length) : (gok + '/' + items.length)) + '</span></h4>' +
+          '<h4>' + esc(g.title) + ' <span>' + (g.id === 'laws' ? String((lawDraft.length && rec && rec.dateShamsi === selectedMetaDay()) ? lawDraft.length : laws.length) : (gok + '/' + items.length)) + '</span></h4>' +
           '<div class="flagchips">' + chips + '</div>' +
         '</article>';
       }).join('') +

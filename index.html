@@ -175,9 +175,17 @@ button.cancel{
   border-radius:14px;padding:10px 12px;border:1px solid var(--line);
   min-width:0;background:#0b1016
 }
-.sumtile span{display:block;font-size:.7rem;color:var(--muted);margin-bottom:2px;overflow-wrap:anywhere}
-.sumtile b{display:block;font-size:1.22rem;line-height:1.2;direction:ltr;text-align:left;color:#e8eef5}
-.sumtile small{display:block;color:#93a4b8;font-size:.7rem;margin-top:4px;direction:ltr}
+.sumtile b,.flagchips .chip,.mblock h3,.flaggrid button,.alist button,.nbcode,.nbtags,.sumcard h4{
+  direction:ltr;unicode-bidi:isolate;text-align:left;
+  overflow-wrap:break-word;word-break:normal
+}
+.flagchips .chip,.flaggrid button,.mblock h3{
+  display:inline-block;max-width:100%;white-space:normal;line-height:1.35
+}
+.flaggrid button{display:block}
+.sumtile span{display:block;font-size:.7rem;color:var(--muted);margin-bottom:2px}
+.sumtile b{display:block;font-size:1.22rem;line-height:1.2;color:#e8eef5}
+.sumtile small{display:block;color:#93a4b8;font-size:.7rem;margin-top:4px}
 .sumtile.off{opacity:.48}
 .sumtile.tone-nb{border-color:#3a6288;background:linear-gradient(180deg,#152033,#0b1016)}
 .sumtile.p0{border-color:#7a5a18;background:linear-gradient(180deg,#2a2214,#0b1016)}
@@ -194,8 +202,8 @@ button.cancel{
 .sumtile.p3 b,.sumtile.tone-raayat b{color:#c8f0d8}
 .flagchips{display:flex;flex-wrap:wrap;gap:6px}
 .flagchips .chip{
-  display:inline-block;max-width:100%;overflow-wrap:anywhere;border-radius:8px;
-  padding:5px 8px;font-size:.68rem;font-family:Consolas,monospace;direction:ltr
+  display:inline-block;max-width:100%;overflow-wrap:break-word;word-break:normal;border-radius:8px;
+  padding:5px 8px;font-size:.68rem;font-family:Consolas,monospace;direction:ltr;unicode-bidi:isolate
 }
 .flagchips .chip.ok{background:#12312a;border:1px solid #3ecf8e;color:#c8f0d8}
 .flagchips .chip.draft{background:#2a2214;border:1px solid #f0b429;color:#ffe7b3}
@@ -231,7 +239,7 @@ button.cancel{
 .flaggrid button{
   background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:12px;
   padding:12px 10px;font-family:Consolas,monospace;font-size:.8rem;cursor:pointer;
-  direction:ltr;text-align:left;overflow-wrap:anywhere;word-break:break-word;min-height:52px
+  direction:ltr;text-align:left;unicode-bidi:isolate;overflow-wrap:break-word;word-break:normal;min-height:52px
 }
 .flaggrid button.on{background:#12312a;border-color:var(--good);color:var(--good)}
 .brk{display:block;direction:ltr;text-align:left;overflow-wrap:anywhere;word-break:break-all;max-width:100%}
@@ -474,6 +482,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=41"></script>
+<script src="app.js?v=43"></script>
 </body>
 </html>
