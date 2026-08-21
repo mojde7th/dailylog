@@ -144,17 +144,24 @@ button.cancel{
 .logkind{font-size:.72rem;border:1px solid var(--line);border-radius:8px;padding:2px 8px;white-space:nowrap}
 .logdate{direction:ltr;color:var(--muted);font-size:.78rem}
 .logactions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.logwhat,.logval,.catlines{
-  direction:ltr;unicode-bidi:isolate;text-align:left;display:block
+.logwhat,.logval,.catlines,.logcode,.logdur,.logchip,.logdate{
+  direction:ltr;unicode-bidi:isolate;text-align:left
 }
-.logwhat{font-size:.86rem}
-.logval{color:#c8f0d8;font-size:.9rem;margin-top:2px}
-.catlines{margin-top:8px;font-family:Consolas,monospace}
-.logchips{display:flex;flex-wrap:wrap;gap:6px;direction:ltr;justify-content:flex-start;margin-top:8px}
-.logchips span{
-  display:inline-flex;align-items:center;gap:6px;
+.logline{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 10px;
+  margin-top:6px;min-width:0
+}
+.logpart{direction:rtl;unicode-bidi:isolate;text-align:right;color:#8cc8f5;flex-shrink:0}
+.logcode{font-family:Consolas,monospace;font-size:.86rem;overflow-wrap:anywhere;min-width:0}
+.logdur{font-family:Consolas,monospace;color:#c8f0d8;margin-inline-start:auto;white-space:nowrap}
+.logwhat{font-size:.86rem;display:block}
+.logval{color:#c8f0d8;font-size:.9rem;margin-top:2px;display:block}
+.catlines{margin-top:8px;font-family:Consolas,monospace;display:block;text-align:left}
+.logchips{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start;margin-top:8px}
+.logchip{
+  display:inline-block;max-width:100%;overflow-wrap:anywhere;
   border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:.72rem;
-  direction:ltr;max-width:100%;overflow-wrap:anywhere
+  font-family:Consolas,monospace
 }
 .logchips .cancel{padding:3px 7px}
 #toast{
@@ -488,6 +495,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=46"></script>
+<script src="app.js?v=47"></script>
 </body>
 </html>

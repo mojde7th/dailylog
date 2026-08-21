@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v46 · meta';
+const APP_VERSION = 'v47 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1682,7 +1682,8 @@ async function refreshData() {
     at: r.createdAt || '',
     date: r.dateShamsi || '',
     kind: 'دفتر',
-    what: (r.part ? r.part + ' · ' : '') + (r.code || ''),
+    part: r.part || '',
+    code: r.code || '',
     val: r.chunk || r.hm || r.count || '',
     synced: r.synced,
     store: 'sessions',
@@ -1711,10 +1712,14 @@ async function refreshData() {
         const x = !r.synced
           ? '<button type="button" class="cancel" data-meta-item="' + esc(b.id) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
           : '';
-        return '<span>' + esc(b.text) + x + '</span>';
+        return '<span class="logchip">' + esc(b.text) + x + '</span>';
       }).join('') + '</div>';
-    } else if (r.val) {
-      body = '<div class="logval">' + esc(r.val) + '</div>';
+    } else if (r.store === 'sessions') {
+      body = '<div class="logline">' +
+        (r.part ? '<span class="logpart">' + esc(r.part) + '</span>' : '') +
+        (r.code ? '<span class="logcode">' + esc(r.code) + '</span>' : '') +
+        (r.val ? '<span class="logdur">' + esc(r.val) + '</span>' : '') +
+      '</div>';
     }
     return '<div class="logcard">' +
       '<div class="loghead">' +
@@ -1722,7 +1727,6 @@ async function refreshData() {
         '<span class="logdate">' + esc(r.date) + '</span></div>' +
         '<div class="logactions">' + actions + '</div>' +
       '</div>' +
-      (r.what && r.store !== 'meta' ? '<div class="logwhat">' + esc(r.what) + '</div>' : '') +
       body +
     '</div>';
   }).join('') || '<div class="empty">خالی</div>';
