@@ -5,8 +5,8 @@
 
 'use strict';
 
-const APP_VERSION = 'v47 · meta';
-const SCRIPT_VERSION = 'v10-meta';
+const APP_VERSION = 'v49 · meta';
+const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -17,6 +17,15 @@ const PARTS = [
   { id: 1, label: '۱۲ تا ۲',  hint: 'ظهر — ارث از تا ۱۲ به‌علاوهٔ این پارت' },
   { id: 2, label: '۲ تا ۶',   hint: 'بعدازظهر — ارث از دو پارت قبل' },
   { id: 3, label: 'بعد اوپن', hint: 'بعد اوپن‌فست — همهٔ قبلی‌ها هم اینجان' }
+];
+
+const TAKH_WHO = [
+  { id:'ماد', label:'ماد' },
+  { id:'پد', label:'پد' },
+  { id:'بیار', label:'بیار' },
+  { id:'بیارزد', label:'بیارزد' },
+  { id:'DUS', label:'DUS' },
+  { id:'رئیس', label:'رئیس' }
 ];
 
 const QUALITY_TAGS = [
@@ -125,6 +134,8 @@ const META_ITEMS = [
     label:'ghanoonfarayeman' },
   { id:'layers', group:'andaze', kind:'accumDur',
     label:'bigharrshadid,zajrshadid,dardshadid,fesharshadi,karesakht,flowshadid,tamarkozshaid,amighshadid,withthinkshadid' },
+  { id:'sokut', group:'andaze', kind:'accumDur', optional:true,
+    label:'roozsokut' },
   { id:'takhirAvg', group:'andaze', kind:'avgSec',
     label:'takhirinputoutput3thout<=1.5s' }
 ];
@@ -170,7 +181,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
   'noCarb','noghahveyebiruni',
   'nocopypasteazaighable12pm','preplan12',
-  'takhirAvg','takhirN','takhirSum','lawsJson','lawsMin',
+  'takhirAvg','takhirN','takhirSum','lawsJson','lawsMin','sokut',
   'doneJson','complete'];
 
 const MIN_REACT_SEC = 2;
@@ -181,7 +192,8 @@ const META_STORE = {
   moodToFlow: 'moodToFlowMin',
   afterFastMood: 'afterFastMoodMin',
   ghanoon: 'ghanoonMin',
-  layers: 'layersMin'
+  layers: 'layersMin',
+  sokut: 'sokut'
 };
 
 /* ═════════════════════════════ 2. JALALI ═══════════════════════════════════ */
@@ -543,6 +555,7 @@ function takhirIsOk(rec, extra) {
 function isComplete(rec) {
   const d = parseDone(rec);
   return META_ITEMS.every(it => {
+    if (it.optional) return true;
     if (it.kind === 'avgSec') return takhirIsOk(rec);
     return !!d[it.id];
   });
@@ -553,7 +566,8 @@ function metaUid(day) {
 }
 function fillMetaGaps(keep, extra) {
   if (!keep || !extra) return;
-  ['moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin'].forEach(k => {
+  Object.keys(META_STORE).forEach(id => {
+    const k = META_STORE[id];
     if (!(Number(keep[k]) > 0) && Number(extra[k]) > 0) keep[k] = extra[k];
   });
   META_FLAG_IDS.forEach(k => {
@@ -628,7 +642,7 @@ function blankMeta(day) {
     uid: metaUid(day),
     createdAt: new Date().toISOString(),
     dateShamsi: day,
-    moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0,
+    moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0, sokut:0,
     takhirAvg:'', takhirN:0, takhirSum:0, lawsJson:'[]', lawsMin:0,
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
@@ -761,8 +775,7 @@ async function paintMetaStatus() {
   const rec = day ? await metaFor(day) : null;
   lastMetaRec = rec;
   const work = await sessionWork(day);
-  paintSummary($('metaSum'), rec, work);
-  paintSummary($('nbMetaSum'), rec, work);
+  paintDayChart($('metaDayChart'), rec, work);
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
@@ -822,15 +835,12 @@ function mountMetaItem(host, it) {
   box.innerHTML =
     `<h3>${it.label}</h3>` +
     `<p class="hint" id="tot_${it.id}">—</p>` +
-    `<div id="mw_${it.id}"></div>`;
+    `<div id="mw_${it.id}"></div>` +
+    `<button type="button" class="rst" data-reset="${it.id}">reset</button>`;
   host.appendChild(box);
   const h = $('mw_' + it.id);
   if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0, scheduleSummary);
   if (it.kind === 'avgSec') {
-    const hint = document.createElement('p');
-    hint.className = 'hint';
-    hint.textContent = 'sample ha montazer put paye daste mimanand';
-    h.appendChild(hint);
     const bar = document.createElement('div');
     h.appendChild(bar);
     pickBar(bar, TAKHIR_SECS, null, v => {
@@ -839,6 +849,8 @@ function mountMetaItem(host, it) {
       vibrate(8);
     });
   }
+  const rst = box.querySelector('[data-reset]');
+  if (rst) rst.addEventListener('click', () => resetMetaItem(it.id));
 }
 
 function paintSavedLaws() {
@@ -846,7 +858,7 @@ function paintSavedLaws() {
   if (!host) return;
   const items = parseLaws(lastMetaRec);
   if (!items.length) {
-    host.innerHTML = '<p class="hint">sabt shode baraye in ruz nist</p>';
+    host.innerHTML = '';
     return;
   }
   host.innerHTML = items.map((x, i) =>
@@ -872,7 +884,7 @@ function paintLawList() {
   const host = $('lawList');
   if (!host) return;
   if (!lawDraft.length) {
-    host.innerHTML = '<p class="hint">pishnevis khali — ta put tu kart nemiayad</p>';
+    host.innerHTML = '';
     return;
   }
   host.innerHTML = lawDraft.map((x, i) =>
@@ -915,22 +927,19 @@ function mountLawsPanel(wrap) {
   const box = document.createElement('div');
   box.className = 'mblock';
   box.innerHTML =
-    `<h3>name + saat — tozih ekhtiari</h3>` +
-    `<p class="hint">pishnevis ta put tu kart nist. add be in ruz mostaghim tu kart miravad.</p>` +
+    `<h3>name + saat</h3>` +
     `<div class="chips qchips" id="lawCat"></div>` +
     `<label class="lb">nam</label>` +
     `<input id="lawName" class="ltr" placeholder="masalan: sokut-12"/>` +
-    `<label class="lb">tozih — ekhtiari</label>` +
-    `<textarea id="lawDesc" class="ltr" placeholder="in ghanoon chist"></textarea>` +
+    `<label class="lb">tozih</label>` +
+    `<textarea id="lawDesc" class="ltr"></textarea>` +
     `<label class="lb">saat</label>` +
     `<div id="lawDur"></div>` +
     `<div class="mall">` +
       `<button type="button" id="lawAdd">add be pishnevis</button>` +
       `<button type="button" class="putg" id="lawNow">add be in ruz</button>` +
     `</div>` +
-    `<p class="hint">sabt shode in ruz</p>` +
     `<div class="lawlist" id="lawSaved"></div>` +
-    `<p class="hint">pishnevis</p>` +
     `<div class="lawlist" id="lawList"></div>`;
   wrap.appendChild(box);
   mW.lawDur = makeDurWheel($('lawDur'), 0, 30);
@@ -1115,11 +1124,9 @@ function buildParts() {
     picked = null;
     fillActivityList();
     $('nbComposer').classList.add('hide');
-    $('partHint').textContent = PARTS[activePart].hint;
     vibrate(8);
   }));
   paint();
-  $('partHint').textContent = PARTS[activePart].hint;
 }
 
 function fillActivityList() {
@@ -1160,12 +1167,33 @@ function quickChips(parent, values, cb) {
   parent.appendChild(d);
 }
 
+function paintWhoBox(code) {
+  const box = $('whoBox');
+  if (!box) return;
+  const on = code === 'takhmojmotn';
+  box.classList.toggle('hide', !on);
+  if (!on) { box.innerHTML = ''; return; }
+  box.innerHTML = TAKH_WHO.map(w =>
+    `<label class="whochk"><input type="checkbox" data-who="${esc(w.id)}"/> ${esc(w.label)}</label>`
+  ).join('');
+  box.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      inp.closest('.whochk').classList.toggle('on', inp.checked);
+      vibrate(8);
+    });
+  });
+}
+function selectedWho() {
+  const box = $('whoBox');
+  if (!box || box.classList.contains('hide')) return [];
+  return [...box.querySelectorAll('input:checked')].map(i => i.dataset.who).filter(Boolean);
+}
+
 function openComposer() {
   const c = currentCode();
   const d = c.def || {};
   $('nbComposer').classList.remove('hide');
   $('compTitle').textContent = c.code;
-  $('compHint').textContent = 'tags ba virgul. quality chips zir.';
   const host = $('dynFields');
   WHEELS.forEach(w => { if (!w.el.isConnected) w.destroy(); });
   host.innerHTML = '';
@@ -1182,6 +1210,7 @@ function openComposer() {
       dyn.dur.setMinutes(h * 60 + m);
     });
   }
+  paintWhoBox(c.code);
   if (c.metric === 'sec') {
     const box = addField(host, 'ثانیه — حداقل ' + MIN_REACT_SEC);
     box.innerHTML = `<input id="f_sec" class="ltr" type="number" inputmode="numeric" min="${MIN_REACT_SEC}" value="${d.n || MIN_REACT_SEC}"/>`;
@@ -1255,6 +1284,8 @@ function collectSession() {
     note: $('s_note').value.trim(),
     synced: 0
   };
+  const who = selectedWho();
+  if (who.length) rec.tags = who.concat(rec.tags ? rec.tags.split(',').map(s => s.trim()).filter(Boolean) : []).join(',');
   if (c.metric === 'dur') {
     rec.minutes = dyn.dur.minutes();
     rec.hm = dyn.dur.hm();
@@ -1343,8 +1374,6 @@ async function paintNotebook() {
     });
     html += '</div>';
   });
-  const rec = day ? await metaFor(day) : null;
-  paintSummary($('nbMetaSum'), rec, await sessionWork(day));
   host.innerHTML = html || '<div class="empty">خالی</div>';
 }
 
@@ -1367,15 +1396,17 @@ function ensureSessionUi() {
 }
 
 function showTab(name) {
-  if (name !== 'session' && name !== 'meta' && name !== 'data') name = 'session';
+  if (name !== 'session' && name !== 'meta' && name !== 'data' && name !== 'dash') name = 'session';
   activeTab = name;
   cfgSet('tab', name);
   $('paneSession').classList.toggle('hide', name !== 'session');
   $('paneMeta').classList.toggle('hide',    name !== 'meta');
   $('paneData').classList.toggle('hide',    name !== 'data');
+  if ($('paneDash')) $('paneDash').classList.toggle('hide', name !== 'dash');
   $('tabSession').classList.toggle('active', name === 'session');
   $('tabMeta').classList.toggle('active',    name === 'meta');
   $('tabData').classList.toggle('active',    name === 'data');
+  if ($('tabDash')) $('tabDash').classList.toggle('active', name === 'dash');
   $('btnSave').disabled  = (name !== 'session');
   $('btnSave').textContent = 'این خط را بنویس';
   const bar = document.querySelector('.bar');
@@ -1387,6 +1418,7 @@ function showTab(name) {
   if (name === 'meta') paintMetaStatus();
   if (name === 'session') { paintNotebook(); paintMetaStatus(); }
   if (name === 'data') refreshData();
+  if (name === 'dash') paintDashboard();
 }
 
 async function doSave() {
@@ -1493,7 +1525,8 @@ async function trySync(loud) {
 
   const s = (await getAll('sessions')).filter(r => !r.synced);
   const m = (await getAll('meta')).filter(r => !r.synced);
-  if (!s.length && !m.length) {
+  const dels = pendingDeletes();
+  if (!s.length && !m.length && !dels.length) {
     if (loud) toast('صف خالی است');
     return;
   }
@@ -1501,11 +1534,17 @@ async function trySync(loud) {
   trySync._busy = true;
   try {
     let info = [];
+    if (dels.length) {
+      const delOut = await pushDeletes(url, secret, dels);
+      cfgSet('del_sessions', '[]');
+      info.push(delOut);
+    }
     if (s.length) info.push(await pushBatch(url, secret, 'session', s, SESSION_FIELDS));
     if (m.length) info.push(await pushBatch(url, secret, 'meta',    m, META_FIELDS));
     const line = info.map(x =>
-      (x.tab || '') + ' ' + (x.version || '') +
-      ' +' + (x.inserted || 0) + ' ~' + (x.updated || 0)
+      (x.tab || x.type || '') + ' ' + (x.version || '') +
+      ' +' + (x.inserted || 0) + ' ~' + (x.updated || 0) +
+      (x.deleted ? ' -' + x.deleted : '')
     ).join(' · ');
     paintSyncOut(line);
     if (loud) toast('شیت به‌روز شد');
@@ -1539,10 +1578,28 @@ async function pushBatch(url, secret, type, rows, fields) {
   return outp;
 }
 
+async function pushDeletes(url, secret, uids) {
+  const payload = { secret, type: 'sessionDelete', uids };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const raw = await res.text();
+  let outp;
+  try { outp = JSON.parse(raw); } catch (e) { throw new Error('پاسخ شیت جیسان نیست'); }
+  if (!outp.ok) throw new Error(outp.error || 'server');
+  if (String(outp.version || '') !== SCRIPT_VERSION) {
+    throw new Error('old script ' + (outp.version || ''));
+  }
+  outp.type = 'del';
+  return outp;
+}
+
 async function updateQueueBadge() {
   const s = (await getAll('sessions')).filter(r => !r.synced).length;
   const m = (await getAll('meta')).filter(r => !r.synced).length;
-  const n = s + m;
+  const n = s + m + pendingDeletes().length;
   $('queuePill').textContent = 'صف ' + n;
   $('queuePill').className = 'pill ' + (n ? 'off' : 'on');
 }
@@ -1632,6 +1689,120 @@ async function sessionWork(day) {
   out.byCat = Object.keys(catMap).map(k => catMap[k]).sort((a, b) => b.min - a.min);
   return out;
 }
+function tileTitle(it) {
+  if (it.id === 'moodToFlow') return 'moodToFlow';
+  if (it.id === 'afterFastMood') return 'afterFastMood';
+  if (it.id === 'layers') return 'layers';
+  if (it.id === 'ghanoon') return 'ghanoonFarayeman';
+  if (it.id === 'sokut') return 'roozsokut';
+  if (it.id === 'takhirAvg') return 'takhir';
+  return it.label;
+}
+function svgBars(rows) {
+  rows = (rows || []).filter(r => r && r.lab);
+  if (!rows.length) return '';
+  const max = Math.max(1, ...rows.map(r => Number(r.n) || 0));
+  const w = 360, barH = 18, gap = 8, labW = 108, pad = 8;
+  const h = pad * 2 + rows.length * (barH + gap) - gap;
+  let y = pad;
+  const parts = rows.map(r => {
+    const n = Number(r.n) || 0;
+    const bw = Math.max(n ? 4 : 0, Math.round((w - labW - pad * 2) * n / max));
+    const line = `<text x="${pad}" y="${y + 13}" fill="#93a4b8" font-size="10" font-family="Consolas,monospace">${esc(r.lab)}</text>` +
+      `<rect x="${labW}" y="${y}" width="${bw}" height="${barH}" rx="4" fill="${r.fill || '#3a6288'}"/>` +
+      `<text x="${labW + bw + 6}" y="${y + 13}" fill="#c8f0d8" font-size="10" font-family="Consolas,monospace">${esc(r.val || fmtChunk(n))}</text>`;
+    y += barH + gap;
+    return line;
+  }).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" role="img">${parts}</svg>`;
+}
+function paintDayChart(el, rec, work) {
+  if (!el) return;
+  work = work || { sessionMin: 0 };
+  const bars = [{ lab: 'daftar', n: work.sessionMin || 0, fill: '#3a6288' }];
+  META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => {
+    bars.push({ lab: tileTitle(it), n: Number(rec && rec[META_STORE[it.id]]) || 0, fill: '#6a4a8a' });
+  });
+  const avg = rec && Number(rec.takhirN) ? Number(rec.takhirAvg) : 0;
+  if (avg) bars.push({ lab: 'takhir', n: avg, val: avg.toFixed(2) + 's', fill: '#7a5a18' });
+  el.innerHTML = svgBars(bars);
+}
+async function resetMetaItem(id) {
+  const day = selectedMetaDay();
+  const rec = await metaFor(day) || blankMeta(day);
+  takhirDraft.length = 0;
+  clearMetaField(rec, id);
+  if (mW[id] && mW[id].reset) mW[id].reset();
+  await put('meta', rec);
+  lastMetaRec = rec;
+  toast(id + ' reset');
+  vibrate(8);
+  await paintMetaStatus();
+  updateQueueBadge();
+  trySync();
+}
+function pendingDeletes() {
+  try {
+    const a = JSON.parse(cfgGet('del_sessions') || '[]');
+    return Array.isArray(a) ? a.map(String).filter(Boolean) : [];
+  } catch (e) { return []; }
+}
+function queueSessionDelete(uid) {
+  const a = pendingDeletes();
+  if (a.indexOf(uid) < 0) a.push(uid);
+  cfgSet('del_sessions', JSON.stringify(a));
+}
+function daysAgoJ(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return fmtJ(...toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+}
+let dashDays = 14;
+async function paintDashboard() {
+  const hostS = $('dashStat');
+  const hostB = $('dashBars');
+  const hostM = $('dashMeta');
+  if (!hostS) return;
+  const [ty, tm, td] = todayJ();
+  const to = fmtJ(ty, tm, td);
+  let from;
+  if (dashDays === 'mah') from = ty + '/' + pad2(tm) + '/01';
+  else from = daysAgoJ(Number(dashDays) || 14);
+  const sess = (await getAll('sessions')).filter(r => r.dateShamsi >= from && r.dateShamsi <= to);
+  const meta = (await getAll('meta')).filter(r => r.dateShamsi >= from && r.dateShamsi <= to);
+  const byDay = {};
+  sess.forEach(r => {
+    const d = r.dateShamsi;
+    if (!byDay[d]) byDay[d] = { daftar: 0, n: 0 };
+    byDay[d].daftar += Number(r.minutes) || 0;
+    byDay[d].n += 1;
+  });
+  let daftar = 0;
+  Object.keys(byDay).forEach(d => { daftar += byDay[d].daftar; });
+  const durSum = {};
+  META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => { durSum[it.id] = 0; });
+  let lawN = 0;
+  meta.forEach(r => {
+    META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => {
+      durSum[it.id] += Number(r[META_STORE[it.id]]) || 0;
+    });
+    lawN += parseLaws(r).length;
+  });
+  hostS.innerHTML =
+    `<span>از <b class="ltr">${from}</b></span>` +
+    `<span>تا <b class="ltr">${to}</b></span>` +
+    `<span>دفتر <b>${fmtChunk(daftar)}</b></span>` +
+    `<span>خط <b>${sess.length}</b></span>` +
+    `<span>قانون <b>${lawN}</b></span>`;
+  const dayKeys = Object.keys(byDay).sort();
+  hostB.innerHTML = svgBars(dayKeys.map(d => ({
+    lab: d.slice(5), n: byDay[d].daftar, fill: '#3a6288'
+  })));
+  hostM.innerHTML = svgBars(META_ITEMS.filter(it => it.kind === 'accumDur').map(it => ({
+    lab: tileTitle(it), n: durSum[it.id] || 0, fill: '#6a4a8a'
+  })));
+}
+
 function sumTile(title, value, note, tone, off) {
   return '<div class="sumtile ' + tone + (off ? ' off' : '') + '">' +
     '<span>' + esc(title) + '</span>' +
@@ -1656,11 +1827,11 @@ function paintSummary(el, rec, work) {
       parts.map(p => sumTile(p.label, fmtChunk(p.min), p.n + ' خط', 'p' + p.id, !p.min)).join('') +
     '</div>' +
     '<div class="sumhero durs">' +
-      durs.map(v => sumTile(v.id === 'layers' ? 'layers' : v.label, v.val, v.min ? '' : 'خالی', 'tone-' + v.group, !v.min)).join('') +
-      sumTile('ghanoon mohem', String(laws.length), fmtChunk(lawMin), 'tone-laws', !laws.length) +
+      durs.map(v => sumTile(tileTitle(v), v.val, v.min ? fmtChunk(v.min) : '0m', 'tone-' + v.group, !v.min)).join('') +
+      sumTile('ghanoon mohem', String(laws.length), fmtChunk(lawMin), 'tone-laws', false) +
       (function () {
         const avg = views.find(v => v.kind === 'avgSec');
-        return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok' : '>1.5s', 'tone-andaze', avg.state !== 'ok') : '';
+        return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok <=1.5s' : '>1.5s', 'tone-andaze', avg.state !== 'ok') : '';
       }()) +
     '</div>' +
     ((work.byCat && work.byCat.length)
@@ -1678,7 +1849,7 @@ function paintSummary(el, rec, work) {
         if (g.id === 'laws') {
           chips = laws.length
             ? laws.map(x => '<span class="chip ok">' + esc(x.name) + (x.desc ? ' — ' + esc(x.desc) : '') + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
-            : '<span class="chip miss">nist</span>';
+            : '<span class="chip miss">0</span>';
         }
         return '<article class="sumcard tone-' + esc(g.id) + '">' +
           '<h4>' + esc(g.title) + ' <span>' + (g.id === 'laws' ? String(laws.length) : (gok + '/' + items.length)) + '</span></h4>' +
@@ -1778,15 +1949,13 @@ async function refreshData() {
   const host = $('logList');
   if (!host) return;
   host.innerHTML = mixed.slice(0, 30).map(r => {
-    const actions = tagCell(r.synced) + (r.store === 'sessions' && !r.synced && r.uid
-      ? '<button type="button" class="cancel" data-store="sessions" data-uid="' + esc(r.uid) + '">لغو</button>'
+    const actions = tagCell(r.synced) + (r.store === 'sessions' && r.uid
+      ? '<button type="button" class="cancel" data-store="sessions" data-uid="' + esc(r.uid) + '">برگشت</button>'
       : '');
     let body = '';
     if (r.store === 'meta' && r.bits && r.bits.length) {
       body = '<div class="logchips">' + r.bits.map(b => {
-        const x = !r.synced
-          ? '<button type="button" class="cancel" data-meta-item="' + esc(b.id) + '" data-uid="' + esc(r.uid) + '">لغو</button>'
-          : '';
+        const x = '<button type="button" class="cancel" data-meta-item="' + esc(b.id) + '" data-uid="' + esc(r.uid) + '">برگشت</button>';
         return '<span class="logchip">' + esc(b.text) + x + '</span>';
       }).join('') + '</div>';
     } else if (r.store === 'sessions') {
@@ -1889,6 +2058,14 @@ async function boot() {
   $('tabSession').addEventListener('click', () => showTab('session'));
   $('tabMeta').addEventListener('click',    () => showTab('meta'));
   $('tabData').addEventListener('click',    () => showTab('data'));
+  if ($('tabDash')) $('tabDash').addEventListener('click', () => showTab('dash'));
+  if ($('dashRange')) {
+    $('dashRange').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      dashDays = b.dataset.d === 'mah' ? 'mah' : Number(b.dataset.d);
+      $('dashRange').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      paintDashboard();
+    }));
+  }
   $('btnSave').addEventListener('click',  () => doSave());
   $('btnSaveCfg').addEventListener('click', () => {
     cfgSet('url', $('cfg_url').value.trim());
@@ -1915,13 +2092,14 @@ async function boot() {
       const rec = all.find(r => r.uid === uid);
       if (!rec) return;
       clearMetaField(rec, itemId);
-      if (!metaBits(rec).length) await delKey('meta', rec.uid);
-      else await put('meta', rec);
-      toast('از متا حذف شد');
+      rec.synced = 0;
+      await put('meta', rec);
+      toast('برگشت خورد');
       await refreshData();
       updateQueueBadge();
       paintMetaStatus();
       paintNotebook();
+      trySync();
       return;
     }
     const b = ev.target.closest('button.cancel');
@@ -1929,12 +2107,14 @@ async function boot() {
     const store = b.dataset.store;
     const id = b.dataset.uid;
     if (!store || !id) return;
+    if (store === 'sessions') queueSessionDelete(id);
     await delKey(store, id);
-    toast('از صف حذف شد');
+    toast('برگشت خورد');
     await refreshData();
     updateQueueBadge();
     if (store === 'meta') paintMetaStatus();
     else paintNotebook();
+    trySync();
   });
   $('btnWipe').addEventListener('click', async () => {
     if (!confirm('همه دادهٔ این دستگاه پاک شود؟')) return;
@@ -1952,7 +2132,7 @@ async function boot() {
   window.addEventListener('pageshow', () => {
     settleWheels();
     const last = cfgGet('tab');
-    if (last === 'session' || last === 'data' || last === 'meta') {
+    if (last === 'session' || last === 'data' || last === 'meta' || last === 'dash') {
       if (last !== activeTab) showTab(last);
     }
   });
@@ -1975,7 +2155,7 @@ async function boot() {
   checkSheet(false);
   trySync();
   const last = cfgGet('tab');
-  showTab(last === 'session' || last === 'data' || last === 'meta' ? last : 'session');
+  showTab(last === 'session' || last === 'data' || last === 'meta' || last === 'dash' ? last : 'session');
 
   if (location.search.indexOf('diag=meta') >= 0) {
     setTimeout(() => showTab('meta'), 1200);

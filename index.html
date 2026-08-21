@@ -36,14 +36,14 @@ h1{font-size:1.05rem;margin:0}
 .pill{font-size:.72rem;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--muted)}
 .pill.on{border-color:var(--good);color:var(--good)}
 .pill.off{border-color:var(--warn);color:var(--warn)}
-.tabs{display:flex;gap:6px;margin-top:10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .tabs button{
-  flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);
-  border-radius:10px;padding:9px 6px;font-size:.86rem;font-family:inherit;cursor:pointer
+  flex:1 1 22%;min-width:72px;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:8px 4px;font-size:.78rem;font-family:inherit;cursor:pointer
 }
 .tabs button.active{background:#1e2b3c;border-color:var(--accent);color:var(--ink)}
 main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc(12px + var(--hdr, 108px));overflow-x:hidden}
-#paneMeta,#paneSession,.mgrids,.sumdash,.sumhero,.sumflags,.flaggrid,.flagchips{min-width:0;max-width:100%}
+#paneMeta,#paneSession,#paneDash,.mgrids,.sumdash,.sumhero,.sumflags,.flaggrid,.flagchips{min-width:0;max-width:100%}
 .mgrids{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .mgrp{border:1px solid var(--line);border-radius:14px;padding:10px;margin:0;background:var(--panel);min-width:0;max-width:100%;overflow:hidden}
 .mgrp.span2{grid-column:1 / -1}
@@ -64,6 +64,7 @@ main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 14px;overflow-x:hidden}
 .card h2{margin:0 0 4px;font-size:.98rem}
 .hint{color:var(--muted);font-size:.79rem;margin:0 0 10px}
+.mblock .hint{direction:ltr;unicode-bidi:isolate;text-align:left;font-family:Consolas,monospace}
 label.lb{display:block;font-size:.84rem;margin:14px 0 6px;color:#cfdcea}
 label.lb .req{color:var(--bad)}
 input,select,textarea{
@@ -185,7 +186,8 @@ button.cancel{
 }
 .sumtile{
   border-radius:14px;padding:10px 12px;border:1px solid var(--line);
-  min-width:0;background:#0b1016
+  min-width:0;background:#0b1016;
+  direction:ltr;unicode-bidi:isolate;text-align:left
 }
 .sumtile b,.flagchips .chip,.mblock h3,.flaggrid button,.alist button,.nbcode,.nbtags,.sumcard h4{
   direction:ltr;unicode-bidi:isolate;text-align:left;
@@ -194,9 +196,19 @@ button.cancel{
 .flagchips .chip,.flaggrid button,.mblock h3{
   display:block;width:100%;box-sizing:border-box;white-space:normal;line-height:1.35
 }
-.sumtile span{display:block;font-size:.7rem;color:var(--muted);margin-bottom:2px}
-.sumtile b{display:block;font-size:1.22rem;line-height:1.2;color:#e8eef5}
-.sumtile small{display:block;color:#93a4b8;font-size:.7rem;margin-top:4px}
+.sumtile span{
+  display:block;font-size:.68rem;color:var(--muted);margin-bottom:4px;
+  direction:ltr;unicode-bidi:isolate;text-align:left;
+  overflow-wrap:anywhere;word-break:break-word;line-height:1.3
+}
+.sumtile b{
+  display:block;font-size:1.18rem;line-height:1.2;color:#e8eef5;
+  direction:ltr;unicode-bidi:isolate;text-align:left
+}
+.sumtile small{
+  display:block;color:#93a4b8;font-size:.68rem;margin-top:4px;
+  direction:ltr;unicode-bidi:isolate;text-align:left
+}
 .sumtile.off{opacity:.48}
 .sumtile.tone-nb{border-color:#3a6288;background:linear-gradient(180deg,#152033,#0b1016)}
 .sumtile.p0{border-color:#7a5a18;background:linear-gradient(180deg,#2a2214,#0b1016)}
@@ -306,10 +318,14 @@ button.gput{
 .nbtags{color:#c5d4e4;font-size:.78rem}
 .nbdur{margin-inline-start:auto;color:#c8f0d8;font-weight:bold;white-space:nowrap}
 .catlab{font-size:.75rem;color:var(--muted);margin:12px 0 6px}
-.alist{display:flex;flex-wrap:wrap;gap:6px}
+.alist{
+  display:flex;flex-wrap:wrap;gap:6px;
+  direction:ltr;justify-content:flex-start;text-align:left
+}
 .alist.stick{
   display:flex;flex-wrap:wrap;gap:4px;margin:10px 0;
-  border:1px solid var(--line);border-radius:12px;padding:8px;background:#0b1016
+  border:1px solid var(--line);border-radius:12px;padding:8px;background:#0b1016;
+  direction:ltr;justify-content:flex-start
 }
 .alist button{
   background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:10px;
@@ -352,6 +368,26 @@ button.gput{
   border-radius:14px;padding:8px;margin:10px 0
 }
 .catbox .catlab{margin:0 0 6px;color:var(--c,var(--muted));font-family:Consolas,monospace;direction:ltr;text-align:left}
+#nbList,.catbox,#nbComposer{direction:ltr;text-align:left}
+#compTitle{direction:ltr;unicode-bidi:isolate;text-align:left;font-family:Consolas,monospace}
+.whoBox{
+  display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;
+  direction:ltr;justify-content:flex-start
+}
+.whochk{
+  display:flex;align-items:center;gap:6px;
+  border:1px solid var(--line);border-radius:10px;padding:8px 10px;
+  background:#0b1016;font-size:.82rem;cursor:pointer;user-select:none
+}
+.whochk.on{border-color:var(--accent);background:#1e2b3c}
+.whochk input{width:auto;margin:0}
+.rst{
+  margin-top:8px;background:#2a1618;border:1px solid var(--bad);color:#f8c9cd;
+  border-radius:8px;padding:7px 10px;font-size:.75rem;font-family:inherit;cursor:pointer
+}
+.chartbox{direction:ltr;unicode-bidi:isolate;text-align:left;overflow-x:auto;margin-top:8px}
+.chartbox svg{display:block;width:100%;height:auto;max-width:100%}
+.tabs button#tabDash.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
 .catbox .alist.stick{margin:0;border:0;padding:0;background:transparent}
 .cat-takhsis{--c:#c9a0ff;--bg:rgba(160,110,220,.12);--bd:#5a3d78}
 .cat-arastegi{--c:#7ee0d6;--bg:rgba(70,190,180,.12);--bd:#2f6a66}
@@ -393,6 +429,7 @@ button.gput{
   <div class="tabs">
     <button id="tabMeta" class="active" type="button">متای روز</button>
     <button id="tabSession" type="button">دفتر نوبت</button>
+    <button id="tabDash" type="button">داشبورد</button>
     <button id="tabData" type="button">داده‌ها</button>
   </div>
 </header>
@@ -403,10 +440,9 @@ button.gput{
     <div class="gate" id="metaGate">meta …</div>
     <div class="card">
       <h2>متای روز</h2>
-      <p class="hint">با یک نگاه: جمع کار، انجام‌شده، مانده.</p>
       <label class="lb">تاریخ</label>
       <div id="mDate"></div>
-      <div class="sumdash" id="metaSum"></div>
+      <div class="chartbox" id="metaDayChart"></div>
       <div class="checks" id="metaChecks"></div>
     </div>
     <div id="metaBlocks"></div>
@@ -416,27 +452,38 @@ button.gput{
     <div class="gate" id="metaGate2">—</div>
     <div class="card">
       <h2>دفتر امروز</h2>
-      <p class="hint">خلاصه بالا نشان می‌دهد چقدر کار شده و چه چیزی مانده. پارت‌ها کارت رنگی‌اند.</p>
       <label class="lb">تاریخ</label>
       <div id="sDate"></div>
-      <div class="sumdash" id="nbMetaSum"></div>
       <div class="nb" id="nbLog">در حال خواندن دفتر…</div>
     </div>
     <div class="card">
       <h2>افزودن به پارت جاری</h2>
       <label class="lb">پارت</label>
       <div class="parts" id="sParts"></div>
-      <p class="hint" id="partHint"></p>
       <div id="nbList"></div>
       <div id="nbComposer" class="hide">
-        <label class="lb" id="compTitle">—</label>
-        <p class="hint" id="compHint"></p>
+        <label class="lb ltr" id="compTitle">—</label>
         <div id="dynFields"></div>
-        <label class="lb">پرانتز — با ویرگول جدا کن</label>
-        <input id="s_tags" placeholder="مثلاً فشار، زجر، فلو"/>
+        <div id="whoBox" class="whoBox hide"></div>
+        <input id="s_tags" class="hide" />
         <label class="lb">یادداشت خط</label>
         <textarea id="s_note" placeholder="اختیاری"></textarea>
       </div>
+    </div>
+  </section>
+
+  <section id="paneDash" class="hide">
+    <div class="card">
+      <h2>داشبورد</h2>
+      <div class="chips qchips" id="dashRange">
+        <button type="button" data-d="7">۷ روز</button>
+        <button type="button" data-d="14" class="on">۱۴ روز</button>
+        <button type="button" data-d="30">۳۰ روز</button>
+        <button type="button" data-d="mah">این ماه</button>
+      </div>
+      <div class="stat" id="dashStat">—</div>
+      <div class="chartbox" id="dashBars"></div>
+      <div class="chartbox" id="dashMeta"></div>
     </div>
   </section>
 
@@ -495,6 +542,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=47"></script>
+<script src="app.js?v=49"></script>
 </body>
 </html>
