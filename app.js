@@ -5,8 +5,8 @@
 
 'use strict';
 
-const APP_VERSION = 'v37 · meta';
-const SCRIPT_VERSION = 'v9-meta';
+const APP_VERSION = 'v38 · meta';
+const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -135,17 +135,22 @@ function flagBundleKeys(id) {
   return FLAG_BUNDLES[id] || [id];
 }
 function applyFlagBundle(rec, id, on) {
-  const v = on ? 1 : 0;
-  flagBundleKeys(id).forEach(k => { rec[k] = v; });
+  rec[id] = on ? 1 : 0;
+  flagBundleKeys(id).forEach(k => { if (k !== id) delete rec[k]; });
 }
 function migrateFlagBundles(rec) {
   const done = parseDone(rec);
   Object.keys(FLAG_BUNDLES).forEach(primary => {
     const keys = FLAG_BUNDLES[primary];
     const any = keys.some(k => rec[k] || done[k]);
-    keys.forEach(k => { rec[k] = any ? 1 : 0; });
+    rec[primary] = any ? 1 : 0;
     if (any) done[primary] = 1;
-    keys.forEach(k => { if (k !== primary) delete done[k]; });
+    keys.forEach(k => {
+      if (k !== primary) {
+        delete rec[k];
+        delete done[k];
+      }
+    });
   });
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
@@ -156,9 +161,9 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'openfa1h','nchort','saatbidari5','twoHourAras',
   'opf1','chizayemojazbadeopfa2','opf2',
   'takhghmojaz0','takhmojmotns',
-  'mohtmoj100','budandarjayemojaz100','kharidemojaz100',
+  'budandarjayemojaz100',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
-  'noCarb','noghahveyebiruni','nolimunadbiruni',
+  'noCarb','noghahveyebiruni',
   'nocopypasteazaighable12pm','preplan12',
   'takhirAvg','takhirN','takhirSum','lawsJson','lawsMin',
   'doneJson','complete'];
@@ -610,9 +615,6 @@ function blankMeta(day) {
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
   META_FLAG_IDS.forEach(k => { rec[k] = 0; });
-  Object.keys(FLAG_BUNDLES).forEach(p => {
-    FLAG_BUNDLES[p].forEach(k => { rec[k] = 0; });
-  });
   return rec;
 }
 
@@ -627,7 +629,8 @@ let lastMetaRec = null;
 
 function flagOn(rec, id) {
   if (Object.prototype.hasOwnProperty.call(flagDraft, id)) return !!flagDraft[id];
-  return !!(rec && rec[id]);
+  if (rec && rec[id]) return true;
+  return flagBundleKeys(id).some(k => !!(rec && rec[k]));
 }
 
 function clearFlagDraft() {
@@ -698,11 +701,8 @@ async function paintMetaStatus() {
   const day = mDate ? selectedMetaDay() : '';
   const rec = day ? await metaFor(day) : null;
   lastMetaRec = rec;
-  const sum = rec ? metaSummary(rec) : '—';
-  const sumEl = $('metaSum');
-  if (sumEl) sumEl.textContent = 'meta · ' + sum;
-  const nbSum = $('nbMetaSum');
-  if (nbSum) nbSum.textContent = 'meta · ' + sum;
+  renderMetaCards($('metaSum'), rec);
+  renderMetaCards($('nbMetaSum'), rec);
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
@@ -735,6 +735,21 @@ function groupFlags(gid) {
 }
 
 function mountMetaItem(host, it) {
+  if (it.kind === 'flag') {
+    let row = host.querySelector('.flaggrid');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'flaggrid';
+      host.appendChild(row);
+    }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = it.label;
+    b.addEventListener('click', () => toggleFlagDraft(it.id));
+    row.appendChild(b);
+    it._btn = b;
+    return;
+  }
   const box = document.createElement('div');
   box.className = 'mblock';
   box.innerHTML =
@@ -744,17 +759,6 @@ function mountMetaItem(host, it) {
   host.appendChild(box);
   const h = $('mw_' + it.id);
   if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0);
-  if (it.kind === 'flag') {
-    const row = document.createElement('div');
-    row.className = 'flagrow';
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = it.label;
-    b.addEventListener('click', () => toggleFlagDraft(it.id));
-    row.appendChild(b);
-    h.appendChild(row);
-    it._btn = b;
-  }
   if (it.kind === 'avgSec') {
     const hint = document.createElement('p');
     hint.className = 'hint';
@@ -863,14 +867,10 @@ function buildMeta() {
   });
   const host = $('metaBlocks');
   host.innerHTML = '';
+  host.className = 'mgrids';
   META_GROUPS.forEach(g => {
-    if (g.hr) {
-      const hr = document.createElement('hr');
-      hr.className = 'mhr';
-      host.appendChild(hr);
-    }
     const wrap = document.createElement('div');
-    wrap.className = 'mgrp';
+    wrap.className = 'mgrp' + ((g.id === 'andaze' || g.id === 'laws') ? ' span2' : '');
     const flags = groupFlags(g.id);
     wrap.innerHTML =
       `<div class="gtitle">${g.title}</div>` +
@@ -1290,13 +1290,13 @@ async function doSave() {
 /* ═════════════════════════════ 8. SYNC ═════════════════════════════════════ */
 
 async function forceMetaResyncOnce() {
-  if (cfgGet('meta_resync') === 'v37') return;
+  if (cfgGet('meta_resync') === 'v38') return;
   const all = await getAll('meta');
   for (const r of all) {
     r.synced = 0;
     await put('meta', r);
   }
-  cfgSet('meta_resync', 'v37');
+  cfgSet('meta_resync', 'v38');
 }
 
 function execHint(url) {
@@ -1443,7 +1443,7 @@ function metaBits(rec) {
   META_ITEMS.forEach(it => {
     if (it.kind === 'accumDur') {
       const n = Number(rec[META_STORE[it.id]]) || 0;
-      if (n) bits.push({ id: it.id, text: it.id + '=' + fmtChunk(n) });
+      if (n) bits.push({ id: it.id, text: it.label + '=' + fmtChunk(n) });
     } else if (it.kind === 'flag' && rec[it.id]) {
       bits.push({ id: it.id, text: it.label });
     } else if (it.kind === 'avgSec' && Number(rec.takhirN) > 0) {
@@ -1455,6 +1455,38 @@ function metaBits(rec) {
     bits.push({ id: 'law:' + x.name, text: x.name + '=' + fmtChunk(x.min) });
   });
   return bits;
+}
+function groupedMetaBits(rec) {
+  const by = {};
+  META_GROUPS.forEach(g => { by[g.id] = { title: g.title, bits: [] }; });
+  metaBits(rec).forEach(b => {
+    let gid = 'laws';
+    if (String(b.id).indexOf('law:') !== 0) {
+      const it = META_ITEMS.find(x => x.id === b.id);
+      if (it) gid = it.group;
+    }
+    if (!by[gid]) by[gid] = { title: gid, bits: [] };
+    by[gid].bits.push(b);
+  });
+  return META_GROUPS.map(g => by[g.id]).filter(g => g.bits.length);
+}
+function renderMetaCards(el, rec) {
+  if (!el) return;
+  if (!rec) {
+    el.innerHTML = '<article class="sumcard empty">—</article>';
+    return;
+  }
+  const groups = groupedMetaBits(rec);
+  if (!groups.length) {
+    el.innerHTML = '<article class="sumcard empty">khali</article>';
+    return;
+  }
+  el.innerHTML = groups.map(g =>
+    '<article class="sumcard">' +
+      '<h4>' + esc(g.title) + '</h4>' +
+      g.bits.map(b => '<div class="sumline">' + esc(b.text) + '</div>').join('') +
+    '</article>'
+  ).join('');
 }
 function metaSummary(rec) {
   const bits = metaBits(rec);
@@ -1517,8 +1549,9 @@ async function refreshData() {
       cats.map(c => `${c}: <b>${fmtHM(byCat[c].min)}</b>`).join('<br/>') + '</div>';
   }
   const todayMeta = m.find(r => r.dateShamsi === today);
-  html += '<div class="ltr" style="margin-top:8px">متا · ' +
-    esc(todayMeta ? metaSummary(todayMeta) : '—') + '</div>';
+  const hold = document.createElement('div');
+  renderMetaCards(hold, todayMeta || null);
+  html += '<div class="sumgrid" style="margin-top:8px">' + hold.innerHTML + '</div>';
   $('todaySum').innerHTML = html;
   const mixed = [];
   s.forEach(r => mixed.push({
