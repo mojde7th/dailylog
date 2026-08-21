@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v55 · scale';
+const APP_VERSION = 'v56 · ltr-en';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -776,6 +776,7 @@ async function paintMetaStatus() {
   lastMetaRec = rec;
   const work = await sessionWork(day);
   paintDayChart($('metaDayChart'), rec, work);
+  paintSummary($('metaChecks'), rec, work);
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
@@ -824,6 +825,7 @@ function mountMetaItem(host, it) {
     }
     const b = document.createElement('button');
     b.type = 'button';
+    b.dir = 'ltr';
     b.textContent = it.label;
     b.addEventListener('click', () => toggleFlagDraft(it.id));
     row.appendChild(b);
@@ -1743,17 +1745,7 @@ function paintDayChart(el, rec, work) {
     if (!s.n) return;
     bars.push({ lab: g.id, n: s.ok, val: s.ok + '/' + s.n, fill: '#7a5428', unit: 'n' });
   });
-  const chips = flags.map(it => {
-    const on = flagOn(rec, it.id);
-    return '<span class="chip ' + dirOf(it.label) + ' ' + (on ? 'ok' : 'miss') + '">' + esc(it.label) + ' ' + (on ? '1' : '0') + '</span>';
-  }).join('');
-  const lawChips = laws.length
-    ? laws.map(x => '<span class="chip ' + dirOf(x.name) + ' ok">' + esc(x.name) + (x.min ? ' ' + esc(fmtChunk(x.min)) : '') + '</span>').join('')
-    : '';
-  el.innerHTML =
-    svgBars(bars) +
-    '<div class="flagchips dayflags">' + chips + '</div>' +
-    (lawChips ? '<div class="flagchips daylaws">' + lawChips + '</div>' : '');
+  el.innerHTML = svgBars(bars);
 }
 async function resetMetaItem(id) {
   const day = selectedMetaDay();
@@ -1991,11 +1983,11 @@ function paintSummary(el, rec, work) {
         const items = views.filter(v => v.group === g.id);
         const gok = items.filter(v => v.state === 'ok').length;
         let chips = items.map(v =>
-          '<span class="chip ' + dirOf(v.label) + ' ' + v.state + '">' + esc(v.label) + (v.val ? ' ' + v.val : '') + '</span>'
+          '<span class="chip ' + dirOf(v.label) + ' ' + v.state + '" dir="' + dirOf(v.label) + '">' + esc(v.label) + (v.val ? ' ' + v.val : '') + '</span>'
         ).join('');
         if (g.id === 'laws') {
           chips = laws.length
-            ? laws.map(x => '<span class="chip ' + dirOf(x.name) + ' ok">' + esc(x.name) + (x.desc ? ' — ' + esc(x.desc) : '') + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
+            ? laws.map(x => '<span class="chip ' + dirOf(x.name) + ' ok" dir="' + dirOf(x.name) + '">' + esc(x.name) + (x.desc ? ' — ' + esc(x.desc) : '') + ' ' + esc(fmtChunk(x.min)) + '</span>').join('')
             : '<span class="chip miss">0</span>';
         }
         return '<article class="sumcard tone-' + esc(g.id) + '">' +
