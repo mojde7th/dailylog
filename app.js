@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v56 · ltr-en';
+const APP_VERSION = 'v57 · center';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1940,44 +1940,12 @@ async function paintDashboard() {
 function dirOf(s) {
   return /[\u0600-\u06FF]/.test(String(s || '')) ? 'rtl' : 'ltr';
 }
-function sumTile(title, value, note, tone, off) {
-  return '<div class="sumtile ' + tone + (off ? ' off' : '') + '">' +
-    '<div class="tirow">' +
-      '<span class="tilab ' + dirOf(title) + '">' + esc(title) + '</span>' +
-      '<b class="tival">' + esc(value) + '</b>' +
-    '</div>' +
-    (note ? '<small class="tinote ' + dirOf(note) + '">' + esc(note) + '</small>' : '') +
-  '</div>';
-}
 function paintSummary(el, rec, work) {
   if (!el) return;
   el.classList.add('sumdash');
-  work = work || { sessionMin: 0, sessionN: 0, byPart: PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 })), byCat: [] };
   const views = META_ITEMS.map(it => metaItemView(rec, it));
   const laws = lawsForSummary(rec);
-  const durs = views.filter(v => v.kind === 'accumDur');
-  const lawMin = laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
-  const okN = views.filter(v => v.state === 'ok').length;
-  const pct = views.length ? Math.round(100 * okN / views.length) : 0;
-  const parts = (work.byPart || PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 })));
   el.innerHTML =
-    '<div class="sumhero work">' +
-      sumTile('دفتر', fmtChunk(work.sessionMin || 0), (work.sessionN || 0) + ' خط · ' + pct + '% متا', 'tone-nb', !(work.sessionMin)) +
-      parts.map(p => sumTile(p.label, fmtChunk(p.min), p.n + ' خط', 'p' + p.id, !p.min)).join('') +
-    '</div>' +
-    '<div class="sumhero durs">' +
-      durs.map(v => sumTile(tileTitle(v), v.val, v.min ? fmtChunk(v.min) : '0m', 'tone-' + v.group, !v.min)).join('') +
-      sumTile('ghanoon mohem', String(laws.length), fmtChunk(lawMin), 'tone-laws', false) +
-      (function () {
-        const avg = views.find(v => v.kind === 'avgSec');
-        return avg ? sumTile('takhir', avg.val, avg.state === 'ok' ? 'ok <=1.5s' : '>1.5s', 'tone-andaze', avg.state !== 'ok') : '';
-      }()) +
-    '</div>' +
-    ((work.byCat && work.byCat.length)
-      ? ('<div class="sumhero cats">' +
-          work.byCat.map(c => sumTile(c.cat, fmtChunk(c.min), c.n + ' خط', 'cat-' + c.cat, !c.min)).join('') +
-        '</div>')
-      : '') +
     '<div class="sumflags">' +
       META_GROUPS.map(g => {
         const items = views.filter(v => v.group === g.id);

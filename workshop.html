@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>DailyLog · کارگاه قراردادها</title>
+<title>DailyLog · از صفر تا صد</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <style>
 :root{
-  --bg:#0f1419;--panel:#171d25;--ink:#e8eef5;--muted:#93a4b8;
+  --bg:#0f1419;--ink:#e8eef5;--muted:#93a4b8;
   --line:#2a3542;--accent:#6db3f2;--good:#3ecf8e;--warn:#f0b429;--bad:#f07178;
   --fs:16px
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;background:var(--bg);color-scheme:dark}
-body{margin:0;font-family:Tahoma,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.9;font-size:var(--fs)}
+body{margin:0;font-family:Tahoma,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.85;font-size:var(--fs)}
 .top{
   position:sticky;top:0;z-index:50;background:#101820;border-bottom:1px solid var(--line);
   padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center
@@ -24,61 +24,36 @@ body{margin:0;font-family:Tahoma,"Segoe UI",sans-serif;background:var(--bg);colo
 }
 .prog{flex:1;min-width:120px;height:8px;background:#1d242e;border-radius:99px;overflow:hidden}
 .prog i{display:block;height:100%;width:0;background:var(--good)}
-.wrap{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 52px)}
+.wrap{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 52px)}
 nav{
   position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);overflow:auto;
   background:#131922;border-left:1px solid var(--line);padding:16px 12px
 }
-nav a{display:flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.82rem;padding:5px 8px;border-radius:8px}
+nav a{display:flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.78rem;padding:5px 8px;border-radius:8px}
 nav a:hover,nav a.on{background:#1e2b3c;color:var(--ink)}
 nav a.done{color:var(--good)}
 nav .g{color:#6db3f2;font-size:.72rem;margin:12px 8px 4px}
-main{max-width:900px;padding:28px 28px 80px}
-h1{font-size:1.45rem;margin:0 0 8px}
-h2{font-size:1.15rem;margin:36px 0 10px;border-top:1px solid var(--line);padding-top:22px;scroll-margin-top:64px}
-h3{font-size:1rem;margin:22px 0 8px;color:#cfe3f7}
+main{max-width:860px;padding:28px 28px 80px}
+h1{font-size:1.4rem;margin:0 0 10px}
+h2{font-size:1.08rem;margin:40px 0 10px;border-top:1px solid var(--line);padding-top:22px;scroll-margin-top:64px}
 p,li{color:#d5deea}
 .muted{color:var(--muted)}
-.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
-.lab{border-color:var(--accent)}
-.warn{border-color:var(--warn)}
-.good{border-color:var(--good)}
-.bad{border-color:var(--bad)}
 .kicker{font-size:.78rem;color:var(--accent)}
 pre,code{font-family:Consolas,"Cascadia Mono",monospace}
 .prewrap{position:relative}
 pre{
   direction:ltr;text-align:left;background:#070b10;border:1px solid var(--line);
-  border-radius:12px;padding:12px;overflow:auto;font-size:.8rem;line-height:1.55;color:#c8f0d8
+  border-radius:10px;padding:12px;overflow:auto;font-size:.8rem;line-height:1.55;color:#c8f0d8
 }
-.copy{
-  position:absolute;top:8px;left:8px;font-size:.7rem;padding:3px 8px
-}
-code{direction:ltr;unicode-bidi:isolate}
-p code,li code,h3 code{font-size:.92em}
-.goal{border-right:3px solid var(--good);padding:10px 12px;margin:0 0 14px;background:#0c1814}
-.why{border-right:3px solid var(--accent);padding:10px 12px;margin:12px 0;background:#0d1822}
-mark.hit{background:#3a4a20;color:#e8eef5;border-radius:3px}
-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:10px 0}
-th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:right;vertical-align:top}
-th{color:var(--muted);font-weight:normal}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 14px;direction:ltr;justify-content:flex-start}
-.sw b,.clock{font-size:1.2rem;direction:ltr}
-button, .top button{
+.copy{position:absolute;top:8px;left:8px;font-size:.7rem;padding:3px 8px}
+.goal{margin:0 0 10px;color:#c8f0d8}
+.why{margin:12px 0 0;color:#b7c4d4}
+button,.top button{
   background:#1e2b3c;border:1px solid var(--line);color:var(--ink);
   border-radius:10px;padding:7px 12px;font-family:inherit;cursor:pointer
 }
 button.good{background:#1b3a2e;border-color:var(--good)}
-.chk{margin:6px 0}
-.chk input{margin-left:8px}
-.play{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.play .box{margin:0}
-.flag{display:block;width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;margin:4px 0;padding:10px}
-.flag.on{background:#12312a;border-color:var(--good);color:var(--good)}
-.note{
-  width:100%;min-height:70px;background:#0b1016;border:1px solid var(--line);color:var(--ink);
-  border-radius:10px;padding:10px;font-family:inherit
-}
+.clock{font-size:1.1rem;direction:ltr}
 .toast{
   position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#12312a;
   border:1px solid var(--good);color:#bff0dc;padding:8px 14px;border-radius:10px;
@@ -87,15 +62,14 @@ button.good{background:#1b3a2e;border-color:var(--good)}
 .toast.show{opacity:1}
 body.focus nav{display:none}
 body.focus .wrap{grid-template-columns:1fr}
-.hide{display:none}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}nav{height:auto;position:relative;top:0}.play{grid-template-columns:1fr}}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}nav{height:auto;position:relative;top:0}}
 @media print{.top,nav,button,.toast{display:none}main{max-width:none;padding:0}h2{break-before:page}}
 </style>
 </head>
 <body>
 <div class="top">
-  <input id="q" type="search" placeholder="جستجو در کارگاه — میانبر اسلش"/>
-  <div class="prog" title="پیشرفت فصل‌ها"><i id="bar"></i></div>
+  <input id="q" type="search" placeholder="جستجو — میانبر اسلش"/>
+  <div class="prog" title="پیشرفت نسخه‌ها"><i id="bar"></i></div>
   <span id="pct" class="muted">۰٪</span>
   <b id="clk" class="clock">00:00</b>
   <button type="button" id="go">شروع</button>
@@ -108,404 +82,883 @@ body.focus .wrap{grid-template-columns:1fr}
 </div>
 <div class="wrap">
 <nav>
-  <div class="g">معماری</div>
-  <a href="#map">لایه‌ها</a>
-  <a href="#files">قرارداد پرونده‌ها</a>
-  <a href="#run">مبدأ اجرا</a>
-  <div class="g">runtime</div>
-  <a href="#pwa">manifest</a>
-  <a href="#sw">service worker</a>
-  <a href="#idb">IndexedDB</a>
-  <a href="#wheel">تاریخ شمسی</a>
-  <div class="g">مدل داده</div>
-  <a href="#meta">متا و draft</a>
-  <a href="#nb">دفتر و ارث پارت</a>
-  <a href="#laws">قانون پویا</a>
-  <a href="#sync">sync و قفل نسخه</a>
-  <a href="#gas">Apps Script</a>
-  <div class="g">عملیات</div>
-  <a href="#dash">داشبورد بازه</a>
-  <a href="#bugs">رگرسیون‌هایی که خوردیم</a>
-  <a href="#deploy">deploy</a>
-  <a href="#win">نصب PWA</a>
-  <div class="g">تمرین</div>
-  <a href="#play">شبیه‌ساز</a>
-  <a href="#quiz">آزمون</a>
-  <a href="#end">چک‌لیست</a>
+<div class="g">پوسته</div><a href="#v0">نسخهٔ 0 · صفحهٔ خالی که هنوز اپ نیست</a><a href="#v1">نسخهٔ 1 · رنگ و جهت پایه</a><a href="#v2">نسخهٔ 2 · چهار تب، چهار قاب. شناسه را نشکن</a><a href="#v3">نسخهٔ 3 · نمایش یک تب</a><a href="#v4">نسخهٔ 4 · پیام کوتاه روی صفحه</a><a href="#v5">نسخهٔ 5 · کمک‌های یک‌خطی که همه‌جا تکرار می‌شوند</a><a href="#v6">نسخهٔ 6 · سه نسخه که باید با هم بالا بروند</a><a href="#v7">نسخهٔ 7 · نوار پایین فقط دفتر</a><a href="#v8">نسخهٔ 8 · فرار متن قبل از چسباندن به دام</a><a href="#v9">نسخهٔ 9 · جهت یک رشته</a><a href="#v10">نسخهٔ 10 · قرارداد پرونده‌ها</a><div class="g">حافظه و تاریخ</div><a href="#v11">نسخهٔ 11 · باز کردن ایندکس‌دی‌بی</a><a href="#v12">نسخهٔ 12 · چهار عمل روی فروشگاه</a><a href="#v13">نسخهٔ 13 · کلید متای یک روز</a><a href="#v14">نسخهٔ 14 · یک روز، چند ردیف کهنه</a><a href="#v15">نسخهٔ 15 · کبیسه و طول ماه شمسی</a><a href="#v16">نسخهٔ 16 · امروز به شمسی</a><a href="#v17">نسخهٔ 17 · گام روز روی تقویم شمسی</a><a href="#v18">نسخهٔ 18 · بازهٔ داشبورد</a><a href="#v19">نسخهٔ 19 · چرخ باید ارتفاع داشته باشد</a><a href="#v20">نسخهٔ 20 · تاریخ شمسی روی سه ستون</a><div class="g">دفتر</div><a href="#v21">نسخهٔ 21 · چهار پارت روز</a><a href="#v22">نسخهٔ 22 · پارت از ساعت دیوار</a><a href="#v23">نسخهٔ 23 · دکمه‌های پارت، وسط بخش</a><a href="#v24">نسخهٔ 24 · کدها یک جدول‌اند</a><a href="#v25">نسخهٔ 25 · لیست فعالیت پارت جاری</a><a href="#v26">نسخهٔ 26 · مدت به دقیقه و نمایش تکه</a><a href="#v27">نسخهٔ 27 · جمع‌کردن یک خط نوبت</a><a href="#v28">نسخهٔ 28 · نوشتن خط دفتر</a><a href="#v29">نسخهٔ 29 · کشیدن دفتر روز</a><a href="#v30">نسخهٔ 30 · فیلدهای نوبت که به شیت می‌روند</a><div class="g">متا</div><a href="#v31">نسخهٔ 31 · آیتم‌های متا</a><a href="#v32">نسخهٔ 32 · پیش‌نویس پرچم روی صفحه</a><a href="#v33">نسخهٔ 33 · بستهٔ پرچم</a><a href="#v34">نسخهٔ 34 · ثبت یک گروه متا</a><a href="#v35">نسخهٔ 35 · میانگین تأخیر</a><a href="#v36">نسخهٔ 36 · نقشهٔ مدت متا به ستون</a><a href="#v37">نسخهٔ 37 · ستون‌های متا برای شیت</a><a href="#v38">نسخهٔ 38 · کامل بودن روز</a><a href="#v39">نسخهٔ 39 · نصب دکمهٔ پرچم</a><a href="#v40">نسخهٔ 40 · ساخت همهٔ گروه‌های متا</a><div class="g">قانون و خلاصه</div><a href="#v41">نسخهٔ 41 · قانون به شکل جیسان</a><a href="#v42">نسخهٔ 42 · پیش‌نویس قانون تا ثبت</a><a href="#v43">نسخهٔ 43 · انجام به شکل جیسان</a><a href="#v44">نسخهٔ 44 · وضعیت سبز روی دکمه</a><a href="#v45">نسخهٔ 45 · کار روز برای چارت متا</a><a href="#v46">نسخهٔ 46 · نوار افقی با مقیاس ساعت</a><a href="#v47">نسخهٔ 47 · چیپ خلاصه بدون کارت</a><a href="#v48">نسخهٔ 48 · نمایش آیتم برای چیپ</a><a href="#v49">نسخهٔ 49 · رنگ گروه</a><a href="#v50">نسخهٔ 50 · ریست یک آیتم متا</a><div class="g">همگام و شیت</div><a href="#v51">نسخهٔ 51 · بدنهٔ پست باید متن ساده باشد</a><a href="#v52">نسخهٔ 52 · صف همگام</a><a href="#v53">نسخهٔ 53 · نسخهٔ وب‌اپ را بپرس</a><a href="#v54">نسخهٔ 54 · کارگر پست را لمس نمی‌کند</a><a href="#v55">نسخهٔ 55 · نصب و ادعای کلاینت</a><a href="#v56">نسخهٔ 56 · مانیفست نصب</a><a href="#v57">نسخهٔ 57 · اسکریپت شیت: قفل نسخه</a><a href="#v58">نسخهٔ 58 · استقرار گوگل</a><a href="#v59">نسخهٔ 59 · حذف نوبت در صف شیت</a><a href="#v60">نسخهٔ 60 · هرگز اسکریپت را در گیت نگذار</a><div class="g">کارگر و نصب</div><a href="#v61">نسخهٔ 61 · خروجی سی‌اس‌وی</a><a href="#v62">نسخهٔ 62 · اشتراک فایل</a><a href="#v63">نسخهٔ 63 · سخت‌تازه‌سازی</a><a href="#v64">نسخهٔ 64 · پیدا کردن تب آخر</a><a href="#v65">نسخهٔ 65 · ثبت کارگر از صفحه</a><a href="#v66">نسخهٔ 66 · آیکون و پوسته</a><a href="#v67">نسخهٔ 67 · سرور محلی</a><a href="#v68">نسخهٔ 68 · صفحات گیت‌هاب</a><a href="#v69">نسخهٔ 69 · تشخیص پاسخ کهنه</a><a href="#v70">نسخهٔ 70 · پیل شبکه</a><div class="g">جهت و نمودار</div><a href="#v71">نسخهٔ 71 · جزیرهٔ چپ برای فینگلیش</a><a href="#v72">نسخهٔ 72 · پارت فارسی وسط</a><a href="#v73">نسخهٔ 73 · نوار: نام چپ، عدد راست</a><a href="#v74">نسخهٔ 74 · بدون اس‌وی‌جی عرض‌ثابت</a><a href="#v75">نسخهٔ 75 · روز خالی روی محور</a><a href="#v76">نسخهٔ 76 · جمع پرچم در بازه</a><a href="#v77">نسخهٔ 77 · متن طولانی فینگلیش</a><a href="#v78">نسخهٔ 78 · بدون گوشهٔ تزئینی</a><a href="#v79">نسخهٔ 79 · چرخ مدت متا</a><a href="#v80">نسخهٔ 80 · کیفیت روی خط</a><div class="g">داده</div><a href="#v81">نسخهٔ 81 · چه کسی در تخصیص</a><a href="#v82">نسخهٔ 82 · کد چسبیده</a><a href="#v83">نسخهٔ 83 · شمارندهٔ صف</a><a href="#v84">نسخهٔ 84 · برگشت خط دفتر</a><a href="#v85">نسخهٔ 85 · پاک‌کردن دستگاه</a><a href="#v86">نسخهٔ 86 · خروجی تشخیص</a><a href="#v87">نسخهٔ 87 · چرخ دقیقه با گام پنج</a><a href="#v88">نسخهٔ 88 · نام دستهٔ کهنه</a><a href="#v89">نسخهٔ 89 · عنوان کوتاه روی نوار</a><a href="#v90">نسخهٔ 90 · امتیاز پرچم گروه</a><div class="g">تا اپ کامل</div><a href="#v91">نسخهٔ 91 · رگرسیون‌هایی که خوردیم</a><a href="#v92">نسخهٔ 92 · آزمون قرارداد</a><a href="#v93">نسخهٔ 93 · چک‌لیست نصب روی ویندوز</a><a href="#v94">نسخهٔ 94 · آنچه این ریپو نیست</a><a href="#v95">نسخهٔ 95 · ترتیب ساخت از صفر</a><a href="#v96">نسخهٔ 96 · کپی از کارگاه به اپ</a><a href="#v97">نسخهٔ 97 · منبع حقیقت زنده</a><a href="#v98">نسخهٔ 98 · نسخهٔ جاری را بخوان</a><a href="#v99">نسخهٔ 99 · از کارگاه تا اپ کامل</a><a href="#v100">نسخهٔ 100 · اپ زنده</a>
 </nav>
 <main>
-
-<p class="kicker">کارگاه سطح میانه · هم‌زمان با اپ زنده</p>
-<pre>APP_VERSION     = 'v56 · ltr-en'
-SCRIPT_VERSION  = 'v11-meta'
-CACHE           = 'dailylog-v58'
-app.js?v=56
+<p class="kicker">صد و یک نسخه · هر نسخه یک بلوک کامل · بدون کارت · بدون خرد کردن تابع</p><pre>APP_VERSION     = v57 · center
+SCRIPT_VERSION  = v11-meta
+CACHE           = dailylog-v59
+app.js?v=57
 https://mojde7th.github.io/dailylog/
-D:\tech-lab\habit-pwa\
-</pre>
-
-<h1>قراردادهایی که اگر نفهمی، اپ را نمی‌توانی خودت جلو ببری</h1>
-<p>این کارگاه آموزش «وب چیست» نیست. فرض این است که HTML و جاوااسکریپت را بلدی. اینجا می‌گوییم چرا این پروژه این‌طور ساخته شده، هر بلوک کد برای چیست، و اگر خطی را عوض کنی چه می‌شکند.</p>
-<p>الگو در هر فصل یکی است: اول هدف، بعد کل بلوک، بعد دلیل. شناسه‌ها داخل <code>code</code> می‌مانند؛ جمله را تکه نمی‌کنیم.</p>
-<div class="box warn">
-<p><code>Code.gs</code> را در گیت نگذار. کلید و شناسهٔ شیت فقط همان‌جا است.</p>
-</div>
-
-<h2 id="map">چهار لایه، نه یک سایت</h2>
-<div class="goal">هدف: بدانی داده کجا حقیقت است، و گیت‌هاب فقط ویترین است.</div>
-<pre>phone / desktop
-  index.html  ← DOM IDs = ABI برای app.js
-  app.js      ← منطق، بدون bundler
-  sw.js       ← فقط GET همین مبدأ، network-first
-  IndexedDB   ← sessions (append) + meta (upsert روی تاریخ شمسی)
-       │  آنلاین
-       ▼
-  POST text/plain JSON  →  Apps Script /exec
-       │  اگر SCRIPT_VERSION یکی باشد
-       ▼
-  Sheet: SESSIONS · META · LAWS
-         GOZARESH_*  مشتق است، منبع حقیقت نیست
-</pre>
-<div class="why">
-<p>Pages فقط فایل استاتیک پخش می‌کند. اگر Pages بخوابد، PWA نصب‌شده از کش می‌آید و ثبت‌ها در IndexedDB می‌مانند. صف وقتی نت برگردد خالی می‌شود. سرور خودت وسط این مسیر نیست.</p>
-</div>
-
-<h2 id="files">قرارداد پرونده‌ها</h2>
-<div class="goal">هدف: بدانی کدام فایل را برای چه دست می‌زنی، و سه نسخه چرا باید با هم بالا بروند.</div>
-<pre>index.html     اسکلت + idها. برچسب فارسی آزاد است؛ id را نشکن.
-app.js         تمام منطق. ES2017، بدون build.
-sw.js          CACHE را عوض کن وگرنه فایل کهنه می‌ماند.
-manifest.json  display:standalone + آیکون‌ها → نصب به‌عنوان برنامه.
-Code.gs        محلی. VERSION باید با SCRIPT_VERSION یکی باشد.
-</pre>
-<pre>APP_VERSION      روی کپسول اپ — فقط نمایش
-app.js?v=56      کش مرورگر برای خود اسکریپت
-CACHE            نام جعبه در Cache Storage
-SCRIPT_VERSION   قفل با شیت — اگر نخواند، POST رد می‌شود
-</pre>
-<div class="why">
-<p>اگر فقط عنوان اپ را عوض کنی و <code>?v=</code> و <code>CACHE</code> را نه، بعضی کلاینت‌ها هفته‌ها <code>app.js</code> کهنه می‌دهند. سه تای اول با هم. چهارمی فقط وقتی مدل شیت عوض شود.</p>
-</div>
-
-<h2 id="run">مبدأ اجرا</h2>
-<div class="goal">هدف: روی <code>http://localhost</code> بشکنی، نه روی <code>file://</code> — وگرنه SW و POST به گوگل ناقص می‌شوند.</div>
-<pre>cd D:\tech-lab\habit-pwa
-python -m http.server 8081
-# http://localhost:8081/
-</pre>
-<p>زنده از شاخهٔ <code>main</code> است؛ بعد از push معمولاً یکی دو دقیقه تأخیر Pages عادی است.</p>
-<div class="why">
-<p>در Network باید <code>POST .../exec</code> با <code>Content-Type: text/plain</code> ببینی. Application → IndexedDB دو store. Application → Cache Storage نام <code>dailylog-v58</code>.</p>
-</div>
-
-<h2 id="pwa">manifest — قرارداد نصب، نه دکور</h2>
-<div class="goal">هدف: سیستم‌عامل این صفحه را برنامه ببیند. بدون این فایل، دکمهٔ Install نمی‌آید.</div>
-<pre>{
-  "name": "DailyLog",
-  "short_name": "DailyLog",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#0f1419",
-  "theme_color": "#0f1419",
-  "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}</pre>
-<div class="why">
-<p><code>display: standalone</code> نوار آدرس را برمی‌دارد. آیکون ۱۹۲ و ۵۱۲ برای کاشی ویندوز؛ <code>favicon.svg</code> برای زبانه. اتصال در HTML فقط همین است:</p>
-</div>
-<pre>&lt;link rel="manifest" href="manifest.json"/&gt;</pre>
-
-<h2 id="sw">service worker — خط‌به‌خط، زخمی که خوردیم</h2>
-<div class="goal">هدف: آفلاین برای فایل‌های خودت. همگام‌سازی شیت را هرگز قاپیدن.</div>
-<pre>const CACHE = 'dailylog-v58';
-
-self.addEventListener('fetch', ev => {
+D:\tech-lab\habit-pwa\</pre><h1>از صفحهٔ خالی تا DailyLog زنده</h1><p>این کارگاه آموزش وب نیست. فرض این است که اچ‌تی‌ام‌ال و جاوااسکریپت را بلدی. هر نسخه یک تابع یا یک پروندهٔ کامل است که به قبلی اضافه می‌شود. جمله را دور شناسه خرد نمی‌کنیم. جعبه نمی‌کشیم. توضیح بعد از بلوک است، نه دو لایه روی هر خط.</p><p>اگر کارگاه و اپ زنده فرق داشتند، پرونده‌های زنده منبع‌اند. این صفحه آموزش است.</p><h2 id="v0">نسخهٔ 0 — صفحهٔ خالی که هنوز اپ نیست</h2><p class="goal">هدف: یک پروندهٔ اچ‌تی‌ام‌ال که مرورگر بازش می‌کند. هنوز داده، تب، همگام، هیچ.</p><pre>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;fa&quot; dir=&quot;rtl&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;/&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;/&gt;
+&lt;title&gt;DailyLog&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;DailyLog&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre><p class="why">از صفر یعنی همین. باندلر نیست. فریم‌ورک نیست. اگر این پرونده روی فایل پروتکل باز شود بعداً کارگر و پست گوگل ناقص می‌مانند؛ از همین اول با یک سرور محلی عادت کن.</p><h2 id="v1">نسخهٔ 1 — رنگ و جهت پایه</h2><p class="goal">هدف: صفحه راست‌به‌چپ است. شناسه‌های فینگلیش بعداً جزیرهٔ چپ‌چین می‌گیرند، نه کل سند.</p><pre>:root{
+  --bg:#0b1016;--panel:#121820;--ink:#e8eef5;--muted:#8fa3b8;
+  --line:#2a3542;--accent:#6db3f2;--good:#3ecf8e;--warn:#f0b429;--bad:#f07178
+}
+html{background:var(--bg);color-scheme:dark}
+body{margin:0;font-family:Tahoma,&quot;Segoe UI&quot;,sans-serif;color:var(--ink);background:var(--bg)}
+.ltr{direction:ltr;text-align:left;unicode-bidi:isolate}</pre><p class="why">جهت سند را برای جملهٔ فارسی می‌گذاری. اگر کل بدنه را چپ‌چین کنی بازهٔ دوازده تا دو می‌شکند. جزیره برای فیلد، نه برای کل ویجت.</p><h2 id="v2">نسخهٔ 2 — چهار تب، چهار قاب. شناسه را نشکن</h2><p class="goal">هدف: اسکلت زنده. جاوااسکریپت فقط با همین شناسه‌ها حرف می‌زند. برچسب فارسی آزاد است.</p><pre>&lt;header&gt;
+  &lt;h1&gt;DailyLog&lt;/h1&gt;
+  &lt;span id=&quot;verPill&quot; class=&quot;pill&quot;&gt;&lt;/span&gt;
+  &lt;nav class=&quot;tabs&quot;&gt;
+    &lt;button type=&quot;button&quot; id=&quot;tabMeta&quot;&gt;متای روز&lt;/button&gt;
+    &lt;button type=&quot;button&quot; id=&quot;tabSession&quot;&gt;دفتر نوبت&lt;/button&gt;
+    &lt;button type=&quot;button&quot; id=&quot;tabDash&quot;&gt;داشبورد&lt;/button&gt;
+    &lt;button type=&quot;button&quot; id=&quot;tabData&quot;&gt;داده‌ها&lt;/button&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;
+&lt;main&gt;
+  &lt;section id=&quot;paneMeta&quot;&gt;&lt;/section&gt;
+  &lt;section id=&quot;paneSession&quot; class=&quot;hide&quot;&gt;&lt;/section&gt;
+  &lt;section id=&quot;paneDash&quot; class=&quot;hide&quot;&gt;&lt;/section&gt;
+  &lt;section id=&quot;paneData&quot; class=&quot;hide&quot;&gt;&lt;/section&gt;
+&lt;/main&gt;</pre><p class="why">اگر شناسه را عوض کنی اپ خاموش است و خطای روشنی نمی‌دهد. نسخهٔ بعدی فقط منطق اضافه می‌کند، اسکلت را بازنویسی نکن.</p><h2 id="v3">نسخهٔ 3 — نمایش یک تب</h2><p class="goal">هدف: یک نام در حافظه، چهار کلاس در دام. نوار پایین فقط مال دفتر است.</p><pre>function showTab(name) {
+  if (name !== &#x27;session&#x27; &amp;&amp; name !== &#x27;meta&#x27; &amp;&amp; name !== &#x27;data&#x27; &amp;&amp; name !== &#x27;dash&#x27;) name = &#x27;session&#x27;;
+  activeTab = name;
+  cfgSet(&#x27;tab&#x27;, name);
+  $(&#x27;paneSession&#x27;).classList.toggle(&#x27;hide&#x27;, name !== &#x27;session&#x27;);
+  $(&#x27;paneMeta&#x27;).classList.toggle(&#x27;hide&#x27;,    name !== &#x27;meta&#x27;);
+  $(&#x27;paneData&#x27;).classList.toggle(&#x27;hide&#x27;,    name !== &#x27;data&#x27;);
+  if ($(&#x27;paneDash&#x27;)) $(&#x27;paneDash&#x27;).classList.toggle(&#x27;hide&#x27;, name !== &#x27;dash&#x27;);
+  $(&#x27;tabSession&#x27;).classList.toggle(&#x27;active&#x27;, name === &#x27;session&#x27;);
+  $(&#x27;tabMeta&#x27;).classList.toggle(&#x27;active&#x27;,    name === &#x27;meta&#x27;);
+  $(&#x27;tabData&#x27;).classList.toggle(&#x27;active&#x27;,    name === &#x27;data&#x27;);
+  if ($(&#x27;tabDash&#x27;)) $(&#x27;tabDash&#x27;).classList.toggle(&#x27;active&#x27;, name === &#x27;dash&#x27;);
+  $(&#x27;btnSave&#x27;).disabled = (name !== &#x27;session&#x27;);
+  const bar = document.querySelector(&#x27;.bar&#x27;);
+  if (bar) bar.classList.toggle(&#x27;hide&#x27;, name !== &#x27;session&#x27;);
+}</pre><p class="why">تب آخر در انبار محلی می‌ماند تا خروج، اپ را وسط متا برنگرداند. دکمهٔ نوشتن فقط وقتی دفتر باز است زنده است؛ متا ثبت خودش را ته گروه دارد.</p><h2 id="v4">نسخهٔ 4 — پیام کوتاه روی صفحه</h2><p class="goal">هدف: بازخورد بدون مودال. دو ثانیه، بعد خاموش.</p><pre>function toast(msg, isErr) {
+  const t = $(&#x27;toast&#x27;);
+  t.textContent = msg;
+  t.className = &#x27;show&#x27; + (isErr ? &#x27; err&#x27; : &#x27;&#x27;);
+  clearTimeout(t._h);
+  t._h = setTimeout(() =&gt; { t.className = &#x27;&#x27;; }, 2200);
+}</pre><p class="why">خطای همگام و خطای خالی بودن مقدار هر دو از همین‌جا می‌آیند. اگر عنصر نباشد کل ثبت می‌ترکد؛ شناسه را در اسکلت نگه دار.</p><h2 id="v5">نسخهٔ 5 — کمک‌های یک‌خطی که همه‌جا تکرار می‌شوند</h2><p class="goal">هدف: سلکتور، شناسهٔ تصادفی، عدد خالی، لرزش.</p><pre>const $ = id =&gt; document.getElementById(id);
+const uid = () =&gt; Date.now().toString(36) + &#x27;-&#x27; + Math.random().toString(36).slice(2, 10);
+const num = v =&gt; (v === &#x27;&#x27; || v == null || isNaN(Number(v))) ? &#x27;&#x27; : Number(v);
+const vibrate = ms =&gt; { if (navigator.vibrate) navigator.vibrate(ms); };
+const pad2 = n =&gt; String(n).padStart(2, &#x27;0&#x27;);
+const cfgGet = k =&gt; { try { return localStorage.getItem(&#x27;dl_&#x27; + k) || &#x27;&#x27;; } catch (e) { return &#x27;&#x27;; } };
+const cfgSet = (k, v) =&gt; { try { localStorage.setItem(&#x27;dl_&#x27; + k, v); } catch (e) {} };</pre><p class="why">کلید انبار محلی پیشوند دارد تا با دامنهٔ دیگر قاطی نشود. شناسهٔ نوبت تصادفی است چون دو خط در یک میلی‌ثانیه هم نباید برخورد کنند. متای روز شناسهٔ تصادفی ندارد.</p><h2 id="v6">نسخهٔ 6 — سه نسخه که باید با هم بالا بروند</h2><p class="goal">هدف: عنوان روی کپسول، کش مرورگر برای خود اسکریپت، نام کش کارگر. چهارمی فقط وقتی مدل شیت عوض شود.</p><pre>const APP_VERSION = &#x27;v57 · center&#x27;;
+const SCRIPT_VERSION = &#x27;v11-meta&#x27;;
+// index.html
+&lt;script src=&quot;app.js?v=57&quot;&gt;&lt;/script&gt;
+// sw.js
+const CACHE = &#x27;dailylog-v59&#x27;;</pre><p class="why">اگر فقط عنوان را عوض کنی بعضی کلاینت‌ها هفته‌ها اسکریپت کهنه می‌دهند. سه تای اول با هم. قفل شیت جداست؛ ظاهر اپ عوض شود لازم نیست اسکریپت شیت را عوض کنی.</p><h2 id="v7">نسخهٔ 7 — نوار پایین فقط دفتر</h2><p class="goal">هدف: یک دکمه برای نوشتن خط جاری. متا این نوار را ندارد.</p><pre>&lt;div class=&quot;bar&quot;&gt;
+  &lt;div class=&quot;inner&quot;&gt;
+    &lt;button type=&quot;button&quot; class=&quot;primary&quot; id=&quot;btnSave&quot;&gt;این خط را بنویس&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre><p class="why">اگر نوار را برای متا هم زنده کنی کاربر فکر می‌کند پرچم همان لحظه رفته. نرفته. تا ته گروه نزنی ایندکس‌دی‌بی بی‌خبر است.</p><h2 id="v8">نسخهٔ 8 — فرار متن قبل از چسباندن به دام</h2><p class="goal">هدف: هر برچسب کاربر یا فینگلیش که به اچ‌تی‌ام‌ال می‌رود از اینجا رد می‌شود.</p><pre>function esc(s) {
+  return String(s == null ? &#x27;&#x27; : s)
+    .replace(/&amp;/g, &#x27;&amp;amp;&#x27;)
+    .replace(/&lt;/g, &#x27;&amp;lt;&#x27;)
+    .replace(/&gt;/g, &#x27;&amp;gt;&#x27;);
+}</pre><p class="why">بدون این، یک نام قانون با علامت کوچکتر می‌تواند دکمه بسازد. چیپ‌ها و دفتر همه از همین استفاده می‌کنند.</p><h2 id="v9">نسخهٔ 9 — جهت یک رشته</h2><p class="goal">هدف: حرف فارسی یعنی راست. وگرنه چپ. بازهٔ عددی فارسی هم راست است.</p><pre>function dirOf(s) {
+  return /[\u0600-\u06FF]/.test(String(s || &#x27;&#x27;)) ? &#x27;rtl&#x27; : &#x27;ltr&#x27;;
+}</pre><p class="why">فینگلیش پرچم‌ها چپ می‌ماند. تا دوازده و دوازده تا دو راست می‌مانند. این تابع را روی کل کارت نگذار؛ روی خود برچسب بگذار.</p><h2 id="v10">نسخهٔ 10 — قرارداد پرونده‌ها</h2><p class="goal">هدف: چهار لایه، نه یک سایت. گیت‌هاب ویترین است. حقیقت روی دستگاه است.</p><pre>index.html     اسکلت + شناسه‌ها. برچسب فارسی آزاد؛ شناسه را نشکن
+app.js         منطق، بدون باندلر
+sw.js          فقط GET همین مبدأ، network-first
+manifest.json  نصب روی منوی شروع
+Code.gs        فقط در ادیتور گوگل. گیت نه. کلید نه.</pre><p class="why">اگر کانفلوئنس یا هاد را داخل همین ریپو بگذاری مسیرها قاطی می‌شوند. کارگاه کنار اپ است، داخل اپ نیست.</p><h2 id="v11">نسخهٔ 11 — باز کردن ایندکس‌دی‌بی</h2><p class="goal">هدف: یک پایگاه، سه فروشگاه. نسخهٔ طرح را بی‌خودی بالا نبر.</p><pre>function openDB() {
+  if (_db) return Promise.resolve(_db);
+  return new Promise((resolve, reject) =&gt; {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = ev =&gt; {
+      const db = ev.target.result;
+      if (!db.objectStoreNames.contains(&#x27;sessions&#x27;)) db.createObjectStore(&#x27;sessions&#x27;, { keyPath:&#x27;uid&#x27; });
+      if (!db.objectStoreNames.contains(&#x27;meta&#x27;))     db.createObjectStore(&#x27;meta&#x27;,     { keyPath:&#x27;uid&#x27; });
+      if (!db.objectStoreNames.contains(&#x27;config&#x27;))   db.createObjectStore(&#x27;config&#x27;,   { keyPath:&#x27;k&#x27; });
+    };
+    req.onsuccess = () =&gt; { _db = req.result; resolve(_db); };
+    req.onerror   = () =&gt; reject(req.error);
+  });
+}</pre><p class="why">نشانی شیت در انبار محلی است نه اینجا. پاک‌کردن فروشگاه‌ها تنظیمات را لزوماً نمی‌کشد. اگر طرح را عوض کنی بدون مهاجرت، مرورگر فروشگاه خالی می‌سازد.</p><h2 id="v12">نسخهٔ 12 — چهار عمل روی فروشگاه</h2><p class="goal">هدف: بگذار، بخوان همه، حذف کلید، خالی کن. همه پرامیس.</p><pre>const store = (n, m) =&gt; openDB().then(db =&gt; db.transaction(n, m).objectStore(n));
+const put = (n, o) =&gt; store(n, &#x27;readwrite&#x27;).then(s =&gt; new Promise((res, rej) =&gt; {
+  const r = s.put(o); r.onsuccess = () =&gt; res(o); r.onerror = () =&gt; rej(r.error);
+}));
+const delKey = (n, key) =&gt; store(n, &#x27;readwrite&#x27;).then(s =&gt; new Promise((res, rej) =&gt; {
+  const r = s.delete(key); r.onsuccess = () =&gt; res(); r.onerror = () =&gt; rej(r.error);
+}));
+const getAll = n =&gt; store(n, &#x27;readonly&#x27;).then(s =&gt; new Promise((res, rej) =&gt; {
+  const r = s.getAll(); r.onsuccess = () =&gt; res(r.result || []); r.onerror = () =&gt; rej(r.error);
+}));
+const clearStore = n =&gt; store(n, &#x27;readwrite&#x27;).then(s =&gt; new Promise((res, rej) =&gt; {
+  const r = s.clear(); r.onsuccess = () =&gt; res(); r.onerror = () =&gt; rej(r.error);
+}));</pre><p class="why">گذاشتن به‌جای افزودن: ثبت دوبارهٔ همان روز متا ردیف دوم نمی‌سازد. دفتر عمداً شناسهٔ تصادفی دارد پس هر خط رویداد تازه است.</p><h2 id="v13">نسخهٔ 13 — کلید متای یک روز</h2><p class="goal">هدف: یک روز، یک ردیف. شناسه از تاریخ می‌آید نه از تصادف.</p><pre>function metaUid(day) {
+  return &#x27;meta-&#x27; + String(day || &#x27;&#x27;).trim();
+}
+function blankMeta(day) {
+  const rec = {
+    uid: metaUid(day),
+    createdAt: new Date().toISOString(),
+    dateShamsi: day,
+    moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0, sokut:0,
+    takhirAvg:&#x27;&#x27;, takhirN:0, takhirSum:0, lawsJson:&#x27;[]&#x27;, lawsMin:0,
+    done: {}, doneJson: &#x27;{}&#x27;, complete: 0, synced: 0
+  };
+  META_FLAG_IDS.forEach(k =&gt; { rec[k] = 0; });
+  return rec;
+}</pre><p class="why">اگر متا هم تصادفی باشد سه ردیف برای یک روز می‌سازی و داشبورد دروغ می‌گوید. ادغام ردیف‌های اضافه در نسخهٔ بعد است.</p><h2 id="v14">نسخهٔ 14 — یک روز، چند ردیف کهنه</h2><p class="goal">هدف: پرترین را نگه دار، حفره را از بقیه پر کن، اضافه را حذف کن.</p><pre>async function metaFor(day) {
+  const all = await getAll(&#x27;meta&#x27;);
+  const hits = all.filter(r =&gt; r.dateShamsi === day);
+  if (!hits.length) return null;
+  hits.sort((a, b) =&gt; {
+    const na = Object.keys(parseDone(a)).length;
+    const nb = Object.keys(parseDone(b)).length;
+    if (nb !== na) return nb - na;
+    return String(b.createdAt || &#x27;&#x27;).localeCompare(String(a.createdAt || &#x27;&#x27;));
+  });
+  const keep = hits[0];
+  const oldUid = keep.uid;
+  for (let i = 1; i &lt; hits.length; i++) fillMetaGaps(keep, hits[i]);
+  migrateMeta(keep);
+  const want = metaUid(day);
+  if (oldUid !== want || hits.length &gt; 1) {
+    keep.uid = want;
+    keep.dateShamsi = day;
+    keep.synced = 0;
+    await put(&#x27;meta&#x27;, keep);
+    for (const extra of hits) {
+      if (extra.uid &amp;&amp; extra.uid !== want) await delKey(&#x27;meta&#x27;, extra.uid);
+    }
+  }
+  return keep;
+}</pre><p class="why">این همان جایی است که نسخهٔ قدیمی با شناسهٔ تصادفی زنده می‌ماند و نسخهٔ جدید قورتش می‌دهد. بدون این، انتخاب همه روی ردیف خالی می‌نشست.</p><h2 id="v15">نسخهٔ 15 — کبیسه و طول ماه شمسی</h2><p class="goal">هدف: محور داشبورد و چرخ روز هر دو از اینجا می‌خورند. تقویم میلادی را به تاریخ ورودی نده.</p><pre>function jIsLeap(jy) {
+  const a = jy - (jy &gt; 0 ? 474 : 473);
+  const b = ((a % 2820) + 2820) % 2820 + 474;
+  return (((b + 38) * 682) % 2816) &lt; 682;
+}
+function jMonthLen(jy, jm) {
+  if (jm &lt;= 6)  return 31;
+  if (jm &lt;= 11) return 30;
+  return jIsLeap(jy) ? 30 : 29;
+}
+const fmtJ = (y, m, d) =&gt; y + &#x27;/&#x27; + pad2(m) + &#x27;/&#x27; + pad2(d);</pre><p class="why">بدون صفر جلو ماه، پنج‌اسلش‌دو از پنج‌اسلش‌ده بزرگ‌تر دیده می‌شود. اسفند در کبیسه سی روز است؛ چرخ روز باید از نو ساخته شود.</p><h2 id="v16">نسخهٔ 16 — امروز به شمسی</h2><p class="goal">هدف: از ساعت دستگاه، نه از شیت.</p><pre>function toJalali(gy, gm, gd) {
+  const gdm = [0,31,59,90,120,151,181,212,243,273,304,334];
+  let jy = (gy &lt;= 1600) ? 0 : 979;
+  gy -= (gy &lt;= 1600) ? 621 : 1600;
+  const gy2 = (gm &gt; 2) ? gy + 1 : gy;
+  let days = 365*gy + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100)
+           + Math.floor((gy2+399)/400) - 80 + gd + gdm[gm-1];
+  jy += 33 * Math.floor(days/12053);
+  days %= 12053;
+  jy += 4 * Math.floor(days/1461);
+  days %= 1461;
+  if (days &gt; 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+  const jm = (days &lt; 186) ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+  const jd = 1 + ((days &lt; 186) ? days % 31 : (days-186) % 30);
+  return [jy, jm, jd];
+}
+function todayJ() {
+  const d = new Date();
+  return toJalali(d.getFullYear(), d.getMonth()+1, d.getDate());
+}</pre><p class="why">اگر امروز را از رشتهٔ ثابت بگیری فردا همه روی همان روز می‌نویسند. چرخ تاریخ از همین امروز منهای دو سال تا امروز به‌علاوهٔ یک می‌سازد.</p><h2 id="v17">نسخهٔ 17 — گام روز روی تقویم شمسی</h2><p class="goal">هدف: هفت روز یعنی امروز منهای شش تا امروز، هر دو سر شامل. اول ماه نیست.</p><pre>function addDaysJ(y, m, d, n) {
+  d += n;
+  let guard = 0;
+  while (guard++ &lt; 800) {
+    if (d &lt; 1) {
+      m -= 1;
+      if (m &lt; 1) { m = 12; y -= 1; }
+      d += jMonthLen(y, m);
+      continue;
+    }
+    const len = jMonthLen(y, m);
+    if (d &gt; len) {
+      d -= len;
+      m += 1;
+      if (m &gt; 12) { m = 1; y += 1; }
+      continue;
+    }
+    break;
+  }
+  return [y, m, d];
+}
+function eachJ(from, to) {
+  const out = [];
+  let [y, m, d] = parseJ(from);
+  let guard = 0;
+  while (fmtJ(y, m, d) &lt;= to &amp;&amp; guard++ &lt; 400) {
+    out.push(fmtJ(y, m, d));
+    [y, m, d] = addDaysJ(y, m, d, 1);
+  }
+  return out;
+}</pre><p class="why">روز بدون ثبت هم در محور می‌ماند با صفر. اگر فقط روزهای دارای داده را بکشی نمودار می‌پرد و مقایسه دروغ می‌شود.</p><h2 id="v18">نسخهٔ 18 — بازهٔ داشبورد</h2><p class="goal">هدف: هفت، چهارده، سی، یا فصل از سی‌ویک خرداد تا سی‌ویک تیر همان سال.</p><pre>function dashSpan() {
+  const [ty, tm, td] = todayJ();
+  const to = fmtJ(ty, tm, td);
+  if (dashDays === &#x27;fasl&#x27;) {
+    return { from: fmtJ(ty, 5, 31), to: fmtJ(ty, 6, 31), n: null, kind: &#x27;fasl&#x27; };
+  }
+  const n = Math.max(1, Number(dashDays) || 7);
+  return { from: fmtJ(...addDaysJ(ty, tm, td, -(n - 1))), to, n, kind: &#x27;days&#x27; };
+}</pre><p class="why">سی مرداد یعنی بیست‌وچهار تا سی. اگر از اول مرداد بکشی با محصولی که خواستی فرق دارد.</p><h2 id="v19">نسخهٔ 19 — چرخ باید ارتفاع داشته باشد</h2><p class="goal">هدف: اگر ستون هنوز در دام ارتفاع ندارد اسکرول را نادیده بگیر؛ وگرنه روز اول ماه برداشته می‌شود.</p><pre>function apply() {
+  if (!col.isConnected || col.offsetParent === null) return;
+  if (sc.clientHeight &lt; ITEM_H) return;
+  ready = true;
+  quiet = true;
+  recenter();
+  if (Math.abs(sc.scrollTop - idx * ITEM_H) &gt; 2) place(idx * ITEM_H);
+  paint();
+  setTimeout(() =&gt; { quiet = false; }, 80);
+}</pre><p class="why">سال «امروز منهای دو» با همان ماه‌روز به امروز می‌چسبید چون حلقه گاهی روی کپی اشتباه می‌نشست. تا ستون دیده نشود، ایندکس را از اسکرول نخوان.</p><h2 id="v20">نسخهٔ 20 — تاریخ شمسی روی سه ستون</h2><p class="goal">هدف: سال و ماه که عوض شوند طول روز از نو ساخته می‌شود. مقدار نگه داشته می‌شود تا جایی که ماه اجازه دهد.</p><pre>function makeDateWheel(host, onChange) {
+  const [cy, cm, cd] = todayJ();
+  const years = [];
+  for (let y = cy - 2; y &lt;= cy + 1; y++) years.push(String(y));
+  const dayItems = (y, m) =&gt; {
+    const a = [];
+    for (let i = 1; i &lt;= jMonthLen(y, m); i++) a.push(pad2(i));
+    return a;
+  };
+  let wy, wm, wd;
+  const fire = () =&gt; { if (onChange) onChange(); };
+  wy = wheelColumn(years, years.indexOf(String(cy)), () =&gt; { rebuildDays(); fire(); }, { loop: true });
+  wm = wheelColumn(J_MONTHS, cm - 1, () =&gt; { rebuildDays(); fire(); }, { loop: true });
+  wd = wheelColumn(dayItems(cy, cm), cd - 1, fire, { loop: true });
+  wheelGroup(host, [wy, wm, wd], [&#x27;سال&#x27;, &#x27;ماه&#x27;, &#x27;روز&#x27;]);
+  return {
+    value: () =&gt; fmtJ(Number(years[wy.get()]), wm.get() + 1, wd.get() + 1)
+  };
+}</pre><p class="why">چرخ کامل در اپ زنده است. این نسخه قراردادش را می‌گذارد: مقدار یک رشتهٔ اسلش‌دار با صفر جلو ماه و روز. متا و دفتر هر کدام یک چرخ جدا دارند.</p><h2 id="v21">نسخهٔ 21 — چهار پارت روز</h2><p class="goal">هدف: پارت بعدی کدهای قبلی را به ارث می‌برد. لایه‌ها و قانون روزانه متا هستند نه نوبت.</p><pre>const PARTS = [
+  { id: 0, label: &#x27;تا ۱۲&#x27;,    hint: &#x27;صبح — کارهای این پارت و ارثی‌ها&#x27; },
+  { id: 1, label: &#x27;۱۲ تا ۲&#x27;,  hint: &#x27;ظهر — ارث از تا ۱۲ به‌علاوهٔ این پارت&#x27; },
+  { id: 2, label: &#x27;۲ تا ۶&#x27;,   hint: &#x27;بعدازظهر — ارث از دو پارت قبل&#x27; },
+  { id: 3, label: &#x27;بعد اوپن&#x27;, hint: &#x27;بعد اوپن‌فست — همهٔ قبلی‌ها هم اینجان&#x27; }
+];
+const codesForPart = p =&gt; CODES.filter(c =&gt; (c.from || 0) &lt;= p);</pre><p class="why">چهار لیست جدا ننویس. یک آرایه با فیلد از. پارت دو یعنی صفر و یک و دو. ساعت دیوار پارت پیش‌فرض را می‌گوید؛ کاربر می‌تواند عوض کند.</p><h2 id="v22">نسخهٔ 22 — پارت از ساعت دیوار</h2><p class="goal">هدف: ظهر یعنی دوازده تا دو. بعد از هجده بعد اوپن.</p><pre>function partFromClock() {
+  const h = new Date().getHours();
+  if (h &lt; 12) return 0;
+  if (h &lt; 14) return 1;
+  if (h &lt; 18) return 2;
+  return 3;
+}</pre><p class="why">این فقط پیش‌فرض دکمه است. خط ذخیره‌شده پارت انتخاب‌شده را نگه می‌دارد، نه ساعت لحظهٔ همگام.</p><h2 id="v23">نسخهٔ 23 — دکمه‌های پارت، وسط بخش</h2><p class="goal">هدف: برچسب راست‌به‌چپ ایزوله است. خود ردیف وسط بخش دفتر است نه چسبیده به راست صفحه.</p><pre>function buildParts() {
+  activePart = partFromClock();
+  const host = $(&#x27;sParts&#x27;);
+  host.innerHTML = PARTS.map(p =&gt;
+    `&lt;button type=&quot;button&quot; data-p=&quot;${p.id}&quot; class=&quot;p${p.id} ${dirOf(p.label)}&quot;&gt;${p.label}&lt;/button&gt;`).join(&#x27;&#x27;);
+  const paint = () =&gt; host.querySelectorAll(&#x27;button&#x27;).forEach(b =&gt;
+    b.classList.toggle(&#x27;on&#x27;, Number(b.dataset.p) === activePart));
+  host.querySelectorAll(&#x27;button&#x27;).forEach(b =&gt; b.addEventListener(&#x27;click&#x27;, () =&gt; {
+    activePart = Number(b.dataset.p);
+    paint();
+    picked = null;
+    fillActivityList();
+    $(&#x27;nbComposer&#x27;).classList.add(&#x27;hide&#x27;);
+  }));
+  paint();
+}</pre><p class="why">لیست کد بعد از تعویض پارت از نو کشیده می‌شود. آهنگساز بسته می‌شود تا کد پارت قبلی روی پارت جدید نماند.</p><h2 id="v24">نسخهٔ 24 — کدها یک جدول‌اند</h2><p class="goal">هدف: دسته، شناسه، متریک، از کدام پارت، پیش‌فرض چرخ.</p><pre>const CODES = [
+  { cat:&#x27;takhsis&#x27;, code:&#x27;takhkhod&#x27;, metric:&#x27;dur&#x27;, from:0, def:{h:0,m:30} },
+  { cat:&#x27;kar&#x27;,     code:&#x27;ITPr&#x27;,     metric:&#x27;dur&#x27;, from:0, def:{h:2,m:40} },
+  { cat:&#x27;varzesh&#x27;, code:&#x27;rah&lt;=25m&#x27;, metric:&#x27;dur&#x27;, from:2, def:{h:0,m:25} },
+  { cat:&#x27;badan&#x27;,   code:&#x27;dand&#x27;,     metric:&#x27;reps&#x27;, from:3, def:{r:3,pr:5} }
+];</pre><p class="why">کدهای چسبیده در یک بلوک می‌مانند بدون برچسب دستهٔ تکراری. تگ داخل پرانتز روی خط تایپ می‌شود، ویرگولی. اپ زنده جدول کامل را دارد؛ این نسخه شکل ردیف را یاد می‌دهد.</p><h2 id="v25">نسخهٔ 25 — لیست فعالیت پارت جاری</h2><p class="goal">هدف: ارث یعنی فیلتر از. دسته را گروه کن، بعد دکمه.</p><pre>function fillActivityList() {
+  const allowed = codesForPart(activePart);
+  const cats = [...new Set(allowed.map(c =&gt; c.cat))];
+  $(&#x27;nbList&#x27;).innerHTML = cats.map(cat =&gt; {
+    const items = allowed.filter(c =&gt; c.cat === cat);
+    const stick = items.some(c =&gt; c.stick);
+    return `&lt;div class=&quot;catbox cat-${cat}&quot;&gt;&lt;div class=&quot;catlab&quot;&gt;${cat}&lt;/div&gt;` +
+      `&lt;div class=&quot;alist${stick ? &#x27; stick&#x27; : &#x27;&#x27;}&quot;&gt;` +
+      items.map(c =&gt; `&lt;button type=&quot;button&quot; data-code=&quot;${c.code}&quot;&gt;${c.code}&lt;/button&gt;`).join(&#x27;&#x27;) +
+      `&lt;/div&gt;&lt;/div&gt;`;
+  }).join(&#x27;&#x27;);
+  $(&#x27;nbList&#x27;).querySelectorAll(&#x27;button&#x27;).forEach(b =&gt; b.addEventListener(&#x27;click&#x27;, () =&gt; {
+    picked = CODES.find(c =&gt; c.code === b.dataset.code);
+    openComposer();
+  }));
+}</pre><p class="why">فینگلیش کدها جزیرهٔ چپ‌چین‌اند. اگر فلکس صفحه راست باشد بدون جهت چپ، دکمه‌ها به راست می‌چسبند.</p><h2 id="v26">نسخهٔ 26 — مدت به دقیقه و نمایش تکه</h2><p class="goal">هدف: زیر شصت دقیقه با پسوند دقیقه. بالای شصت با نقطه بین ساعت و دقیقه.</p><pre>const fmtHM = min =&gt; {
+  const n = Number(min) || 0;
+  return Math.floor(n/60) + &#x27;:&#x27; + pad2(n%60);
+};
+const fmtChunk = min =&gt; {
+  const n = Number(min) || 0;
+  if (n &gt;= 60) return Math.floor(n/60) + &#x27;.&#x27; + pad2(n % 60);
+  return n + &#x27;m&#x27;;
+};</pre><p class="why">نمودار دقیقه خام می‌خواهد. برچسب کاربر تکه می‌خواهد. دو تابع را قاطی نکن وگرنه مقیاس ده ساعت خراب می‌شود.</p><h2 id="v27">نسخهٔ 27 — جمع‌کردن یک خط نوبت</h2><p class="goal">هدف: خالی را راه نده. شناسه تازه. پارت و کد از انتخاب جاری.</p><pre>function collectSession() {
+  const c = currentCode();
+  if (!c) { toast(&#x27;کد خالی است&#x27;, true); return null; }
+  const rec = {
+    uid: uid(),
+    createdAt: new Date().toISOString(),
+    dateShamsi: sDate.value(),
+    part: PARTS[activePart].label,
+    partId: activePart,
+    category: c.cat,
+    code: c.code,
+    metric: c.metric,
+    synced: 0
+  };
+  // چرخ‌ها دقیقه / تکرار / ثانیه واکنش را پر می‌کنند
+  const filled = [rec.minutes, rec.count, rec.reactSec].some(v =&gt; v !== &#x27;&#x27; &amp;&amp; v !== 0);
+  if (!filled) { toast(&#x27;مقدار خالی است&#x27;, true); return null; }
+  return rec;
+}</pre><p class="why">فیلدهای کامل در اپ زنده داخل همین تابع‌اند. نکتهٔ قرارداد: تا ذخیره نزنی صف شیت خالی است. ذخیره یعنی گذاشتن در فروشگاه نوبت‌ها با همگام‌نشده.</p><h2 id="v28">نسخهٔ 28 — نوشتن خط دفتر</h2><p class="goal">هدف: نوار پایین فقط همین را صدا می‌زند.</p><pre>async function doSave() {
+  if (activeTab === &#x27;session&#x27;) {
+    const rec = collectSession();
+    if (!rec) return;
+    await put(&#x27;sessions&#x27;, rec);
+    toast(&#x27;نوشته شد&#x27;);
+    await paintNotebook();
+    updateQueueBadge();
+    trySync();
+  }
+}</pre><p class="why">همگام بعد از نوشتن تلاش می‌کند؛ اگر آفلاین باشی خط در صف می‌ماند. شکست همگام، خط را پاک نمی‌کند.</p><h2 id="v29">نسخهٔ 29 — کشیدن دفتر روز</h2><p class="goal">هدف: گروه روی پارت. داخل پارت گروه روی کد. مدت جمع می‌شود.</p><pre>async function paintNotebook() {
+  if (!sDate) return;
+  const day = sDate.value();
+  const rows = (await getAll(&#x27;sessions&#x27;))
+    .filter(r =&gt; r.dateShamsi === day)
+    .sort((a, b) =&gt; String(a.createdAt).localeCompare(String(b.createdAt)));
+  const host = $(&#x27;nbLog&#x27;);
+  let html = &#x27;&#x27;;
+  PARTS.forEach(p =&gt; {
+    const here = rows.filter(r =&gt; Number(r.partId) === p.id || r.part === p.label);
+    if (!here.length) return;
+    html += &#x27;&lt;div class=&quot;nbpart p&#x27; + p.id + &#x27;&quot;&gt;&lt;div class=&quot;partline &#x27; + dirOf(p.label) + &#x27;&quot;&gt;&#x27; + esc(p.label) + &#x27;&lt;/div&gt;&#x27;;
+    // ... گروه کد و مدت
+    html += &#x27;&lt;/div&gt;&#x27;;
+  });
+  host.innerHTML = html || &#x27;&lt;div class=&quot;empty&quot;&gt;خالی&lt;/div&gt;&#x27;;
+}</pre><p class="why">بدنهٔ کامل گروه‌بندی در اپ زنده است. این نسخه می‌گوید دفتر گزارش است نه ویرایشگر سلول. برگشت از تب داده، ردیف را حذف می‌کند.</p><h2 id="v30">نسخهٔ 30 — فیلدهای نوبت که به شیت می‌روند</h2><p class="goal">هدف: ترتیب این آرایه قرارداد ستون است. شیء آزاد نفرست.</p><pre>const SESSION_FIELDS = [
+  &#x27;uid&#x27;,&#x27;createdAt&#x27;,&#x27;dateShamsi&#x27;,&#x27;part&#x27;,&#x27;partId&#x27;,&#x27;category&#x27;,&#x27;code&#x27;,&#x27;metric&#x27;,
+  &#x27;minutes&#x27;,&#x27;hm&#x27;,&#x27;chunk&#x27;,&#x27;tags&#x27;,&#x27;reactSec&#x27;,&#x27;count&#x27;,&#x27;reps&#x27;,&#x27;perRep&#x27;,&#x27;kind&#x27;,&#x27;note&#x27;
+];</pre><p class="why">فیلد غایب رشتهٔ خالی می‌شود نه تعریف‌نشده، تا سلول شیت به‌هم نریزد. اگر اینجا ستونی اضافه کنی اسکریپت شیت هم باید همان نسخه را بفهمد.</p><h2 id="v31">نسخهٔ 31 — آیتم‌های متا</h2><p class="goal">هدف: پرچم، مدت جمع‌شونده، میانگین ثانیه. گروه برای یک ثبت.</p><pre>const META_ITEMS = [
+  { id:&#x27;moodToFlow&#x27;, group:&#x27;openfa&#x27;, kind:&#x27;accumDur&#x27;, label:&#x27;moodtoflowbeforeopenfa2&#x27; },
+  { id:&#x27;nchort&#x27;,     group:&#x27;openfa&#x27;, kind:&#x27;flag&#x27;,     label:&#x27;nchort&#x27; },
+  { id:&#x27;takhirAvg&#x27;,  group:&#x27;andaze&#x27;, kind:&#x27;avgSec&#x27;,   label:&#x27;takhirinputoutput3thout&lt;=1.5s&#x27; }
+];
+const META_GROUPS = [
+  { id:&#x27;openfa&#x27;, title:&#x27;openfa&#x27; },
+  { id:&#x27;raayat&#x27;, title:&#x27;raayat / mojaz / no&#x27; },
+  { id:&#x27;andaze&#x27;, title:&#x27;andaze / ghanoon&#x27; },
+  { id:&#x27;laws&#x27;,   title:&#x27;ghanoon mohem&#x27; }
+];</pre><p class="why">لیبل روی دکمه است، شناسه کلید فروشگاه. اگر لیبل را عوض کنی داده نمی‌میرد. اگر شناسه را عوض کنی ردیف‌های کهنه یتیم می‌مانند.</p><h2 id="v32">نسخهٔ 32 — پیش‌نویس پرچم روی صفحه</h2><p class="goal">هدف: انتخاب همه صف را پر نمی‌کند. تا ته گروه نزنی ایندکس‌دی‌بی بی‌خبر است.</p><pre>const flagDraft = {};
+function flagOn(rec, id) {
+  if (Object.prototype.hasOwnProperty.call(flagDraft, id)) return !!flagDraft[id];
+  if (rec &amp;&amp; rec[id]) return true;
+  return flagBundleKeys(id).some(k =&gt; !!(rec &amp;&amp; rec[k]));
+}
+function toggleFlagDraft(id) {
+  flagDraft[id] = flagOn(lastMetaRec, id) ? 0 : 1;
+  paintMetaStatus();
+}
+function draftGroupFlags(gid, on) {
+  groupFlags(gid).forEach(it =&gt; { flagDraft[it.id] = on ? 1 : 0; });
+  paintMetaStatus();
+}</pre><p class="why">دکمه سبز یعنی پیش‌نویس یا ذخیره‌شده، بسته به اینکه کلید در پیش‌نویس هست یا نه. همگام‌نشده فقط بعد از ثبت ته گروه یک می‌شود.</p><h2 id="v33">نسخهٔ 33 — بستهٔ پرچم</h2><p class="goal">هدف: چند کلید کهنه به یک کلید زنده جمع می‌شوند.</p><pre>const FLAG_BUNDLES = {
+  noghahveyebiruni: [&#x27;noghahveyebiruni&#x27;, &#x27;nolimunadbiruni&#x27;],
+  budandarjayemojaz100: [&#x27;budandarjayemojaz100&#x27;, &#x27;kharidemojaz100&#x27;, &#x27;mohtmoj100&#x27;]
+};
+function applyFlagBundle(rec, id, on) {
+  rec[id] = on ? 1 : 0;
+  flagBundleKeys(id).forEach(k =&gt; { if (k !== id) delete rec[k]; });
+}</pre><p class="why">بدون مهاجرت، داشبورد سه ستون برای یک تصمیم نشان می‌دهد. مهاجرت یک‌بار روی خواندن روز اجرا می‌شود.</p><h2 id="v34">نسخهٔ 34 — ثبت یک گروه متا</h2><p class="goal">هدف: یک گذاشتن، کل گروه. پرچم از پیش‌نویس، مدت از چرخ، تأخیر از نمونه‌ها.</p><pre>async function putGroup(gid) {
+  const day = selectedMetaDay();
+  let rec = await metaFor(day) || blankMeta(day);
+  const done = parseDone(rec);
+  META_ITEMS.filter(it =&gt; it.group === gid).forEach(it =&gt; {
+    if (it.kind === &#x27;flag&#x27;) {
+      const on = flagOn(rec, it.id);
+      rec[it.id] = on ? 1 : 0;
+      applyFlagBundle(rec, it.id, on);
+      if (on) done[it.id] = 1;
+      else delete done[it.id];
+      delete flagDraft[it.id];
+    }
+    if (it.kind === &#x27;accumDur&#x27;) {
+      const add = mW[it.id] ? mW[it.id].minutes() : 0;
+      const key = META_STORE[it.id];
+      if (add &gt; 0) {
+        rec[key] = (Number(rec[key]) || 0) + add;
+        mW[it.id].reset();
+      }
+      if (Number(rec[key]) &gt; 0) done[it.id] = 1;
+    }
+  });
+  rec.done = done;
+  rec.doneJson = JSON.stringify(done);
+  rec.complete = isComplete(rec) ? 1 : 0;
+  rec.synced = 0;
+  await put(&#x27;meta&#x27;, rec);
+  trySync();
+}</pre><p class="why">مدت جمع می‌شود نه جایگزین. ثبت دوم یک ساعت روی یک ساعت قبلی، دو ساعت است. چرخ بعد از ثبت صفر می‌شود تا دوباره‌فرستی نکنی.</p><h2 id="v35">نسخهٔ 35 — میانگین تأخیر</h2><p class="goal">هدف: هر عدد یک نمونه است. زیر یک‌ونیم یعنی انجام.</p><pre>const TAKHIR_OK = 1.5;
+function takhirIsOk(rec, extra) {
+  extra = extra || [];
+  const n = Number(rec &amp;&amp; rec.takhirN) || 0;
+  if (!n &amp;&amp; !extra.length) return true;
+  let sum = Number(rec &amp;&amp; rec.takhirSum) || 0;
+  extra.forEach(s =&gt; { sum += Number(s) || 0; });
+  const avg = (n + extra.length) ? (sum / (n + extra.length)) : 0;
+  return avg &lt;= TAKHIR_OK;
+}</pre><p class="why">نسخهٔ خالی را انجام‌شده حساب می‌کنیم تا روزی که هنوز نمونه ندادی قفل نشود. بعد از اولین نمونه، میانگین حرف می‌زند.</p><h2 id="v36">نسخهٔ 36 — نقشهٔ مدت متا به ستون</h2><p class="goal">هدف: شناسهٔ آیتم با نام ستون یکی نیست.</p><pre>const META_STORE = {
+  moodToFlow: &#x27;moodToFlowMin&#x27;,
+  afterFastMood: &#x27;afterFastMoodMin&#x27;,
+  ghanoon: &#x27;ghanoonMin&#x27;,
+  layers: &#x27;layersMin&#x27;,
+  sokut: &#x27;sokut&#x27;
+};</pre><p class="why">اگر مستقیم روی شناسه بنویسی شیت ستون خالی می‌گیرد. فیلدهای متا که به شیت می‌روند آرایهٔ جدا دارند.</p><h2 id="v37">نسخهٔ 37 — ستون‌های متا برای شیت</h2><p class="goal">هدف: همان قرارداد نوبت: آرایهٔ مقادیر به ترتیب فیلد.</p><pre>const META_FIELDS = [&#x27;uid&#x27;,&#x27;createdAt&#x27;,&#x27;dateShamsi&#x27;,
+  &#x27;moodToFlowMin&#x27;,&#x27;afterFastMoodMin&#x27;,&#x27;ghanoonMin&#x27;,&#x27;layersMin&#x27;,
+  &#x27;openfa1h&#x27;,&#x27;nchort&#x27;,&#x27;saatbidari5&#x27;,&#x27;twoHourAras&#x27;,
+  &#x27;opf1&#x27;,&#x27;chizayemojazbadeopfa2&#x27;,&#x27;opf2&#x27;,
+  &#x27;takhghmojaz0&#x27;,&#x27;takhmojmotns&#x27;,
+  &#x27;budandarjayemojaz100&#x27;,
+  &#x27;raatayeghavanineakhlaghietayinshode100&#x27;,&#x27;rayyatepartbandieruz100&#x27;,
+  &#x27;noCarb&#x27;,&#x27;noghahveyebiruni&#x27;,
+  &#x27;nocopypasteazaighable12pm&#x27;,&#x27;preplan12&#x27;,
+  &#x27;takhirAvg&#x27;,&#x27;takhirN&#x27;,&#x27;takhirSum&#x27;,&#x27;lawsJson&#x27;,&#x27;lawsMin&#x27;,&#x27;sokut&#x27;,
+  &#x27;doneJson&#x27;,&#x27;complete&#x27;];</pre><p class="why">قانون داخل جیسان است. قانون تازه اسکریپت تازه نمی‌خواهد چون قالب ردیف عوض نشده.</p><h2 id="v38">نسخهٔ 38 — کامل بودن روز</h2><p class="goal">هدف: آیتم اختیاری مثل سکوت می‌تواند خالی بماند.</p><pre>function isComplete(rec) {
+  const d = parseDone(rec);
+  return META_ITEMS.every(it =&gt; {
+    if (it.optional) return true;
+    if (it.kind === &#x27;avgSec&#x27;) return takhirIsOk(rec);
+    return !!d[it.id];
+  });
+}</pre><p class="why">پرچم خاموش یعنی از انجام حذف می‌شود. مدت صفر یعنی هنوز انجام نیست. این فیلد برای گزارش است نه برای قفل ثبت.</p><h2 id="v39">نسخهٔ 39 — نصب دکمهٔ پرچم</h2><p class="goal">هدف: متن فینگلیش، جهت چپ روی خود دکمه. سبز با کلاس روشن.</p><pre>function mountMetaItem(host, it) {
+  if (it.kind === &#x27;flag&#x27;) {
+    let row = host.querySelector(&#x27;.flaggrid&#x27;);
+    if (!row) {
+      row = document.createElement(&#x27;div&#x27;);
+      row.className = &#x27;flaggrid&#x27;;
+      host.appendChild(row);
+    }
+    const b = document.createElement(&#x27;button&#x27;);
+    b.type = &#x27;button&#x27;;
+    b.dir = &#x27;ltr&#x27;;
+    b.textContent = it.label;
+    b.addEventListener(&#x27;click&#x27;, () =&gt; toggleFlagDraft(it.id));
+    row.appendChild(b);
+    it._btn = b;
+  }
+}</pre><p class="why">صفحه راست‌به‌چپ است. بدون جهت روی دکمه، فینگلیش به راست می‌چسبد. سبز شدن از وضعیت است نه از جهت.</p><h2 id="v40">نسخهٔ 40 — ساخت همهٔ گروه‌های متا</h2><p class="goal">هدف: هر گروه دکمه‌های خودش و یک ثبت ته.</p><pre>function buildMeta() {
+  const host = $(&#x27;metaBlocks&#x27;);
+  host.innerHTML = &#x27;&#x27;;
+  META_GROUPS.forEach(g =&gt; {
+    const wrap = document.createElement(&#x27;div&#x27;);
+    wrap.className = &#x27;mgrp tone-&#x27; + g.id;
+    wrap.innerHTML = `&lt;div class=&quot;gtitle&quot;&gt;${g.title}&lt;/div&gt;`;
+    host.appendChild(wrap);
+    if (g.id === &#x27;laws&#x27;) mountLawsPanel(wrap);
+    else META_ITEMS.filter(it =&gt; it.group === g.id).forEach(it =&gt; mountMetaItem(wrap, it));
+    const putBtn = document.createElement(&#x27;button&#x27;);
+    putBtn.type = &#x27;button&#x27;;
+    putBtn.className = &#x27;gput&#x27;;
+    putBtn.textContent = &#x27;put &#x27; + g.title;
+    putBtn.addEventListener(&#x27;click&#x27;, () =&gt; putGroup(g.id));
+    wrap.appendChild(putBtn);
+  });
+}</pre><p class="why">گروه قانون پنل نام و ساعت دارد نه پرچم. یک ثبت ته، کل لیست آن روز را می‌نویسد.</p><h2 id="v41">نسخهٔ 41 — قانون به شکل جیسان</h2><p class="goal">هدف: نام، توضیح، دقیقه. کاتالوگ جدا در انبار محلی برای پر کردن فرم.</p><pre>function parseLaws(rec) {
+  try {
+    const a = JSON.parse((rec &amp;&amp; rec.lawsJson) || &#x27;[]&#x27;);
+    if (!Array.isArray(a)) return [];
+    return a.filter(x =&gt; x &amp;&amp; String(x.name || &#x27;&#x27;).trim()).map(x =&gt; ({
+      name: String(x.name).trim(),
+      desc: String(x.desc || &#x27;&#x27;),
+      min: Number(x.min) || 0
+    }));
+  } catch (e) { return []; }
+}
+function mergeLawRows(base, extra) {
+  const items = base.slice();
+  extra.forEach(row =&gt; {
+    if (!row || !row.name) return;
+    const i = items.findIndex(x =&gt; x.name === row.name);
+    if (i &gt;= 0) items[i] = row;
+    else items.push(row);
+  });
+  return items;
+}</pre><p class="why">هم‌نام جایگزین می‌شود نه ردیف دوم. کاتالوگ فقط نام و توضیح است؛ دقیقه مال همان روز است.</p><h2 id="v42">نسخهٔ 42 — پیش‌نویس قانون تا ثبت</h2><p class="goal">هدف: افزودن به پیش‌نویس شیت را نمی‌زند. ثبت ته گروه می‌زند.</p><pre>$(&#x27;lawAdd&#x27;).addEventListener(&#x27;click&#x27;, () =&gt; {
+  const row = lawFormRow();
+  if (!row) { toast(&#x27;nam khali ast&#x27;, true); return; }
+  const i = lawDraft.findIndex(x =&gt; x.name === row.name);
+  if (i &gt;= 0) lawDraft[i] = row;
+  else lawDraft.push(row);
+  paintLawList();
+});</pre><p class="why">همان الگوی پرچم. اگر هر افزودن را همگام کنی صف پر از نیمه‌کاره می‌شود.</p><h2 id="v43">نسخهٔ 43 — انجام به شکل جیسان</h2><p class="goal">هدف: کلید آیتم‌هایی که این روز بسته شده‌اند.</p><pre>function parseDone(rec) {
+  if (!rec) return {};
+  if (rec.done &amp;&amp; typeof rec.done === &#x27;object&#x27;) return rec.done;
+  try { return JSON.parse(rec.doneJson || &#x27;{}&#x27;); } catch (e) { return {}; }
+}</pre><p class="why">دو شکل برای مهاجرت. شیت فقط رشته را می‌بیند. بعد از خواندن، شیء را هم روی ردیف می‌گذاریم تا بقیهٔ توابع ساده بمانند.</p><h2 id="v44">نسخهٔ 44 — وضعیت سبز روی دکمه</h2><p class="goal">هدف: بعد از خواندن روز، کلاس روشن را با ذخیره‌شده یا پیش‌نویس یکی کن.</p><pre>async function paintMetaStatus() {
+  const day = mDate ? selectedMetaDay() : &#x27;&#x27;;
+  const rec = day ? await metaFor(day) : null;
+  lastMetaRec = rec;
+  const work = await sessionWork(day);
+  paintDayChart($(&#x27;metaDayChart&#x27;), rec, work);
+  paintSummary($(&#x27;metaChecks&#x27;), rec, work);
+  META_ITEMS.forEach(it =&gt; {
+    if (it.kind === &#x27;flag&#x27; &amp;&amp; it._btn) it._btn.classList.toggle(&#x27;on&#x27;, flagOn(rec, it.id));
+  });
+}</pre><p class="why">چارت بالا نوار است. خلاصه زیرش چیپ است نه کارت. دکمهٔ گروه همان منبع حقیقت دکمهٔ سبز است.</p><h2 id="v45">نسخهٔ 45 — کار روز برای چارت متا</h2><p class="goal">هدف: جمع دقیقهٔ دفتر همان تاریخ.</p><pre>async function sessionWork(day) {
+  const rows = (await getAll(&#x27;sessions&#x27;)).filter(r =&gt; r.dateShamsi === day);
+  const sessionMin = rows.reduce((s, r) =&gt; s + (Number(r.minutes) || 0), 0);
+  const byPart = PARTS.map(p =&gt; ({
+    id: p.id, label: p.label,
+    min: rows.filter(r =&gt; Number(r.partId) === p.id).reduce((s, r) =&gt; s + (Number(r.minutes) || 0), 0),
+    n: rows.filter(r =&gt; Number(r.partId) === p.id).length
+  }));
+  return { sessionMin, sessionN: rows.length, byPart };
+}</pre><p class="why">داشبورد چندروزه است. این تابع یک‌روزه است. قاطی‌شان نکن.</p><h2 id="v46">نسخهٔ 46 — نوار افقی با مقیاس ساعت</h2><p class="goal">هدف: کف ده ساعت برای مدت. شمارنده جدا. ثانیه جدا.</p><pre>function svgBars(rows) {
+  rows = (rows || []).filter(r =&gt; r &amp;&amp; r.lab);
+  if (!rows.length) return &#x27;&lt;p class=&quot;muted&quot;&gt;—&lt;/p&gt;&#x27;;
+  const HOUR_FULL = 10 * 60;
+  const SEC_FULL = 10;
+  const maxOf = (pred, floor) =&gt; Math.max(floor, ...rows.filter(pred).map(r =&gt; Number(r.n) || 0), 0) || floor;
+  const maxMin = maxOf(r =&gt; r.unit !== &#x27;n&#x27; &amp;&amp; r.unit !== &#x27;s&#x27;, HOUR_FULL);
+  const maxN = maxOf(r =&gt; r.unit === &#x27;n&#x27;, 1);
+  const maxS = maxOf(r =&gt; r.unit === &#x27;s&#x27;, SEC_FULL);
+  return &#x27;&lt;div class=&quot;hbars&quot;&gt;&#x27; + rows.map(r =&gt; {
+    const n = Number(r.n) || 0;
+    const den = r.unit === &#x27;n&#x27; ? maxN : (r.unit === &#x27;s&#x27; ? maxS : maxMin);
+    const pct = Math.max(0, Math.min(100, Math.round(100 * n / (den || 1))));
+    return &#x27;&lt;div class=&quot;hbar&quot;&gt;&lt;span class=&quot;hbar-lab &#x27; + dirOf(r.lab) + &#x27;&quot;&gt;&#x27; + esc(r.lab) +
+      &#x27;&lt;/span&gt;&lt;span class=&quot;hbar-track&quot;&gt;&lt;i style=&quot;width:&#x27; + pct + &#x27;%&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;/div&gt;&#x27;;
+  }).join(&#x27;&#x27;) + &#x27;&lt;/div&gt;&#x27;;
+}</pre><p class="why">اگر هر نمودار را به بیشینهٔ همان لیست نرمال کنی یک ساعت و ده ساعت هر دو تا ته می‌روند. نام چپ، مدت راست، خود ردیف چپ‌چین تا گرید راست صفحه ستون‌ها را عوض نکند.</p><h2 id="v47">نسخهٔ 47 — چیپ خلاصه بدون کارت</h2><p class="goal">هدف: گروه، عنوان، چیپ سبز یا خاموش. جعبه نکش.</p><pre>function paintSummary(el, rec) {
+  if (!el) return;
+  const views = META_ITEMS.map(it =&gt; metaItemView(rec, it));
+  const laws = lawsForSummary(rec);
+  el.innerHTML = &#x27;&lt;div class=&quot;sumflags&quot;&gt;&#x27; + META_GROUPS.map(g =&gt; {
+    const items = views.filter(v =&gt; v.group === g.id);
+    const chips = items.map(v =&gt;
+      &#x27;&lt;span class=&quot;chip &#x27; + dirOf(v.label) + &#x27; &#x27; + v.state + &#x27;&quot; dir=&quot;&#x27; + dirOf(v.label) + &#x27;&quot;&gt;&#x27; +
+      esc(v.label) + &#x27;&lt;/span&gt;&#x27;).join(&#x27;&#x27;);
+    return &#x27;&lt;article class=&quot;sumcard tone-&#x27; + g.id + &#x27;&quot;&gt;&lt;h4&gt;&#x27; + esc(g.title) +
+      &#x27;&lt;/h4&gt;&lt;div class=&quot;flagchips&quot;&gt;&#x27; + chips + &#x27;&lt;/div&gt;&lt;/article&gt;&#x27;;
+  }).join(&#x27;&#x27;) + &#x27;&lt;/div&gt;&#x27;;
+}</pre><p class="why">کارت تزئینی خواندن را سخت می‌کرد. چیپ کافی است. فینگلیش چپ.</p><h2 id="v48">نسخهٔ 48 — نمایش آیتم برای چیپ</h2><p class="goal">هدف: پرچم روشن یا خاموش. مدت صفر یعنی ازدست‌رفته.</p><pre>function metaItemView(rec, it) {
+  if (it.kind === &#x27;flag&#x27;) {
+    const on = flagOn(rec, it.id);
+    return { id: it.id, group: it.group, kind: it.kind, label: it.label,
+             state: on ? &#x27;ok&#x27; : &#x27;miss&#x27;, val: &#x27;&#x27;, min: 0 };
+  }
+  if (it.kind === &#x27;accumDur&#x27;) {
+    const n = Number(rec &amp;&amp; rec[META_STORE[it.id]]) || 0;
+    return { id: it.id, group: it.group, kind: it.kind, label: it.label,
+             state: n &gt; 0 ? &#x27;ok&#x27; : &#x27;miss&#x27;, val: n &gt; 0 ? fmtChunk(n) : &#x27;0m&#x27;, min: n };
+  }
+  return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: &#x27;miss&#x27;, val: &#x27;&#x27;, min: 0 };
+}</pre><p class="why">تأخیر شاخهٔ جدا دارد. این نسخه شکل مشترک چیپ را می‌گذارد.</p><h2 id="v49">نسخهٔ 49 — رنگ گروه</h2><p class="goal">هدف: اوپنفا، رعایت، اندازه، قانون. فقط رنگ، نه کارت.</p><pre>.mgrp.tone-openfa{border-color:#7a5428}
+.mgrp.tone-raayat{border-color:#2f6b4e}
+.mgrp.tone-andaze{border-color:#3a6288}
+.mgrp.tone-laws{border-color:#6a4a8a}
+.flaggrid button.on{background:#12312a;border-color:var(--good);color:var(--good)}</pre><p class="why">سبز یعنی انجام. زرد گروه اوپنفا برای تمایز است نه یعنی هشدار.</p><h2 id="v50">نسخهٔ 50 — ریست یک آیتم متا</h2><p class="goal">هدف: همان روز، همان ردیف، همان کلید. همگام‌نشده می‌شود.</p><pre>async function resetMetaItem(id) {
+  const day = selectedMetaDay();
+  const rec = await metaFor(day) || blankMeta(day);
+  clearMetaField(rec, id);
+  await put(&#x27;meta&#x27;, rec);
+  trySync();
+}</pre><p class="why">برگشت از تب داده همین مسیر را با شناسهٔ ردیف می‌رود. حذف کل روز جداست.</p><h2 id="v51">نسخهٔ 51 — بدنهٔ پست باید متن ساده باشد</h2><p class="goal">هدف: دامنهٔ پیجز با دامنهٔ گوگل یکی نیست. جیسان نوع محتوا پیش‌پرواز می‌سازد.</p><pre>async function pushBatch(url, secret, type, rows, fields) {
+  const payload = {
+    secret, type, fields,
+    rows: rows.map(r =&gt; fields.map(f =&gt; r[f] === undefined ? &#x27;&#x27; : r[f]))
+  };
+  const res = await fetch(url, {
+    method: &#x27;POST&#x27;,
+    headers: { &#x27;Content-Type&#x27;: &#x27;text/plain;charset=utf-8&#x27; },
+    body: JSON.stringify(payload)
+  });
+  const raw = await res.text();
+  const outp = JSON.parse(raw);
+  if (!outp.ok) throw new Error(outp.error || &#x27;server&#x27;);
+  if (String(outp.version || &#x27;&#x27;) !== SCRIPT_VERSION) {
+    throw new Error(&#x27;old script &#x27; + (outp.version || &#x27;&#x27;));
+  }
+  const st = (type === &#x27;meta&#x27;) ? &#x27;meta&#x27; : &#x27;sessions&#x27;;
+  for (const r of rows) { r.synced = 1; await put(st, r); }
+  return outp;
+}</pre><p class="why">بدنه جیسان است؛ نوع محتوا متن است. اگر نسخه نخواند هیچ ردیفی همگام‌شده نمی‌شود. صف سر جایش می‌ماند.</p><h2 id="v52">نسخهٔ 52 — صف همگام</h2><p class="goal">هدف: آفلاین بنویس، آنلاین بفرست. مشغول را قفل کن.</p><pre>async function trySync(loud) {
+  const url = cfgGet(&#x27;url&#x27;), secret = cfgGet(&#x27;secret&#x27;);
+  if (!url) { if (loud) toast(&#x27;آدرس وب‌اپ خالی است&#x27;, true); return; }
+  if (!navigator.onLine) { if (loud) toast(&#x27;آفلاین هستی&#x27;, true); return; }
+  if (trySync._busy) return;
+  const s = (await getAll(&#x27;sessions&#x27;)).filter(r =&gt; !r.synced);
+  const m = (await getAll(&#x27;meta&#x27;)).filter(r =&gt; !r.synced);
+  if (!s.length &amp;&amp; !m.length) { if (loud) toast(&#x27;صف خالی است&#x27;); return; }
+  trySync._busy = true;
+  try {
+    if (s.length) await pushBatch(url, secret, &#x27;session&#x27;, s, SESSION_FIELDS);
+    if (m.length) await pushBatch(url, secret, &#x27;meta&#x27;, m, META_FIELDS);
+    if (loud) toast(&#x27;شیت به‌روز شد&#x27;);
+  } catch (e) {
+    if (loud) toast(&#x27;ارسال نشد، در صف ماند&#x27;, true);
+  } finally {
+    trySync._busy = false;
+  }
+}</pre><p class="why">شکست یعنی صف دست‌نخورده. موفقیت یعنی پرچم همگام روی همان ردیف‌ها. دوبار کلیک قفل مشغول را می‌بیند.</p><h2 id="v53">نسخهٔ 53 — نسخهٔ وب‌اپ را بپرس</h2><p class="goal">هدف: گت فقط نسخه و نام تب. پست نمی‌فرستد.</p><pre>async function checkSheet(loud) {
+  const url = cfgGet(&#x27;url&#x27;), secret = cfgGet(&#x27;secret&#x27;);
+  const outp = await probeScript(url, secret);
+  const ver = String(outp.version || &#x27;&#x27;);
+  const ok = ver === SCRIPT_VERSION;
+  if (loud) toast(ok ? &#x27;شیت درست است&#x27; : &#x27;همین آدرس کهنه است&#x27;, !ok);
+  return ok;
+}</pre><p class="why">اگر اچ‌تی‌ام‌ال ورود گوگل آمد، یا نشانی غلط است یا دسترسی اجرا برای همه نیست. مداد همان نشانی اجرا، نسخهٔ جدید، نه استقرار تازه با نشانی تازه.</p><h2 id="v54">نسخهٔ 54 — کارگر پست را لمس نمی‌کند</h2><p class="goal">هدف: فقط گت همین مبدأ. شبکه اول، کش پشتیبان.</p><pre>self.addEventListener(&#x27;fetch&#x27;, ev =&gt; {
   const req = ev.request;
-  if (req.method !== 'GET') return;
+  if (req.method !== &#x27;GET&#x27;) return;
   if (!req.url.startsWith(self.location.origin)) return;
   ev.respondWith(
-    fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(req, copy));
-      return res;
-    }).catch(() => caches.match(req))
+    fetch(req)
+      .then(res =&gt; {
+        const copy = res.clone();
+        caches.open(CACHE).then(c =&gt; c.put(req, copy)).catch(() =&gt; {});
+        return res;
+      })
+      .catch(() =&gt; caches.match(req).then(hit =&gt; hit || caches.match(&#x27;./index.html&#x27;)))
+  );
+});</pre><p class="why">کش‌اول یک‌بار اسکریپت کهنه را برای همیشه قفل کرد. شبکه اول یعنی با اتصال، پروندهٔ نو. هواپیما از کش می‌خورد.</p><h2 id="v55">نسخهٔ 55 — نصب و ادعای کلاینت</h2><p class="goal">هدف: نسخهٔ نو همان نشست را می‌گیرد. مخلوط کهنه و نو نماند.</p><pre>self.addEventListener(&#x27;install&#x27;, ev =&gt; {
+  ev.waitUntil(
+    caches.open(CACHE)
+      .then(c =&gt; c.addAll(SHELL).catch(() =&gt; c.addAll([&#x27;./index.html&#x27;, &#x27;./app.js&#x27;])))
+      .then(() =&gt; self.skipWaiting())
   );
 });
-</pre>
-<div class="why">
-<p>شرط متد: <code>POST</code> به گوگل از این handler رد می‌شود و به شبکهٔ واقعی می‌رود. اگر نبود، SW یا کشش می‌کرد یا شکست می‌داد.</p>
-<p>شرط مبدأ: نشانی <code>/exec</code> روی دامنهٔ گوگل است. SW فقط origin همین Pages را لمس می‌کند.</p>
-<p>ترتیب: اول شبکه، بعد کش. <code>cache-first</code> یک‌بار <code>app.js</code> کهنه را برای همیشه قفل کرد؛ تاریخ امروز و پیش‌فرض‌های جدید دیده نمی‌شد. برای همین network-first است.</p>
-<p><code>skipWaiting</code> و <code>clients.claim</code> نسخهٔ جدید را همان نشست فعال می‌کنند. اگر کنترلر عوض شود، اپ یک‌بار reload می‌کند تا مخلوط کهنه و نو نماند.</p>
-<p>دکمهٔ سخت‌تازه‌سازی در تب داده همهٔ cacheها و ثبت SW را می‌کشد. وقتی «پوش کردم ولی سایت کهنه است» اول آن، بعد صبر برای Pages.</p>
-</div>
-
-<h2 id="idb">IndexedDB — دو store، دو مدل</h2>
-<div class="goal">هدف: نوبت رویداد است، متا وضعیت روز است. قاطی‌شان نکن.</div>
-<pre>sessions  keyPath: uid          // هر خط یک رویداد، شناسه تصادفی
-meta      keyPath: dateShamsi   // یک ردیف در روز، upsert
-
-put(store, obj)   // نه add — همان کلید را overwrite می‌کند
-metaUid(day) → 'meta-' + day    // پایدار، تا شیت روی تاریخ merge کند
-uid()     → Date.now().toString(36) + '-' + random
-</pre>
-<div class="why">
-<p><code>put</code> به‌جای <code>add</code>: ثبت دوبارهٔ همان روز متا، ردیف دوم نمی‌سازد. دفتر عمداً uid تصادفی دارد تا دو خط در یک میلی‌ثانیه هم برخورد نکنند.</p>
-<p>نشانی شیت و کلید در <code>localStorage</code>اند نه در IDB. پاک‌کردن storeها تنظیمات را لزوماً نمی‌کشد. تب آخر هم همین‌جا است؛ برای همین برگشت از شیت نباید اجباری روی متا بیفتد.</p>
-</div>
-<div class="box lab">
-<p>در Application، کلید <code>dl_tab</code> را دستی <code>data</code> کن، رفرش. باید تب داده باز شود.</p>
-</div>
-
-<h2 id="wheel">تاریخ شمسی به‌عنوان ABI، نه لوکال ویندوز</h2>
-<div class="goal">هدف: هر رکورد رشتهٔ صفرپَد باشد تا فیلتر بازه مقایسهٔ lexicographic باشد.</div>
-<pre>fmtJ(y, m, d) → '1405/05/30'
-todayJ()      → از Date محلی، تبدیل ریاضی به جلالی — به locale ویندوز وصل نیست
-addDaysJ      → جمع روی ماه‌های ۳۱/۳۰/۲۹، نه Gregorian setDate
-dashSpan(7)   → از امروز منهای ۶ تا امروز، هر دو سر شامل
-</pre>
-<div class="why">
-<p>بدون صفر جلو ماه، <code>5/2</code> از <code>5/10</code> بزرگ‌تر دیده می‌شود. اگر امروز سی مرداد باشد هفت روز یعنی ۲۴ تا ۳۰، نه اول ماه. چرخ اسکرول تا در DOM ارتفاع نداشته باشد رویداد scroll را نادیده می‌گیرد؛ وگرنه scrollTop صفر روز اول ماه را برمی‌داشت. سال «امروز منهای دو» با همان ماه‌روز به امروز می‌چسبد چون حلقهٔ سال گاهی روی کپی اشتباه می‌نشست.</p>
-<p>چرخ دفتر تنبل ساخته می‌شود تا قبل از اولین فریم کار اضافه نباشد. چرخ موس فقط بعد از کلیک روی همان ستون مسلح است.</p>
-</div>
-<pre>const PARTS = [
-  { id: 0, label: 'تا ۱۲' },
-  { id: 1, label: '۱۲ تا ۲' },
-  { id: 2, label: '۲ تا ۶' },
-  { id: 3, label: 'بعد اوپن' }
-];
-CODES.filter(c => c.from &lt;= selectedPartId)
-</pre>
-<div class="why">
-<p>کل پارت یک آرایه است. <code>from</code> یعنی از این پارت به بعد دیده شود. پارت ۲ کدهای ۰ و ۱ و ۲ را دارد. چهار لیست جدا ننویس.</p>
-<p>چینش ردیف: اسم چپ، مدت راست. فینگلیش LTR. بازهٔ عددی مثل ۱۲ تا ۲ همان‌طور که نوشته شده می‌ماند. «بعد اوپن» RTL ایزوله است تا واژه‌ها قاطی نشوند. صفحه RTL است؛ اگر خود ردیف را RTL بگذاری، مدت می‌رود چپ.</p>
-</div>
-
-<h2 id="meta">متا — draft تا put ته گروه</h2>
-<div class="goal">هدف: انتخاب همه صف را پر نکند. یک <code>put</code> ته گروه، کل گروه را می‌نویسد.</div>
-<pre>flagDraft[id] = 1 | 0     // فقط حافظهٔ صفحه
-flagOn(rec, id)           // اگر draft هست همان؛ وگرنه مقدار ذخیره‌شده
-
-async function putGroup(gid) {
-  // پرچم از draft، مدت اگر چرخ صفر نباشد جمع می‌شود
-  rec.synced = 0;
-  await put('meta', rec);
-  trySync();
+self.addEventListener(&#x27;activate&#x27;, ev =&gt; {
+  ev.waitUntil(
+    caches.keys()
+      .then(keys =&gt; Promise.all(keys.filter(k =&gt; k !== CACHE).map(k =&gt; caches.delete(k))))
+      .then(() =&gt; self.clients.claim())
+  );
+});</pre><p class="why">نام کش که عوض شود نسخهٔ قبلی پاک می‌شود. اگر نام را عوض نکنی، فعال‌سازی چیزی برای حذف ندارد.</p><h2 id="v56">نسخهٔ 56 — مانیفست نصب</h2><p class="goal">هدف: نوار آدرس را برمی‌دارد. شروع از همین پوشه.</p><pre>{
+  &quot;name&quot;: &quot;DailyLog&quot;,
+  &quot;short_name&quot;: &quot;DailyLog&quot;,
+  &quot;lang&quot;: &quot;fa&quot;,
+  &quot;dir&quot;: &quot;rtl&quot;,
+  &quot;start_url&quot;: &quot;./index.html&quot;,
+  &quot;scope&quot;: &quot;./&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;#0f1419&quot;,
+  &quot;theme_color&quot;: &quot;#0f1419&quot;
+}</pre><p class="why">نشانی باید اچ‌تی‌تی‌پی‌اس باشد نه فایل. اگر دکمه نبود کارگر کهنه است یا اجازهٔ نصب در اج بسته است.</p><h2 id="v57">نسخهٔ 57 — اسکریپت شیت: قفل نسخه</h2><p class="goal">هدف: همین رشته باید با اپ یکی باشد. کلید را در گیت نگذار.</p><pre>const VERSION = &#x27;v11-meta&#x27;;
+function doGet() {
+  return json_({ ok: true, version: VERSION, alive: true });
 }
-</pre>
-<div class="why">
-<p>تا ثبت نزنی، IDB و شیت بی‌خبرند. <code>synced = 0</code> یعنی حتی اگر قبلاً رفته باشد، این ویرایش دوباره صف می‌شود.</p>
-<p>میانگین تأخیر: اگر زیر ۱٫۵ ثانیه شود پرچم انجام پاک می‌شود. یک نمونهٔ کوتاه میانگین را می‌کشد؛ عمدی است.</p>
-<p>چند ردیف متا برای یک روز: <code>metaFor</code> پرترین را نگه می‌دارد، حفره را از بقیه پر می‌کند، اضافه را حذف می‌کند.</p>
-</div>
-<div class="box lab">
-<p>انتخاب همه در گروه اول. صف نباید زیاد شود. دو پرچم خاموش، بعد ثبت ته گروه. صف یک متا. برگشت روی یک پرچم در تب داده فقط همان تکه را برمی‌دارد.</p>
-</div>
+function doPost(e) {
+  const body = JSON.parse(e.postData &amp;&amp; e.postData.contents || &#x27;{}&#x27;);
+  if (body.secret !== SECRET) return json_({ ok: false, error: &#x27;secret&#x27; });
+  // type: session | meta | sessionDelete
+  return json_({ ok: true, version: VERSION, inserted: 0, updated: 0 });
+}</pre><p class="why">بدنه را از متن ساده بخوان. اگر نوع محتوا را محدود کنی پیش‌پرواز می‌میرد. بازسازی گزارش از فهرست توابع است، دکمه داخل خودش ندارد.</p><h2 id="v58">نسخهٔ 58 — استقرار گوگل</h2><p class="goal">هدف: کد را در ویرایشگر بگذار، ذخیره کن، بعد روی همان اجرا نسخهٔ جدید بساز.</p><pre>1) Apps Script editor → Save
+2) Deploy → Manage deployments → مداد همان /exec
+3) New version → Deploy
+4) URL را عوض نکن مگر اولین بار</pre><p class="why">استقرار تازه با نشانی تازه یعنی همهٔ گوشی‌ها باید آدرس را از نو بگذارند. مداد همان نشانی.</p><h2 id="v59">نسخهٔ 59 — حذف نوبت در صف شیت</h2><p class="goal">هدف: حذف محلی کافی نیست اگر قبلاً رفته باشد.</p><pre>function queueSessionDelete(uid) {
+  const a = pendingDeletes();
+  if (a.indexOf(uid) &lt; 0) a.push(uid);
+  cfgSet(&#x27;del_sessions&#x27;, JSON.stringify(a));
+}</pre><p class="why">همگام اول حذف‌ها را می‌فرستد بعد ردیف‌های تازه را. اگر این صف نباشد شیت ردیف روح نگه می‌دارد.</p><h2 id="v60">نسخهٔ 60 — هرگز اسکریپت را در گیت نگذار</h2><p class="goal">هدف: کلید و شناسهٔ شیت فقط همان‌جا است.</p><pre># .gitignore
+Code.gs
+*.gs
+.env</pre><p class="why">کارگاه می‌تواند شکل توابع را نشان دهد. مقدار راز را نه. اگر جایی پیست کردی، راز را بچرخان.</p><h2 id="v61">نسخهٔ 61 — خروجی سی‌اس‌وی</h2><p class="goal">هدف: همان فیلدها، همان ترتیب، بم در ابتدا برای اکسل.</p><pre>async function buildCsv(storeName, fields) {
+  const rows = await getAll(storeName);
+  return &#x27;\ufeff&#x27; + fields.join(&#x27;,&#x27;) + &#x27;\n&#x27; +
+         rows.map(r =&gt; fields.map(f =&gt; csvEscape(r[f])).join(&#x27;,&#x27;)).join(&#x27;\n&#x27;);
+}</pre><p class="why">همگام شیت جایگزین خروجی نیست. خروجی برای وقتی است که گوگل در دسترس نیست یا می‌خواهی در اکسل ببینی.</p><h2 id="v62">نسخهٔ 62 — اشتراک فایل</h2><p class="goal">هدف: اگر مرورگر بتواند فایل بدهد، همان سی‌اس‌وی را بده.</p><pre>async function shareCsv() {
+  const text = await buildCsv(&#x27;sessions&#x27;, SESSION_FIELDS);
+  const file = new File([text], &#x27;sessions.csv&#x27;, { type: &#x27;text/csv&#x27; });
+  if (navigator.canShare &amp;&amp; navigator.canShare({ files: [file] })) {
+    await navigator.share({ files: [file], title: &#x27;DailyLog&#x27; });
+  }
+}</pre><p class="why">دسکتاپ اغلب نمی‌تواند. همان موقع دانلود معمولی را داشته باش.</p><h2 id="v63">نسخهٔ 63 — سخت‌تازه‌سازی</h2><p class="goal">هدف: کارگر را ول کن، کش را خالی کن، یک‌بار از نو بیا.</p><pre>async function hardReload() {
+  const keys = await caches.keys();
+  await Promise.all(keys.map(k =&gt; caches.delete(k)));
+  if (navigator.serviceWorker) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r =&gt; r.unregister()));
+  }
+  location.reload();
+}</pre><p class="why">اگر فقط رفرش معمولی بزنی کارگر ممکن است همان پرونده را از کش بدهد. این دکمه برای روزی است که نسخه دیدی و صفحه کهنه ماند.</p><h2 id="v64">نسخهٔ 64 — پیدا کردن تب آخر</h2><p class="goal">هدف: کلید انبار محلی، نه شیت.</p><pre>function boot() {
+  const tab = cfgGet(&#x27;tab&#x27;) || &#x27;meta&#x27;;
+  showTab(tab);
+}</pre><p class="why">اگر این را فراموش کنی هر ورود می‌پرد روی متا و کاربر فکر می‌کند داده‌اش گم شده.</p><h2 id="v65">نسخهٔ 65 — ثبت کارگر از صفحه</h2><p class="goal">هدف: فقط روی اچ‌تی‌تی‌پی. فایل پروتکل را رد کن.</p><pre>if (&#x27;serviceWorker&#x27; in navigator &amp;&amp; location.protocol !== &#x27;file:&#x27;) {
+  navigator.serviceWorker.register(&#x27;./sw.js&#x27;);
+}</pre><p class="why">بدون این، مانیفست تنها است. با فایل پروتکل، ثبت یا خطا می‌دهد یا رفتار نصفه‌نیمه.</p><h2 id="v66">نسخهٔ 66 — آیکون و پوسته</h2><p class="goal">هدف: صدونودو دو و پانصدونوزده برای کاشی ویندوز. اس‌وی‌جی برای زبانه.</p><pre>&lt;link rel=&quot;manifest&quot; href=&quot;manifest.json&quot;/&gt;
+&lt;link rel=&quot;apple-touch-icon&quot; href=&quot;icon-192.png&quot;/&gt;
+&lt;meta name=&quot;theme-color&quot; content=&quot;#0f1419&quot;/&gt;</pre><p class="why">اگر آیکون نباشد ویندوز کاشی خالی می‌گذارد. این به منطق ثبت ربط ندارد.</p><h2 id="v67">نسخهٔ 67 — سرور محلی</h2><p class="goal">هدف: روی لوکال‌هاست بشکن نه روی فایل.</p><pre>cd D:\tech-lab\habit-pwa
+python -m http.server 8080</pre><p class="why">بعد در مرورگر همان مبدأ را باز کن. کارگر به پورت حساس است؛ هربار پورت عوض کنی کش جدا می‌سازد.</p><h2 id="v68">نسخهٔ 68 — صفحات گیت‌هاب</h2><p class="goal">هدف: شاخهٔ اصلی، ریشه یا پوشهٔ docs طبق تنظیم ریپو.</p><pre>git add -A
+git commit -m &quot;...&quot;
+git push origin main
+# https://mojde7th.github.io/dailylog/</pre><p class="why">بعد از پوش معمولاً یکی دو دقیقه تأخیر عادی است. اگر کهنه ماند سه نسخه را با هم چک کن و سخت‌تازه‌سازی.</p><h2 id="v69">نسخهٔ 69 — تشخیص پاسخ کهنه</h2><p class="goal">هدف: اگر اچ‌تی‌ام‌ال آمد به‌جای جیسان، نشانی اجرا نیست.</p><pre>async function parseScriptBody(raw) {
+  const t = String(raw || &#x27;&#x27;).trim();
+  if (t.charAt(0) === &#x27;&lt;&#x27;) throw new Error(&#x27;پاسخ شیت جیسان نیست&#x27;);
+  return JSON.parse(t);
+}</pre><p class="why">صفحهٔ ورود گوگل با علامت کوچکتر شروع می‌شود. این را با خطای نسخه عوضی نگیر.</p><h2 id="v70">نسخهٔ 70 — پیل شبکه</h2><p class="goal">هدف: فقط نمایش. همگام خودش آفلاین را می‌فهمد.</p><pre>function updateNetPill() {
+  const on = navigator.onLine;
+  // کلاس on / off روی کپسول
+}
+window.addEventListener(&#x27;online&#x27;,  updateNetPill);
+window.addEventListener(&#x27;offline&#x27;, updateNetPill);</pre><p class="why">روشن بودن پیل به معنی صف خالی نیست. صف را از تعداد همگام‌نشده بخوان.</p><h2 id="v71">نسخهٔ 71 — جزیرهٔ چپ برای فینگلیش</h2><p class="goal">هدف: گروه متا، چیپ، لیست کد، پیش‌نویس قانون.</p><pre>.mgrp,.flaggrid,.flagchips,.chips,.alist{direction:ltr;text-align:left}
+.flaggrid button,.mblock h3{direction:ltr;text-align:left;unicode-bidi:isolate}</pre><p class="why">صفحه راست می‌ماند. فقط این خوشه‌ها چپ می‌شوند. پارت فارسی را داخل این خوشه نگذار.</p><h2 id="v72">نسخهٔ 72 — پارت فارسی وسط</h2><p class="goal">هدف: دو ستون، وسط بخش افزودن به پارت جاری. متن وسط دکمه.</p><pre>.parts{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(118px,168px));
+  justify-content:center;
+  gap:8px;
+  margin:10px auto 14px;
+  max-width:360px
+}
+.parts button.rtl{direction:rtl;unicode-bidi:isolate;text-align:center}</pre><p class="why">اگر دکمه کشیدهٔ تمام‌عرض باشد «وسط» دیده نمی‌شود. عرض محدود و گرید وسط‌چین همان چیزی است که خواستی.</p><h2 id="v73">نسخهٔ 73 — نوار: نام چپ، عدد راست</h2><p class="goal">هدف: صفحه راست است پس خود ردیف باید چپ باشد وگرنه ستون‌ها عوض می‌شوند.</p><pre>.hbars,.hbar{direction:ltr}
+.hbar{
+  display:grid;
+  grid-template-columns:minmax(0,42%) minmax(48px,1fr) auto;
+  gap:8px;align-items:center
+}
+.hbar-lab.rtl{direction:rtl;unicode-bidi:isolate;text-align:right}
+.hbar-val{direction:ltr;text-align:right}</pre><p class="why">برچسب دوازده تا دو راست ایزوله است داخل ستون چپ. مدت همیشه راستِ ردیف است.</p><h2 id="v74">نسخهٔ 74 — بدون اس‌وی‌جی عرض‌ثابت</h2><p class="goal">هدف: میله سی‌اس‌اس است تا از بخش بیرون نزند.</p><pre>.hbar-track{display:block;height:12px;background:#121820;border-radius:99px;overflow:hidden}
+.hbar-track i{display:block;height:100%;max-width:100%;border-radius:99px}</pre><p class="why">اس‌وی‌جی با عرض پیکسل روی موبایل کارت را می‌شکافت. درصد عرض نسبت به شیار است.</p><h2 id="v75">نسخهٔ 75 — روز خالی روی محور</h2><p class="goal">هدف: از تا را با هر روز شمسی پر کن، بعد مقدار را بگذار.</p><pre>hostB.innerHTML = svgBars(days.map(d =&gt; ({
+  lab: jShort(d),
+  n: (byDay[d] &amp;&amp; byDay[d].daftar) || 0,
+  fill: &#x27;#3a6288&#x27;
+})));</pre><p class="why">اگر فیلتر روی نوبت‌های موجود باشد محور سوراخ می‌شود. صفر هم یک عدد است.</p><h2 id="v76">نسخهٔ 76 — جمع پرچم در بازه</h2><p class="goal">هدف: شمارنده است نه دقیقه. واحد جدا.</p><pre>fb.push({
+  lab: it.id,
+  n: flagSum[it.id] || 0,
+  val: (flagSum[it.id] || 0) + &#x27;/&#x27; + dayN,
+  fill: &#x27;#3ecf8e&#x27;,
+  unit: &#x27;n&#x27;
+});</pre><p class="why">اگر با مدت در یک بیشینه قاطی شود یک پرچم نوار را تا ته می‌برد. واحد شمارنده جلوی این را می‌گیرد.</p><h2 id="v77">نسخهٔ 77 — متن طولانی فینگلیش</h2><p class="goal">هدف: بشکن، از عرض نزن بیرون.</p><pre>.flaggrid button,.chip,.nbcode{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  max-width:100%
+}</pre><p class="why">لیبل‌های رعایت بلندند. بدون شکستن، افقی اسکرول می‌گیری و پارت وسط دیده نمی‌شود.</p><h2 id="v78">نسخهٔ 78 — بدون گوشهٔ تزئینی</h2><p class="goal">هدف: بخش یعنی فاصله و عنوان. جعبه نکش.</p><pre>.card{
+  background:transparent;border:0;border-radius:0;
+  padding:8px 0 18px;margin:0;overflow-x:hidden
+}</pre><p class="why">گوشهٔ نوری کارت جعلی می‌ساخت. محتوا همان است. پارت‌ها حالا وسط بخش‌اند نه وسط یک قاب تیره.</p><h2 id="v79">نسخهٔ 79 — چرخ مدت متا</h2><p class="goal">هدف: ساعت و دقیقه، جمع‌شونده، بعد از ثبت صفر.</p><pre>function makeDurWheel(host, defH, defM, onChange) {
+  const hh = [];
+  for (let i = 0; i &lt;= 16; i++) hh.push(pad2(i));
+  const mm = minuteItems();
+  const wh = wheelColumn(hh, defH || 0, notify, { loop: true });
+  const wm = wheelColumn(mm, minuteIndex(defM), notify, { loop: true });
+  wheelGroup(host, [wh, wm], [&#x27;ساعت&#x27;, &#x27;دقیقه&#x27;], true);
+  return {
+    minutes: () =&gt; Number(hh[wh.get()]) * 60 + Number(mm[wm.get()]),
+    reset: () =&gt; { wh.set(0); wm.set(0); }
+  };
+}</pre><p class="why">شانزده ساعت سقف چرخ است. مقیاس نمودار ده ساعت است و اگر بیشتر زدی همان‌جا بزرگ می‌شود. این دو را قاطی نکن.</p><h2 id="v80">نسخهٔ 80 — کیفیت روی خط</h2><p class="goal">هدف: تگ ویرگولی، اختیاری.</p><pre>const QUALITY_TAGS = [
+  &#x27;bigharrshadid&#x27;,&#x27;zajrshadid&#x27;,&#x27;dardshadid&#x27;,&#x27;fesharshadi&#x27;,&#x27;karesakht&#x27;,
+  &#x27;flowshadid&#x27;,&#x27;tamarkozshaid&#x27;,&#x27;amighshadid&#x27;,&#x27;withthinkshadid&#x27;
+];</pre><p class="why">این‌ها متای روز نیستند. روی همان خط نوبت می‌نشینند. لایه‌های روز فیلد مدت جدا دارند.</p><h2 id="v81">نسخهٔ 81 — چه کسی در تخصیص</h2><p class="goal">هدف: چک‌باکس، چندتایی. فقط بعضی کدها.</p><pre>function paintWhoBox(code) {
+  const host = $(&#x27;whoBox&#x27;);
+  const need = /takh/.test(code || &#x27;&#x27;);
+  host.classList.toggle(&#x27;hide&#x27;, !need);
+  if (!need) return;
+  host.innerHTML = TAKH_WHO.map(w =&gt;
+    &#x27;&lt;label class=&quot;whochk&quot;&gt;&lt;input type=&quot;checkbox&quot; value=&quot;&#x27; + w.id + &#x27;&quot;/&gt; &#x27; + w.label + &#x27;&lt;/label&gt;&#x27;
+  ).join(&#x27;&#x27;);
+}</pre><p class="why">اگر برای همهٔ کدها نشانش دهی فرم شلوغ می‌شود. فیلتر روی خود شناسهٔ کد است.</p><h2 id="v82">نسخهٔ 82 — کد چسبیده</h2><p class="goal">هدف: یک بلوک، بدون تکرار دسته.</p><pre>const stick = items.some(c =&gt; c.stick);
+return `&lt;div class=&quot;alist${stick ? &#x27; stick&#x27; : &#x27;&#x27;}&quot;&gt;`</pre><p class="why">اداری و روان و Aff این شکل را می‌خواهند. بقیه دستهٔ جدا دارند.</p><h2 id="v83">نسخهٔ 83 — شمارندهٔ صف</h2><p class="goal">هدف: نوبت همگام‌نشده به‌علاوهٔ متای همگام‌نشده.</p><pre>async function updateQueueBadge() {
+  const s = await getAll(&#x27;sessions&#x27;);
+  const m = await getAll(&#x27;meta&#x27;);
+  const n = s.filter(r =&gt; !r.synced).length + m.filter(r =&gt; !r.synced).length;
+  if ($(&#x27;cntQ&#x27;)) $(&#x27;cntQ&#x27;).textContent = n;
+}</pre><p class="why">پیش‌نویس پرچم اینجا شمرده نمی‌شود. فقط آنچه در فروشگاه با همگام صفر است.</p><h2 id="v84">نسخهٔ 84 — برگشت خط دفتر</h2><p class="goal">هدف: حذف محلی، صف حذف برای شیت، دفتر را از نو بکش.</p><pre>await delKey(&#x27;sessions&#x27;, id);
+queueSessionDelete(id);
+paintNotebook();
+trySync();</pre><p class="why">اگر فقط محلی پاک کنی شیت همان خط را نگه می‌دارد و فردا برمی‌گردد. صف حذف برای همین است.</p><h2 id="v85">نسخهٔ 85 — پاک‌کردن دستگاه</h2><p class="goal">هدف: دو فروشگاه. تنظیمات نشانی می‌ماند.</p><pre>await clearStore(&#x27;sessions&#x27;);
+await clearStore(&#x27;meta&#x27;);</pre><p class="why">عمدی است که نشانی شیت نپرد. اگر بپرد همه باید دوباره پیست کنند. تأیید قبل از پاک.</p><h2 id="v86">نسخهٔ 86 — خروجی تشخیص</h2><p class="goal">هدف: نسخه، نشانی، تعداد ردیف. بدون راز.</p><pre>function diagDump() {
+  return {
+    app: APP_VERSION,
+    scriptNeed: SCRIPT_VERSION,
+    online: navigator.onLine,
+    urlSet: !!cfgGet(&#x27;url&#x27;)
+  };
+}</pre><p class="why">کلید را چاپ نکن. برای پشتیبانی همین کافی است.</p><h2 id="v87">نسخهٔ 87 — چرخ دقیقه با گام پنج</h2><p class="goal">هدف: ایندکس از مقدار، نه از رشته.</p><pre>function minuteItems() {
+  const mm = [];
+  for (let i = 0; i &lt;= 60; i += 5) mm.push(pad2(i));
+  return mm;
+}
+function minuteIndex(m) {
+  const snapped = Math.round((m || 0) / 5) * 5;
+  return Math.max(0, Math.min(12, snapped / 5));
+}</pre><p class="why">شصت دقیقه یعنی ستون بعد. ایندکس دوازده همان شصت است روی همین ستون. با ساعت جمعش کن.</p><h2 id="v88">نسخهٔ 88 — نام دستهٔ کهنه</h2><p class="goal">هدف: دیوار و بدن چند اسم قدیمی دارند.</p><pre>const CAT_RENAME = { div: &#x27;divar&#x27;, sehat: &#x27;badan&#x27; };
+function catName(c) {
+  const k = String(c || &#x27;&#x27;).trim();
+  return CAT_RENAME[k] || k || &#x27;—&#x27;;
+}</pre><p class="why">داشبورد دسته را از روی دادهٔ ذخیره‌شده می‌خواند. بدون این نقشه، دو نوار برای یک دسته می‌بینی.</p><h2 id="v89">نسخهٔ 89 — عنوان کوتاه روی نوار</h2><p class="goal">هدف: لیبل بلند متا برای چارت زیاد است.</p><pre>function tileTitle(it) {
+  if (it.id === &#x27;moodToFlow&#x27;) return &#x27;moodToFlow&#x27;;
+  if (it.id === &#x27;afterFastMood&#x27;) return &#x27;afterFastMood&#x27;;
+  if (it.id === &#x27;layers&#x27;) return &#x27;layers&#x27;;
+  if (it.id === &#x27;ghanoon&#x27;) return &#x27;ghanoonFarayeman&#x27;;
+  if (it.id === &#x27;sokut&#x27;) return &#x27;roozsokut&#x27;;
+  return it.label;
+}</pre><p class="why">دکمه لیبل بلند می‌ماند. نوار اسم کوتاه می‌خواهد تا ستون چپ نخورد.</p><h2 id="v90">نسخهٔ 90 — امتیاز پرچم گروه</h2><p class="goal">هدف: چند از چند، برای نوار داشبورد.</p><pre>function flagScore(rec, gid) {
+  const items = META_ITEMS.filter(it =&gt; it.group === gid &amp;&amp; it.kind === &#x27;flag&#x27;);
+  const ok = items.filter(it =&gt; flagOn(rec, it.id)).length;
+  return { ok, n: items.length };
+}</pre><p class="why">این شمارنده است. با دقیقه جمعش نکن.</p><h2 id="v91">نسخهٔ 91 — رگرسیون‌هایی که خوردیم</h2><p class="goal">هدف: هر ردیف یک درس نسخه است.</p><pre>پوش کردم، سایت کهنه
+  علت: cache-first
+  علاج: network-first + نام کش + ?v=
 
-<h2 id="nb">دفتر — append-only و ارث</h2>
-<div class="goal">هدف: هر خط رویداد جدا. ادغام روی روز مال متا است نه دفتر.</div>
-<pre>const row = {
-  uid: uid(),
-  dateShamsi, partId, category, code,
-  minutes, tags, note, synced: 0
-};
-await put('sessions', row);
-</pre>
-<div class="why">
-<p>کدهای <code>stick</code> در یک بلوک می‌مانند بدون برچسب دستهٔ تکراری. نوار پایین فقط دفتر است؛ متا ثبت خودش را ته گروه دارد.</p>
-</div>
+یک ساعت و ده ساعت هر دو تا ته
+  علت: نرمال به بیشینهٔ همان لیست
+  علاج: کف ده ساعت
 
-<h2 id="laws">قانون — بدون نسخهٔ جدید اپ برای هر نام</h2>
-<div class="goal">هدف: نام از پیش معلوم نیست. قالب خالی: نام، توضیح، مدت.</div>
-<pre>catalog     localStorage dl_law_catalog
-lawDraft    تا put ته گروه صف نمی‌شود
-lawsJson    روی همان ردیف META
-tab LAWS    explode برای گزارش سطری
-</pre>
-<div class="why">
-<p>جیسان عکس همان روز است و با یک sync می‌آید. تب قانون برای فیلتر در شیت است. بعد از <code>v11-meta</code>، قانون تازه اسکریپت تازه نمی‌خواهد. ثبت تکی ندارد؛ ته گروه کل لیست را می‌نویسد.</p>
-</div>
+دوازده تا دو برعکس
+  علت: جهت ردیف یا اجبار چپ روی بازهٔ فارسی
+  علاج: ردیف چپ، برچسب راست ایزوله
 
-<h2 id="sync">چرا text/plain، چرا قفل نسخه</h2>
-<div class="goal">هدف: از Pages به گوگل بدون preflight، و هرگز ستون نو به اسکریپت کهنه.</div>
-<pre>headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-body: JSON.stringify({ secret, type, version, fields, rows })
+انتخاب همه صف را پر کرد
+  علت: همگام روی کلیک دکمه
+  علاج: پیش‌نویس تا ثبت ته گروه
 
-if (trySync._busy) return;
-if (String(outp.version) !== SCRIPT_VERSION) throw ...
-</pre>
-<div class="why">
-<p>دامنهٔ Pages ≠ دامنهٔ گوگل. اگر <code>application/json</code> بفرستی، مرورگر OPTIONS می‌زند و Apps Script آن را دوست ندارد. بدنه همان JSON است؛ نوع محتوا متن ساده است تا CORS ساده بماند.</p>
-<p>قفل مشغول: دو sync موازی ردیف تکراری یا قفل شیت می‌ساخت. صف خالی فقط وقتی خودت دکمه زدی toast می‌دهد؛ همگام پس‌زمینه ساکت است.</p>
-<p>بدنه آرایهٔ مقادیر به ترتیب فیلدها است، نه شیء آزاد. فیلد غایب رشتهٔ خالی می‌شود نه <code>undefined</code>، تا سلول شیت به‌هم نریزد.</p>
-</div>
-<div class="box lab">
-<p>Network، فیلتر <code>exec</code>. یک put گروه. بدنه باید <code>type: "meta"</code> و <code>rows: [[...]]</code> باشد. پاسخ باید همان <code>v11-meta</code> را برگرداند. اگر HTML ورود گوگل آمد، یا URL غلط است یا دسترسی اجرا برای همه نیست.</p>
-</div>
+چرخ روی روز اول ماه پرید
+  علت: اسکرول قبل از ارتفاع
+  علاج: تا ارتفاع نباشد اعمال نکن</pre><p class="why">اگر باگی دیدی اول این فهرست را بخوان، بعد بازنویسی همه‌چیز.</p><h2 id="v92">نسخهٔ 92 — آزمون قرارداد</h2><p class="goal">هدف: ده سؤال. هشت یعنی کارگاه نشسته.</p><pre>کارگر باید پست همگام را قاپد؟ خیر؛ فقط گت همین مبدأ
+انتخاب همه باید همان لحظه به صف برود؟ خیر؛ پیش‌نویس تا ثبت ته گروه
+کد اسکریپت را کجا می‌گذاری؟ ویرایشگر، بعد مداد همان اجرا
+کلید متای یک روز چیست؟ تاریخ شمسی با پیشوند متا
+چرا متن ساده برای پست؟ تا پیش‌پرواز نزند
+میانگین تأخیر زیر یک‌ونیم؟ پرچم انجام می‌شود
+قانون تازه اسکریپت تازه می‌خواهد؟ خیر
+سه چیزی که با هم بالا می‌روند؟ عنوان و پارامتر نسخه و نام کش
+تب آخر کجا ذخیره می‌شود؟ انبار محلی
+استقرار تازه با نشانی تازه؟ غلط؛ همان نشانی، نسخهٔ جدید</pre><p class="why">اگر کمتر از هشت شد فصل همگام و کارگر را دوباره بزن نه فصل رنگ.</p><h2 id="v93">نسخهٔ 93 — چک‌لیست نصب روی ویندوز</h2><p class="goal">هدف: منوی شروع، نه فقط تب. شیت نسخهٔ درست. آفلاین می‌نویسم.</p><pre>- برنامه روی منوی شروع است
+- از منو باز می‌شود نه فقط از تب
+- لینک اجرا نسخهٔ یازده را نشان می‌دهد
+- انتخاب همه صف را زیاد نمی‌کند
+- ثبت ته دسته یک متا به صف می‌برد
+- آفلاین می‌نویسم، آنلاین می‌رود
+- تب آخر بعد از خروج برمی‌گردد
+- اسکریپت در گیت نیست</pre><p class="why">این‌ها را تیک بزن قبل از اینکه بگویی نسخهٔ صد تمام است.</p><h2 id="v94">نسخهٔ 94 — آنچه این ریپو نیست</h2><p class="goal">هدف: کانفلوئنس، ج cle، شکستن لایسنس، هاد عملیاتی سرور.</p><pre>DailyLog = D:\tech-lab\habit-pwa
+Confluence docs = D:\atlassian-software
+GitHub dailylog = فقط اپ + کارگاه</pre><p class="why">مخلوط یعنی مسیر اشتباه در کارگاه و راز اشتباه در گیت. جدا نگه دار.</p><h2 id="v95">نسخهٔ 95 — ترتیب ساخت از صفر</h2><p class="goal">هدف: همین صد نسخه. هر نسخه یک بلوک کامل. خط‌خطی نکن.</p><pre>0-10   پوسته و تب و پیام
+11-20  حافظه و شمسی
+21-30  دفتر و ارث پارت
+31-50  متا، پرچم، قانون، نوار
+51-70  همگام، کارگر، نصب
+71-90  جهت، مقیاس، خروجی
+91-100 درس، آزمون، اپ زنده</pre><p class="why">نسخهٔ بعدی یعنی اضافه کردن همان تابع کامل، نه تکه کردن تابع قبلی به پنج توضیح.</p><h2 id="v96">نسخهٔ 96 — کپی از کارگاه به اپ</h2><p class="goal">هدف: بلوک را کامل بردار. شناسهٔ دام را از نسخهٔ دو حفظ کن.</p><pre>1) پوسته را از نسخهٔ دو بگذار
+2) توابع را به ترتیب نسخه اضافه کن
+3) سه نسخه را با هم بالا ببر
+4) اسکریپت را فقط در گوگل بگذار
+5) روی لوکال‌هاست تست کن بعد پوش</pre><p class="why">اگر از وسط، از همگام شروع کنی صف به فروشگاه خالی می‌زند. ترتیب بالا همان وابستگی است.</p><h2 id="v97">نسخهٔ 97 — منبع حقیقت زنده</h2><p class="goal">هدف: اگر کارگاه و اپ فرق داشتند اپ درست است مگر کارگاه تازه نوشته شده باشد.</p><pre>app.js      منطق
+index.html  اسکلت و سی‌اس‌اس
+sw.js       کارگر
+workshop.html  این پرونده؛ آموزش است نه ران‌تایم</pre><p class="why">کارگاه را در کارگر پوسته نگذار. حجمش زیاد است و آفلاین اول را کند می‌کند.</p><h2 id="v98">نسخهٔ 98 — نسخهٔ جاری را بخوان</h2><p class="goal">هدف: قبل از پوش این سه را یک‌جا ببین.</p><pre>APP_VERSION     = v57 · center
+SCRIPT_VERSION  = v11-meta
+CACHE           = dailylog-v59
+app.js?v=57
+https://mojde7th.github.io/dailylog/</pre><p class="why">اگر یکی عقب باشد همان باگ کهنه برمی‌گردد. عادت کن هر تغییر ظاهر هر سه را لمس کند.</p><h2 id="v99">نسخهٔ 99 — از کارگاه تا اپ کامل</h2><p class="goal">هدف: نسخهٔ نودونه یعنی توابع سر جایشان‌اند. نسخهٔ بعد یعنی پرونده‌های زنده.</p><pre>تابع کامل را از فصل خودش بردار.
+شناسه را عوض نکن.
+پیش‌نویس را با صف یکی نکن.
+مدت را با شمارنده یکی نکن.
+فارسی را با فینگلیش یکی نکن.</pre><p class="why">این پنج خط اگر بماند، صد نسخهٔ بعد هم خراب نمی‌شود.</p><h2 id="v100">نسخهٔ 100 — اپ زنده</h2><p class="goal">هدف: همین ریپو، همین سه پرونده، بدون کارت تزئینی، پارت‌ها وسط بخش دفتر.</p><pre>D:\tech-lab\habit-pwa\index.html
+D:\tech-lab\habit-pwa\app.js
+D:\tech-lab\habit-pwa\sw.js
+D:\tech-lab\habit-pwa\manifest.json
 
-<h2 id="gas">Apps Script — ویرایشگر، نه پنجرهٔ Deploy</h2>
-<div class="goal">هدف: کد را در editor بگذاری، ذخیره کنی، بعد روی همان <code>/exec</code> نسخهٔ جدید بسازی.</div>
-<pre>doGet()   VERSION + نام تب‌ها — دکمهٔ «نسخهٔ همین آدرس»
-doPost()  secret، بعد upsert متا یا insert نوبت یا sessionDelete
-
-var VERSION = 'v11-meta';
-</pre>
-<div class="why">
-<p>پنجرهٔ Deploy کد را اجرا نمی‌کند؛ فقط از روی editor ذخیره‌شده snapshot می‌گیرد. استقرار تازه یعنی URL تازه؛ اپ هنوز URL پیر را دارد.</p>
-<p><code>rebuildReportsNow</code> داخل خودش دکمه ندارد. از فهرست توابع انتخاب کن، Run. بار اول OAuth. برای عوض شدن ظاهر اپ لازم نیست این فایل را دست بزنی؛ قفل هنوز <code>v11-meta</code> است.</p>
-<p>اگر سرستون متا نخواند، اسکریپت تب کهنه را آرشیو می‌کند و بازمی‌سازد. حذف دستی لازم نیست.</p>
-</div>
-
-<h2 id="dash">داشبورد — بازهٔ شمسی دقیق</h2>
-<div class="goal">هدف: هفت روز یعنی همهٔ خانه‌های بازه، حتی صفر. نه یک میله که شبیه اول ماه باشد.</div>
-<pre>today = 1405/05/30
-from  = 1405/05/24
-to    = 1405/05/30
-days  = 24,25,26,27,28,29,30
-</pre>
-<div class="why">
-<p>میله‌ها CSS grid با <code>direction:ltr</code>اند تا اسم چپ و مدت راست بماند. SVG عرض‌ثابت روی موبایل از کارت می‌زد بیرون. دکمهٔ فصل: ۳۱ مرداد تا ۳۱ شهریور همان سال.</p>
-</div>
-
-<h2 id="bugs">رگرسیون‌هایی که واقعاً خوردیم</h2>
-<table>
-<tr><th>نشانه</th><th>علت</th><th>درمان</th></tr>
-<tr><td>پوش کردم، سایت کهنه</td><td>cache-first</td><td>network-first + نام CACHE + <code>?v=</code></td></tr>
-<tr><td>Pages نو، شیت کهنه</td><td>editor ذخیره نشده یا Deploy تازه</td><td>مداد روی همان URL؛ GET باید VERSION درست بدهد</td></tr>
-<tr><td>ارسال نشد دروغین</td><td>sync خاموش هم خطا می‌داد</td><td>فقط loud toast؛ قفل busy</td></tr>
-<tr><td>select all صف را پر کرد</td><td>همان لحظه put</td><td>draft تا put ته گروه</td></tr>
-<tr><td>چند متا برای یک روز</td><td>uid تصادفی</td><td>کلید تاریخ + merge</td></tr>
-<tr><td>۱۲ تا ۲ برعکس، مدت چپ</td><td>ردیف داخل صفحه RTL</td><td>ردیف LTR، برچسب ایزوله</td></tr>
-</table>
-
-<h2 id="deploy">deploy</h2>
-<pre>cd D:\tech-lab\habit-pwa
-git add -A
-git status          # Code.gs نباید باشد
-git commit -m "..."
-git push origin HEAD
-</pre>
-<p>بعد سخت‌تازه‌سازی. اگر مدل شیت عوض شد: VERSION در هر دو جا، Save در editor، مداد، همان <code>/exec</code>، بعد اپ.</p>
-
-<h2 id="win">نصب PWA روی ویندوز</h2>
-<div class="goal">هدف: از منوی شروع باز شود، بدون نوار آدرس. این فصل آخر است چون معماری را اول دیدی.</div>
-<pre>https://mojde7th.github.io/dailylog/
-Edge:  ⋮ → Apps → Install this site as an app
-Chrome: ⋮ → Cast, save and share → Install page as app
-Pin to Start / Pin to taskbar
-</pre>
-<p>نشانی باید https باشد نه file. اگر دکمه نبود: SW کهنه یا اجازهٔ Install در تنظیمات اج.</p>
-
-<h2 id="play">شبیه‌ساز روی همین صفحه</h2>
-<p>این‌ها شبیه همان منطق اپ‌اند. صف اینجا ساختگی است تا ببینی انتخاب همه نباید بفرستد.</p>
-<div class="play">
-  <div class="box lab">
-    <h3>پیش‌نویس پرچم</h3>
-    <p class="muted">انتخاب همه صف را زیاد نمی‌کند. ثبت ته دسته می‌فرستد.</p>
-    <button type="button" class="flag" data-f="a">openfa&lt;=1h</button>
-    <button type="button" class="flag" data-f="b">nchort</button>
-    <button type="button" class="flag" data-f="c">saatbidari&lt;=5m</button>
-    <div class="row">
-      <button type="button" id="all1">select all</button>
-      <button type="button" id="all0">unselect all</button>
-      <button type="button" class="good" id="putf">put</button>
-    </div>
-    <p>صف ساختگی: <b id="qsim">۰</b></p>
-    <p class="muted" id="qmsg">هنوز ثبت نشده</p>
-  </div>
-  <div class="box lab">
-    <h3>میانگین تأخیر</h3>
-    <p class="muted">هر عدد یک نمونه است. میانگین زیر یک‌و‌نیم پرچم را صفر می‌کند.</p>
-    <div class="row" id="secs"></div>
-    <p>جمع <b id="tsum">۰</b> · تعداد <b id="tn">۰</b> · میانگین <b id="tavg">—</b> · پرچم <b id="tflag">۰</b></p>
-    <button type="button" id="treset">صفر نمونه‌ها</button>
-  </div>
-</div>
-<div class="box">
-  <h3>دروازهٔ نسخه</h3>
-  <p>اگر نسخهٔ شیت با اپ یکی نباشد ارسال باید بایستد.</p>
-  <div class="row">
-    <span>اپ</span>
-    <code>v11-meta</code>
-    <span>شیت</span>
-    <select id="verSim">
-      <option>v9-meta</option>
-      <option>v10-meta</option>
-      <option selected>v11-meta</option>
-    </select>
-    <button type="button" id="verGo">شبیه‌سازی ارسال</button>
-  </div>
-  <p id="verOut" class="muted">هنوز نزدی</p>
-</div>
-<div class="box">
-  <h3>یادداشت شخصی این کارگاه</h3>
-  <textarea id="mynote" class="note" placeholder="هر چیزی که خودت کشف کردی اینجا بگذار. در همین مرورگر می‌ماند."></textarea>
-</div>
-
-<h2 id="quiz">آزمون ده سوالی — اگر هشت تا درست بود کارگاه ته نشست</h2>
-<div class="box" id="quizBox"></div>
-<p>نمره: <b id="score">—</b></p>
-<button type="button" class="good" id="grade">نمره‌دهی</button>
-
-<h2 id="keys">میانبر، پارامتر، واژه</h2>
-<pre> /     جستجو
- j k   فصل بعد و قبل
- n     فصل انجام‌شده
- f     حالت تمرکز
- + -   درشتی متن
-</pre>
-<table>
-<thead><tr><th>واژه</th><th>یعنی چه در این پروژه</th></tr></thead>
-<tbody>
-<tr><td>پیش‌نویس</td><td>روی صفحه هست، هنوز ایندکس‌دی‌بی و شیت خبر ندارند</td></tr>
-<tr><td>صف</td><td>ردیف با پرچم ارسال‌نشده</td></tr>
-<tr><td>ثبت دسته</td><td>یک نوشتن برای همهٔ همان گروه</td></tr>
-<tr><td>شبکه‌اول</td><td>کارگر اول اینترنت را می‌پرسد، کش فقط پشتیبان است</td></tr>
-<tr><td>مداد</td><td>نسخهٔ جدید روی همان نشانی اجرا، نه استقرار تازه</td></tr>
-<tr><td>کاتالوگ قانون</td><td>نام‌های قبلی در حافظهٔ محلی برای فردا</td></tr>
-</tbody>
-</table>
-<p>پارامترهایی که اگر عوض شوند کل سیستم را حس می‌کنی:</p>
-<pre>APP_VERSION
-SCRIPT_VERSION
-CACHE
-app.js?v=
-TAKHIR_OK = 1.5
-dl_tab
-dl_law_catalog
-</pre>
-
-<h2 id="end">چک‌لیست</h2>
-<div class="chk"><label><input type="checkbox"/> برنامه روی منوی شروع ویندوز است</label></div>
-<div class="chk"><label><input type="checkbox"/> از منوی شروع باز می‌شود نه فقط از تب</label></div>
-<div class="chk"><label><input type="checkbox"/> لینک اجرای گوگل نسخهٔ یازده را نشان می‌دهد</label></div>
-<div class="chk"><label><input type="checkbox"/> انتخاب همه صف را زیاد نمی‌کند</label></div>
-<div class="chk"><label><input type="checkbox"/> ثبت ته دسته یک متا به صف می‌برد</label></div>
-<div class="chk"><label><input type="checkbox"/> آفلاین می‌نویسم، آنلاین می‌رود</label></div>
-<div class="chk"><label><input type="checkbox"/> تب آخر بعد از خروج برمی‌گردد</label></div>
-<div class="chk"><label><input type="checkbox"/> Code.gs در گیت نیست</label></div>
-<div class="chk"><label><input type="checkbox"/> اف۱۲ را برای پست و ایندکس‌دی‌بی خواندم</label></div>
-<div class="chk"><label><input type="checkbox"/> یک‌بار عمداً نسخه را خراب کردم و پیام کهنه را دیدم</label></div>
-
-<div class="box good">
-<p>اگر فقط سه مسیر را از حفظ بلد باشی کافی است: ثبت دسته فقط ته گروه می‌نویسد. کارگر پست را لمس نمی‌کند. اسکریپت از ویرایشگر ذخیره می‌شود نه از پنجرهٔ استقرار.</p>
-</div>
-
-<p class="muted">پایان کارگاه. این پرونده کنار خود اپ است. هر وقت شک کردی از فصل دیباگ شروع کن نه از بازنویسی همه‌چیز.</p>
+git push origin main
+https://mojde7th.github.io/dailylog/
+https://mojde7th.github.io/dailylog/workshop.html</pre><p class="why">از اینجا به بعد ویژگی جدید یعنی نسخهٔ صدویک در اپ، بعد یک فصل تازه در کارگاه با کل تابع، نه با پنج خط بریده‌بریده.</p>
 </main>
 </div>
 <div class="toast" id="toast"></div>
 <script>
 (function(){
-  const K = 'dl_workshop_v3';
+  const K = 'dl_workshop_v4';
   const st = JSON.parse(localStorage.getItem(K) || '{}');
   st.done = st.done || {};
-  st.times = st.times || {};
-  st.checks = st.checks || {};
-  st.note = st.note || '';
+  st.acc = Number(st.acc || 0);
   st.fs = st.fs || 16;
   const save = () => localStorage.setItem(K, JSON.stringify(st));
   const toast = m => {
@@ -513,11 +966,7 @@ dl_law_catalog
     t.textContent = m; t.className = 'toast show';
     clearTimeout(t._h); t._h = setTimeout(() => t.className = 'toast', 1600);
   };
-
   document.documentElement.style.setProperty('--fs', st.fs + 'px');
-  const note = document.getElementById('mynote');
-  if (note) { note.value = st.note; note.oninput = () => { st.note = note.value; save(); }; }
-
   document.querySelectorAll('pre').forEach(p => {
     const w = document.createElement('div');
     w.className = 'prewrap';
@@ -528,31 +977,23 @@ dl_law_catalog
     b.onclick = () => navigator.clipboard.writeText(p.textContent).then(() => toast('کپی شد'));
     w.appendChild(b);
   });
-
   const heads = [...document.querySelectorAll('main h2')];
   heads.forEach(h => {
-    const id = h.id || h.textContent;
+    const id = h.id;
     const b = document.createElement('button');
     b.type = 'button';
-    b.textContent = st.done[id] ? 'انجام شد' : 'فصل را تمام کردم';
+    b.textContent = st.done[id] ? 'انجام شد' : 'این نسخه را ساختم';
     if (st.done[id]) b.className = 'good';
     b.onclick = () => {
       st.done[id] = !st.done[id];
-      b.textContent = st.done[id] ? 'انجام شد' : 'فصل را تمام کردم';
+      b.textContent = st.done[id] ? 'انجام شد' : 'این نسخه را ساختم';
       b.className = st.done[id] ? 'good' : '';
       save(); paintNav();
     };
     h.after(b);
   });
-
-  document.querySelectorAll('.chk input').forEach((inp, i) => {
-    inp.checked = !!st.checks[i];
-    inp.onchange = () => { st.checks[i] = inp.checked; save(); };
-  });
-
   function paintNav() {
-    const as = document.querySelectorAll('nav a');
-    as.forEach(a => {
+    document.querySelectorAll('nav a').forEach(a => {
       const id = (a.getAttribute('href') || '').slice(1);
       a.classList.toggle('done', !!st.done[id]);
     });
@@ -563,13 +1004,12 @@ dl_law_catalog
     document.getElementById('bar').style.width = pct + '%';
   }
   paintNav();
-
   const el = document.getElementById('clk');
-  let t0 = 0, acc = Number(st.acc || 0), htm = null;
+  let t0 = 0, acc = st.acc, htm = null;
   const pad = n => String(n).padStart(2,'0');
   const draw = () => {
     const s = Math.floor(((htm ? Date.now() - t0 : 0) + acc) / 1000);
-    el.textContent = pad(Math.floor(s/60)) + ':' + pad(s%60);
+    el.textContent = pad(Math.floor(s/60)) + ':' + pad(s % 60);
   };
   draw();
   document.getElementById('go').onclick = () => { if (htm) return; t0 = Date.now(); htm = setInterval(draw, 250); };
@@ -578,7 +1018,6 @@ dl_law_catalog
     clearInterval(htm); htm = null; draw();
   };
   document.getElementById('rst').onclick = () => { acc = 0; st.acc = 0; save(); t0 = Date.now(); if (!htm) el.textContent = '00:00'; else draw(); };
-
   document.getElementById('fsA').onclick = () => { st.fs = Math.min(22, st.fs + 1); document.documentElement.style.setProperty('--fs', st.fs + 'px'); save(); };
   document.getElementById('fsB').onclick = () => { st.fs = Math.max(13, st.fs - 1); document.documentElement.style.setProperty('--fs', st.fs + 'px'); save(); };
   document.getElementById('focus').onclick = () => document.body.classList.toggle('focus');
@@ -587,32 +1026,21 @@ dl_law_catalog
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = 'workshop-progress.json'; a.click();
   };
-
   const q = document.getElementById('q');
   q.addEventListener('input', () => {
-    const s = q.value.trim();
-    document.querySelectorAll('main mark.hit').forEach(m => m.replaceWith(m.textContent));
-    if (!s) { document.querySelectorAll('main h2, main p, main li').forEach(n => n.closest('h2,p,li,div') && (n.style.opacity = '')); return; }
-    const rx = new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-    document.querySelectorAll('main p, main li, main h2, main h3').forEach(n => {
-      if (n.querySelector('pre')) return;
-      const t = n.textContent;
-      n.style.opacity = t.indexOf(s) >= 0 || t.toLowerCase().indexOf(s.toLowerCase()) >= 0 ? '1' : '.35';
+    const s = q.value.trim().toLowerCase();
+    document.querySelectorAll('main h2, main p').forEach(n => {
+      n.style.opacity = !s || n.textContent.toLowerCase().indexOf(s) >= 0 ? '1' : '.28';
     });
   });
-
   const navs = [...document.querySelectorAll('nav a')];
   navs.forEach(a => a.addEventListener('click', () => {
     navs.forEach(x => x.classList.remove('on')); a.classList.add('on');
   }));
-
   document.addEventListener('keydown', ev => {
-    if (ev.target.matches('input,textarea,select')) {
-      if (ev.key === '/' && ev.target.id !== 'q') return;
-      if (ev.target.id === 'q') return;
-    }
-    if (ev.key === '/' && !ev.target.matches('input,textarea')) { ev.preventDefault(); q.focus(); return; }
-    const ids = heads.map(h => h.id).filter(Boolean);
+    if (ev.target.matches('input,textarea')) return;
+    if (ev.key === '/') { ev.preventDefault(); q.focus(); return; }
+    const ids = heads.map(h => h.id);
     const cur = ids.findIndex(id => {
       const r = document.getElementById(id).getBoundingClientRect();
       return r.top >= 40 && r.top < 180;
@@ -622,81 +1050,6 @@ dl_law_catalog
     if (ev.key === 'k') { ev.preventDefault(); location.hash = ids[Math.max(0, i-1)]; }
     if (ev.key === 'f' && !ev.ctrlKey) document.body.classList.toggle('focus');
   });
-
-  const draft = {a:0,b:0,c:0};
-  let queued = 0;
-  const paintF = () => document.querySelectorAll('.flag').forEach(b => b.classList.toggle('on', !!draft[b.dataset.f]));
-  document.querySelectorAll('.flag').forEach(b => b.onclick = () => { draft[b.dataset.f] = draft[b.dataset.f] ? 0 : 1; paintF(); });
-  document.getElementById('all1').onclick = () => { draft.a=draft.b=draft.c=1; paintF(); toast('هنوز صف صفر است'); };
-  document.getElementById('all0').onclick = () => { draft.a=draft.b=draft.c=0; paintF(); };
-  document.getElementById('putf').onclick = () => {
-    queued += 1;
-    document.getElementById('qsim').textContent = String(queued);
-    document.getElementById('qmsg').textContent = 'یک متا به صف رفت با ' + (draft.a+draft.b+draft.c) + ' پرچم روشن';
-    toast('put');
-  };
-
-  let samples = [];
-  const TAKHIR_OK = 1.5;
-  const secs = document.getElementById('secs');
-  [1,1.5,2,3,5].forEach(v => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = String(v);
-    b.onclick = () => {
-      samples.push(v);
-      const n = samples.length, sum = samples.reduce((a,x)=>a+x,0), avg = sum/n;
-      document.getElementById('tsum').textContent = String(sum);
-      document.getElementById('tn').textContent = String(n);
-      document.getElementById('tavg').textContent = avg.toFixed(2);
-      document.getElementById('tflag').textContent = avg >= TAKHIR_OK ? '۱' : '۰';
-    };
-    secs.appendChild(b);
-  });
-  document.getElementById('treset').onclick = () => {
-    samples = [];
-    document.getElementById('tsum').textContent = '0';
-    document.getElementById('tn').textContent = '0';
-    document.getElementById('tavg').textContent = '—';
-    document.getElementById('tflag').textContent = '0';
-  };
-
-  document.getElementById('verGo').onclick = () => {
-    const got = document.getElementById('verSim').value;
-    const ok = got === 'v11-meta';
-    const o = document.getElementById('verOut');
-    o.textContent = ok ? 'ارسال مجاز' : ('وب‌اپ کهنه است · آمده: ' + got + ' · باید: v11-meta');
-    o.style.color = ok ? '#3ecf8e' : '#f0b429';
-  };
-
-  const qs = [
-    ['SW باید POST همگام را قاپد؟', ['بله','خیر؛ فقط GET همین origin'], 1],
-    ['select all باید همان لحظه به صف برود؟', ['بله','خیر؛ draft تا put ته گروه'], 1],
-    ['کد Apps Script را کجا می‌گذاری؟', ['پنجرهٔ Deploy','editor، بعد مداد همان /exec'], 1],
-    ['کلید متای یک روز چیست؟', ['uid تصادفی','تاریخ شمسی / meta- + روز'], 1],
-    ['چرا text/plain برای POST؟', ['گوگل JSON نمی‌فهمد','تا preflight CORS نزند'], 1],
-    ['میانگین تأخیر زیر ۱٫۵؟', ['نادیده','پرچم انجام صفر می‌شود'], 1],
-    ['قانون تازه اسکریپت تازه می‌خواهد؟', ['بله','خیر؛ قالب خالی روی همان VERSION'], 1],
-    ['سه چیزی که با هم بالا می‌روند؟', ['فقط عنوان','APP_VERSION و ?v= و CACHE'], 1],
-    ['تب آخر کجا ذخیره می‌شود؟', ['شیت','localStorage'], 1],
-    ['Deploy تازه با URL جدید؟', ['درست است','غلط؛ همان URL، New version'], 1]
-  ];
-  const qb = document.getElementById('quizBox');
-  qs.forEach((q, i) => {
-    const d = document.createElement('div');
-    d.className = 'box';
-    d.innerHTML = '<p><b>' + (i+1) + '. ' + q[0] + '</b></p>' +
-      q[1].map((opt, j) => '<label class="chk"><input type="radio" name="q'+i+'" value="'+j+'"/> '+opt+'</label>').join('');
-    qb.appendChild(d);
-  });
-  document.getElementById('grade').onclick = () => {
-    let n = 0;
-    qs.forEach((q, i) => {
-      const hit = document.querySelector('input[name="q'+i+'"]:checked');
-      if (hit && Number(hit.value) === q[2]) n++;
-    });
-    document.getElementById('score').textContent = n + ' از ۱۰' + (n >= 8 ? ' — کارگاه ته نشست' : ' — فصل دیباگ را دوباره بزن');
-    toast(n + ' / 10');
-  };
 })();
 </script>
 </body>

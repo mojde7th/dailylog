@@ -67,15 +67,7 @@ main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc
   background:#1b3a2e;border-color:var(--good);color:#d7f5e7;font-weight:bold
 }
 .mhr{height:0;border:0;border-top:2px dashed var(--accent);margin:16px 6px 18px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 14px;overflow-x:hidden;position:relative}
-.card::before{
-  content:"";position:absolute;top:8px;left:8px;width:7px;height:7px;
-  border-top:1px solid var(--accent);border-left:1px solid var(--accent);opacity:.55;pointer-events:none
-}
-.card::after{
-  content:"";position:absolute;bottom:8px;right:8px;width:7px;height:7px;
-  border-bottom:1px solid var(--accent);border-right:1px solid var(--accent);opacity:.35;pointer-events:none
-}
+.card{background:transparent;border:0;border-radius:0;padding:8px 0 18px;margin:0;overflow-x:hidden}
 .card h2{margin:0 0 4px;font-size:.98rem}
 .hint{color:var(--muted);font-size:.79rem;margin:0 0 10px}
 .mblock .hint{direction:ltr;unicode-bidi:isolate;text-align:left;font-family:Consolas,monospace}
@@ -119,13 +111,18 @@ textarea{min-height:52px;resize:vertical}
   padding:7px 12px;font-size:.8rem;text-decoration:none
 }
 .chips button:active,.chips button.on{border-color:var(--accent);color:var(--ink)}
-.parts{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
-.parts button{
-  flex:1;background:#0b1016;border:1px solid var(--line);color:var(--muted);
-  border-radius:10px;padding:9px 2px;font-size:.74rem;font-family:inherit;cursor:pointer
+.parts{
+  display:grid;grid-template-columns:repeat(2,minmax(118px,168px));
+  justify-content:center;justify-items:stretch;align-items:stretch;
+  gap:8px;margin:10px auto 14px;max-width:360px
 }
-.parts button.ltr{direction:ltr;unicode-bidi:isolate}
-.parts button.rtl{direction:rtl;unicode-bidi:isolate;text-align:right}
+.parts button{
+  background:#0b1016;border:1px solid var(--line);color:var(--muted);
+  border-radius:10px;padding:12px 8px;font-size:.82rem;font-family:inherit;cursor:pointer;
+  text-align:center;width:100%
+}
+.parts button.ltr{direction:ltr;unicode-bidi:isolate;text-align:center}
+.parts button.rtl{direction:rtl;unicode-bidi:isolate;text-align:center}
 .parts button.on{background:#1e2b3c;border-color:var(--accent);color:var(--ink);font-weight:bold}
 .accum{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -259,8 +256,7 @@ button.cancel{
 .flagchips .chip.draft{background:#2a2214;border:1px solid #f0b429;color:#ffe7b3}
 .flagchips .chip.miss{background:#121820;border:1px solid #2a3542;color:#7a8a9c}
 .sumcard{
-  background:#0b1016;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
-  direction:ltr;text-align:left;min-width:0;max-width:100%;overflow:hidden
+  background:transparent;border:0;padding:8px 0;direction:ltr;text-align:left;min-width:0
 }
 .sumcard h4{margin:0 0 8px;font-size:.78rem;color:var(--muted);font-weight:bold;display:flex;justify-content:space-between;gap:8px}
 .sumcard h4 span{font-weight:normal;color:#c5d4e4}
@@ -613,6 +609,7 @@ button.gput{
       <div class="sum" id="verBox">—</div>
       <div class="chips">
         <button type="button" id="btnHardReload">پاک‌کردن کش و بارگذاری دوباره</button>
+        <a class="btnlike" href="workshop.html">کارگاه از صفر تا صد</a>
       </div>
     </div>
     <div class="card">
@@ -630,6 +627,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=56"></script>
+<script src="app.js?v=57"></script>
 </body>
 </html>
