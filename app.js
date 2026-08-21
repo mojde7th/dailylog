@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v35 · meta';
+const APP_VERSION = 'v36 · meta';
 const SCRIPT_VERSION = 'v9-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -31,11 +31,11 @@ const CODES = [
   { cat:'takhsis',  code:'takhmojmotn', metric:'dur', from:0, def:{h:0,m:40} },
   { cat:'arastegi', code:'arasmoratakhshose', metric:'dur', from:0, def:{h:0,m:30} },
   { cat:'arastegi', code:'arasmor', metric:'dur', from:0, def:{h:0,m:25} },
-  { cat:'kar',      code:'itpr', metric:'dur', from:0, def:{h:2,m:40} },
+  { cat:'kar',      code:'ITPr', metric:'dur', from:0, def:{h:2,m:40} },
   { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15} },
   { cat:'mali',     code:'vam,sarmayegozari', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'analyseslahibadan', metric:'dur', from:0, def:{h:0,m:40} },
-  { cat:'sehat',    code:'drazmayesh,sono,clinici', metric:'dur', from:0, def:{h:2,m:30} },
+  { cat:'sehat',    code:'drazmayesh,sono,clinici(prepln)', metric:'dur', from:0, def:{h:2,m:30} },
   { cat:'sobh',     code:'bankhozuri', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'tayinsathzaban', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'ghors', metric:'dur', from:0, def:{h:0,m:5} },
@@ -44,30 +44,26 @@ const CODES = [
   { cat:'kharid',   code:'kharidzarur(preplan)', metric:'dur', from:1, def:{h:0,m:20} },
   { cat:'sehat',    code:'ab', metric:'dur', from:1, def:{h:0,m:20} },
   { cat:'kar',      code:'assessvisaplnb', metric:'dur', from:1, def:{h:0,m:30} },
-  { cat:'edari',    code:'pardakhpei', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
-  { cat:'edari',    code:'bimebargoz', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
-  { cat:'edari',    code:'malizar', metric:'dur', from:1, def:{h:0,m:25}, stick:true },
+  { cat:'edari',    code:'pardakhpei,bimebargoz,malizar', metric:'dur', from:1, def:{h:0,m:25}, stick:true },
   { cat:'edari',    code:'peigirimajazighanoon', metric:'dur', from:1, def:{h:0,m:20}, stick:true },
   { cat:'kar',      code:'kartakh2', metric:'dur', from:1, def:{h:0,m:40} },
 
   { cat:'hafte',    code:'akharehafte(preregistKelastakh,zaban)', metric:'dur', from:2, def:{h:0,m:40} },
-  { cat:'ravan',    code:'moshv', metric:'dur', from:2, def:{h:0,m:45}, stick:true },
-  { cat:'ravan',    code:'kargahravanp', metric:'dur', from:2, def:{h:1,m:0}, stick:true },
-  { cat:'ravan',    code:'ravanpp', metric:'dur', from:2, def:{h:0,m:45}, stick:true },
+  { cat:'ravan',    code:'moshv,ravanpp,kargahravanp', metric:'dur', from:2, def:{h:0,m:45}, stick:true },
   { cat:'div',      code:'div(forushzaruri,didnmelkpreplan)', metric:'dur', from:2, def:{h:0,m:25} },
-  { cat:'varzesh',  code:'rah', metric:'dur', from:2, def:{h:0,m:30} },
-  { cat:'varzesh',  code:'do', metric:'dur', from:2, def:{h:0,m:30} },
+  { cat:'varzesh',  code:'rah<=25m', metric:'dur', from:2, def:{h:0,m:25} },
+  { cat:'varzesh',  code:'do<=40m', metric:'dur', from:2, def:{h:0,m:40} },
   { cat:'varzesh',  code:'azkesh', metric:'dur', from:2, def:{h:1,m:0} },
   { cat:'khane',    code:'otu', metric:'dur', from:2, def:{h:0,m:20} },
   { cat:'khane',    code:'shosmort', metric:'dur', from:2, def:{h:0,m:20} },
   { cat:'sehat',    code:'mokamel', metric:'reps', from:2, def:{r:1,pr:5} },
 
+  { cat:'yadgiri',  code:'reswch', metric:'dur', from:2, def:{h:1,m:50} },
+
   { cat:'sabtnam',  code:'sabtnam(tur,kargahravn,kelstakh,zaban,bashgahengh,hamneshin)', metric:'dur', from:3, def:{h:0,m:15} },
-  { cat:'aff',      code:'afflog', metric:'dur', from:3, def:{h:0,m:10}, stick:true },
-  { cat:'aff',      code:'affplan', metric:'dur', from:3, def:{h:0,m:20}, stick:true },
-  { cat:'aff',      code:'affevenlog', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
+  { cat:'aff',      code:'afflog,affplan,affevenlog', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
   { cat:'sehat',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
-  { cat:'yadgiri',  code:'reswch', metric:'dur', from:3, def:{h:1,m:50} },
+  { cat:'sehat',    code:'ket<=25m', metric:'dur', from:3, def:{h:0,m:25} },
   { cat:'sehat',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
 ];
 
@@ -83,19 +79,19 @@ const META_GROUPS = [
 
 const META_ITEMS = [
   { id:'openfa1h', group:'openfa', kind:'flag',
-    label:'openfa<=1h' },
+    label:'openfa2<=30m' },
   { id:'nchort', group:'openfa', kind:'flag',
     label:'nchort' },
   { id:'saatbidari5', group:'openfa', kind:'flag',
-    label:'saatbidari<=5m' },
+    label:'saatbidaritafazollbasaattayinshode<=5m' },
   { id:'twoHourAras', group:'openfa', kind:'flag',
     label:'2saatarasmortakhshoseghableSnapeshose' },
   { id:'opf1', group:'openfa', kind:'flag',
-    label:'opfaafter15 (15g sachetprotein)' },
+    label:'openaf1after15(15g sachetprotein)' },
   { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
     label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
   { id:'opf2', group:'openfa', kind:'flag',
-    label:'openfaaft18' },
+    label:'openfa2after18' },
   { id:'afterFastMood', group:'openfa', kind:'accumDur',
     label:'afterfastmoodtoflow' },
 
@@ -116,9 +112,7 @@ const META_ITEMS = [
   { id:'noCarb', group:'raayat', kind:'flag',
     label:'no(noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajil)' },
   { id:'noghahveyebiruni', group:'raayat', kind:'flag',
-    label:'noghahveyebiruni' },
-  { id:'nolimunadbiruni', group:'raayat', kind:'flag',
-    label:'nolimunadbiruni' },
+    label:'noghahveyebiruni,nolimunadbiruni' },
   { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
     label:'nocopypasteazaighable12pm' },
   { id:'preplan12', group:'raayat', kind:'flag',
@@ -551,6 +545,13 @@ function migrateMeta(rec) {
     rec.takhirSum = Number(rec.mintakhir);
     rec.takhirAvg = Number(rec.mintakhir);
   }
+  if (rec.noghahveyebiruni || rec.nolimunadbiruni) {
+    rec.noghahveyebiruni = 1;
+    rec.nolimunadbiruni = 1;
+  } else {
+    rec.noghahveyebiruni = rec.noghahveyebiruni ? 1 : 0;
+    rec.nolimunadbiruni = rec.nolimunadbiruni ? 1 : 0;
+  }
   return rec;
 }
 async function metaFor(day) {
@@ -909,6 +910,7 @@ async function putGroup(gid) {
     if (it.kind === 'flag') {
       const on = flagOn(rec, it.id);
       rec[it.id] = on ? 1 : 0;
+      if (it.id === 'noghahveyebiruni') rec.nolimunadbiruni = rec[it.id];
       if (on) done[it.id] = 1;
       else delete done[it.id];
       delete flagDraft[it.id];
@@ -1265,13 +1267,13 @@ async function doSave() {
 /* ═════════════════════════════ 8. SYNC ═════════════════════════════════════ */
 
 async function forceMetaResyncOnce() {
-  if (cfgGet('meta_resync') === 'v35') return;
+  if (cfgGet('meta_resync') === 'v36') return;
   const all = await getAll('meta');
   for (const r of all) {
     r.synced = 0;
     await put('meta', r);
   }
-  cfgSet('meta_resync', 'v35');
+  cfgSet('meta_resync', 'v36');
 }
 
 function execHint(url) {
@@ -1446,7 +1448,10 @@ function clearMetaField(rec, itemId) {
     lawDraft = left.slice();
   } else if (!it) return rec;
   if (it && it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
-  if (it && it.kind === 'flag') rec[it.id] = 0;
+  if (it && it.kind === 'flag') {
+    rec[it.id] = 0;
+    if (it.id === 'noghahveyebiruni') rec.nolimunadbiruni = 0;
+  }
   if (it && it.kind === 'avgSec') { rec.takhirAvg = ''; rec.takhirN = 0; rec.takhirSum = 0; }
   const done = parseDone(rec);
   delete done[itemId];
