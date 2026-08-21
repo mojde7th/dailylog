@@ -5,8 +5,8 @@
 
 'use strict';
 
-const APP_VERSION = 'v29 · meta';
-const SCRIPT_VERSION = 'v7-meta';
+const APP_VERSION = 'v30 · meta';
+const SCRIPT_VERSION = 'v8-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -21,100 +21,152 @@ const PARTS = [
 
 const QUALITY_TAGS = [
   'bighar','zajr','dard','fesharshad','karesakht','flowshadid',
-  'tamrkzshadid','amighshadid','thinkshadid'
+  'tamrkzshadid','amighshadid','thinkshadid','withinshadi',
+  'sakhte','fesharziad','khastegishadid','bihavasali','ghalbshad','shadid','narm','motavaset'
 ];
 
 const CODES = [
-  { cat:'takhsis',  code:'takhkhod',       metric:'dur', from:0, def:{h:0,m:30} },
-  { cat:'takhsis',  code:'takhshose',      metric:'dur', from:0, def:{h:0,m:30} },
-  { cat:'takhsis',  code:'takhmojaz',      metric:'dur', from:0, def:{h:0,m:40} },
-  { cat:'arastegi', code:'arasmotakh',     metric:'dur', from:0, def:{h:0,m:30} },
-  { cat:'arastegi', code:'arasmor',        metric:'dur', from:0, def:{h:0,m:25} },
-  { cat:'kar',      code:'itpr',           metric:'dur', from:0, def:{h:2,m:40} },
-  { cat:'sehat',    code:'drazmayesh',     metric:'dur', from:0, def:{h:2,m:30} },
-  { cat:'sobh',     code:'bankhozuri',     metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'sobh',     code:'eslahebadan',    metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'sobh',     code:'analiz',         metric:'dur', from:0, def:{h:0,m:20} },
+  { cat:'takhsis',  code:'takhkhod', metric:'dur', from:0, def:{h:0,m:30} },
+  { cat:'takhsis',  code:'takhshose', metric:'dur', from:0, def:{h:0,m:30} },
+  { cat:'takhsis',  code:'takhmojaz', metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'arastegi', code:'arasmoratakhshose', metric:'dur', from:0, def:{h:0,m:30} },
+  { cat:'arastegi', code:'arasmor', metric:'dur', from:0, def:{h:0,m:25} },
+  { cat:'kar',      code:'itpr', metric:'dur', from:0, def:{h:2,m:40} },
+  { cat:'mali',     code:'tala,dolar(for,khari)', metric:'dur', from:0, def:{h:0,m:15} },
+  { cat:'mali',     code:'vam', metric:'dur', from:0, def:{h:0,m:20} },
+  { cat:'mali',     code:'sarmayegozari', metric:'dur', from:0, def:{h:0,m:20} },
+  { cat:'analiz',   code:'analyseslahibadan', metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'sehat',    code:'drazmayesh,sono,clinici', metric:'dur', from:0, def:{h:2,m:30} },
+  { cat:'sobh',     code:'bankhozuri', metric:'dur', from:0, def:{h:0,m:20} },
   { cat:'sobh',     code:'tayinsathzaban', metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'sobh',     code:'ghors',          metric:'dur', from:0, def:{h:0,m:5} },
-  { cat:'sobh',     code:'dolar',          metric:'dur', from:0, def:{h:0,m:15} },
-  { cat:'sobh',     code:'tala',           metric:'dur', from:0, def:{h:0,m:15} },
-  { cat:'sobh',     code:'sarmayegozari',  metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'sobh',     code:'vam',            metric:'dur', from:0, def:{h:0,m:20} },
-  { cat:'hafte',    code:'hafte_prereg',   metric:'dur', from:0, def:{h:0,m:40} },
-  { cat:'rutin',    code:'rout',           metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'sobh',     code:'ghors', metric:'dur', from:0, def:{h:0,m:5} },
+  { cat:'hafte',    code:'akharehafte(preregistKelastakh,zaban)', metric:'dur', from:0, def:{h:0,m:40} },
+  { cat:'rutin',    code:'rout', metric:'dur', from:0, def:{h:0,m:40} },
 
-  { cat:'sehat',    code:'ab',             metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kharid',   code:'kharid',         metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'assessvisa',     metric:'dur', from:1, def:{h:0,m:30} },
-  { cat:'kar',      code:'pardpei',        metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'bimebargoz',     metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'peigiri',        metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'peigirimaj',     metric:'dur', from:1, def:{h:0,m:20} },
-  { cat:'kar',      code:'malizar',        metric:'dur', from:1, def:{h:0,m:25} },
-  { cat:'kar',      code:'kartakh2',       metric:'dur', from:1, def:{h:0,m:40} },
+  { cat:'kharid',   code:'kharidzarur(preplan)', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'sehat',    code:'ab', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'kar',      code:'assessvisa', metric:'dur', from:1, def:{h:0,m:30} },
+  { cat:'edari',    code:'pardpei', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'edari',    code:'bimebargoz', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'edari',    code:'malizar', metric:'dur', from:1, def:{h:0,m:25} },
+  { cat:'edari',    code:'peigmajazghanoonie', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'kar',      code:'peigiri', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'kar',      code:'peigirimaj', metric:'dur', from:1, def:{h:0,m:20} },
+  { cat:'kar',      code:'kartakh2', metric:'dur', from:1, def:{h:0,m:40} },
 
-  { cat:'varzesh',  code:'rah',            metric:'dur', from:2, def:{h:0,m:30} },
-  { cat:'varzesh',  code:'do',             metric:'dur', from:2, def:{h:0,m:30} },
-  { cat:'varzesh',  code:'azkesh',         metric:'dur', from:2, def:{h:1,m:0} },
-  { cat:'ravan',    code:'moshv',          metric:'dur', from:2, def:{h:0,m:45} },
-  { cat:'ravan',    code:'kargahravanp',   metric:'dur', from:2, def:{h:1,m:0} },
-  { cat:'ravan',    code:'ranpphar2hafte', metric:'dur', from:2, def:{h:0,m:45} },
-  { cat:'asar',     code:'divar',          metric:'dur', from:2, def:{h:0,m:25} },
-  { cat:'asar',     code:'foroshhozuri',   metric:'dur', from:2, def:{h:0,m:25} },
-  { cat:'khane',    code:'otu',            metric:'dur', from:2, def:{h:0,m:20} },
-  { cat:'khane',    code:'shosmort',       metric:'dur', from:2, def:{h:0,m:20} },
-  { cat:'sehat',    code:'mokamel',        metric:'reps', from:2, def:{r:1,pr:5} },
+  { cat:'ravan',    code:'moshv', metric:'dur', from:2, def:{h:0,m:45} },
+  { cat:'ravan',    code:'kargahravanp', metric:'dur', from:2, def:{h:1,m:0} },
+  { cat:'ravan',    code:'ravanpp', metric:'dur', from:2, def:{h:0,m:45} },
+  { cat:'div',      code:'div(forushzaruri,didnmelkpreplan)', metric:'dur', from:2, def:{h:0,m:25} },
+  { cat:'varzesh',  code:'rah', metric:'dur', from:2, def:{h:0,m:30} },
+  { cat:'varzesh',  code:'do', metric:'dur', from:2, def:{h:0,m:30} },
+  { cat:'varzesh',  code:'azkesh', metric:'dur', from:2, def:{h:1,m:0} },
+  { cat:'khane',    code:'otu', metric:'dur', from:2, def:{h:0,m:20} },
+  { cat:'khane',    code:'shosmort', metric:'dur', from:2, def:{h:0,m:20} },
+  { cat:'sehat',    code:'mokamel', metric:'reps', from:2, def:{r:1,pr:5} },
 
-  { cat:'sabt',     code:'sabt',           metric:'dur', from:3, def:{h:0,m:15} },
-  { cat:'sehat',    code:'salad',          metric:'dur', from:3, def:{h:0,m:20}, kind:true },
-  { cat:'yadgiri',  code:'reswch',         metric:'dur', from:3, def:{h:1,m:50} },
-  { cat:'sehat',    code:'dand',           metric:'reps', from:3, def:{r:3,pr:5} },
-  { cat:'afteropen',code:'affplan',        metric:'dur', from:3, def:{h:0,m:20} },
-  { cat:'afteropen',code:'affket',         metric:'dur', from:3, def:{h:0,m:15} },
-  { cat:'afteropen',code:'afflog',         metric:'dur', from:3, def:{h:0,m:10} }
+  { cat:'sabtnam',  code:'sabtnam(tur,kargahravn,kelstakh,zaban,bashgahengh,hamneshin)', metric:'dur', from:3, def:{h:0,m:15} },
+  { cat:'aff',      code:'afflog', metric:'dur', from:3, def:{h:0,m:10} },
+  { cat:'aff',      code:'affplan', metric:'dur', from:3, def:{h:0,m:20} },
+  { cat:'aff',      code:'affevenlog', metric:'dur', from:3, def:{h:0,m:15} },
+  { cat:'sehat',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
+  { cat:'yadgiri',  code:'reswch', metric:'dur', from:3, def:{h:1,m:50} },
+  { cat:'sehat',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
 ];
 
 const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category','code','metric',
                         'minutes','hm','chunk','tags','reactSec','count','reps','perRep','kind','note'];
 
+const META_GROUPS = [
+  { id:'openfa',  title:'openfa / fasting' },
+  { id:'opfa1',   title:'opfa1' },
+  { id:'opfa2',   title:'opfa2 / after open' },
+  { id:'takhsis', title:'takhsis' },
+  { id:'mojaz',   title:'mojaz' },
+  { id:'raayat',  title:'raayat' },
+  { id:'no',      title:'no' },
+  { id:'qabl12',  title:'qabl 12pm' },
+  { id:'flow',    title:'flow' },
+  { id:'rule',    title:'ghanoon / layers / takhir', hr:true }
+];
+
 const META_ITEMS = [
-  { id:'moodToFlow',     label:'moodtoflow',                                        kind:'accumDur' },
-  { id:'fastMode',       label:'fastMode',                                          kind:'xor', options:['cleanfast>=19h','open<5h'] },
-  { id:'cleanAfterOpen', label:'cleaneatingafteropen',                              kind:'flag' },
-  { id:'raatayeghavanineakhlaghietayinshode100', label:'raatayeghavanineakhlaghietayinshode100%', kind:'flag' },
-  { id:'adametakhghmoj0', label:'adametakhghmoj0%',                                  kind:'flag' },
-  { id:'takhmojmotns',    label:'takhmojmotns',                                      kind:'flag' },
-  { id:'mohtmoj100',      label:'mohtmoj100%',                                       kind:'flag' },
-  { id:'budandarjayemojaz100', label:'budandarjayemojaz100%',                        kind:'flag' },
-  { id:'kharidemojaz100', label:'kharidemojaz100%',                                  kind:'flag' },
-  { id:'rayyatepartbandieruz100', label:'rayyatepartbandieruz100%',                  kind:'flag' },
-  { id:'afterFastMood',  label:'afterfastmoodtoflow',                               kind:'accumDur' },
-  { id:'nchort',         label:'nchort',                                           kind:'flag' },
-  { id:'bidDiff',        label:'tafazol',                                          kind:'min15' },
-  { id:'opf1',           label:'opf1aft3pm (15g sachetprotein)',                    kind:'opf1' },
-  { id:'opf2',           label:'opf2aft6pm',                                        kind:'opf2' },
-  { id:'preplan12',      label:'preplaned_ta12',                                    kind:'flag' },
-  { id:'ghanoon',        label:'ghanoonfarayeman',                                  kind:'accumDur' },
-  { id:'layers',         label:'bighar,zajr,dard,fesharshad,karesakht,flowshadid',  kind:'accumDur' },
-  { id:'mintakhir',      label:'mintakhir',                                         kind:'secchips' }
+  { id:'openfa1h', group:'openfa', kind:'flag',
+    label:'openfa<=1h' },
+  { id:'nchort', group:'openfa', kind:'flag',
+    label:'nchort' },
+  { id:'saatbidari5', group:'openfa', kind:'flag',
+    label:'saatbidari<=5m' },
+  { id:'twoHourAras', group:'openfa', kind:'flag',
+    label:'2saatarasmortakhshoseghableSnapeshose' },
+
+  { id:'opf1', group:'opfa1', kind:'flag',
+    label:'opfaafter15 (15g sachetprotein)' },
+
+  { id:'chizayemojazbadeopfa2', group:'opfa2', kind:'flag',
+    label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
+  { id:'opf2', group:'opfa2', kind:'flag',
+    label:'openfaaft18' },
+  { id:'afterFastMood', group:'opfa2', kind:'accumDur',
+    label:'afterfastmoodtoflow' },
+
+  { id:'takhghmojaz0', group:'takhsis', kind:'flag',
+    label:'takhghmojaz<=0' },
+  { id:'takhmojmotns', group:'takhsis', kind:'flag',
+    label:'takhmojmotns' },
+
+  { id:'mohtmoj100', group:'mojaz', kind:'flag',
+    label:'mohtmoj100%' },
+  { id:'budandarjayemojaz100', group:'mojaz', kind:'flag',
+    label:'budandarjayemojaz100%' },
+  { id:'kharidemojaz100', group:'mojaz', kind:'flag',
+    label:'kharidemojaz100%' },
+
+  { id:'raatayeghavanineakhlaghietayinshode100', group:'raayat', kind:'flag',
+    label:'raatayeghavanineakhlaghietayinshode100%' },
+  { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
+    label:'rayyatepartbandieruz100%' },
+
+  { id:'noCarb', group:'no', kind:'flag',
+    label:'no(noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajil)' },
+  { id:'noghahveyebiruni', group:'no', kind:'flag',
+    label:'noghahveyebiruni' },
+  { id:'nolimunadbiruni', group:'no', kind:'flag',
+    label:'nolimunadbiruni' },
+
+  { id:'nocopypasteazaighable12pm', group:'qabl12', kind:'flag',
+    label:'nocopypasteazaighable12pm' },
+  { id:'preplan12', group:'qabl12', kind:'flag',
+    label:'preplaned_ta12' },
+
+  { id:'moodToFlow', group:'flow', kind:'accumDur',
+    label:'moodtoflow' },
+
+  { id:'ghanoon', group:'rule', kind:'accumDur',
+    label:'ghanoonfarayeman' },
+  { id:'layers', group:'rule', kind:'accumDur',
+    label:'bighar,zajr,dard,fesharshad,karesakht,flowshadid,sakhte' },
+  { id:'takhirAvg', group:'rule', kind:'avgSec',
+    label:'takhirinputoutput3thout>=1.5s' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
 
 const META_FIELDS = ['uid','createdAt','dateShamsi',
   'moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin',
-  'fastMode','cleanAfterOpen',
-  'raatayeghavanineakhlaghietayinshode100','adametakhghmoj0','takhmojmotns',
-  'mohtmoj100','budandarjayemojaz100','kharidemojaz100','rayyatepartbandieruz100',
-  'nchort','preplan12',
-  'bidDiffMin','opf1','opf2','mintakhir',
+  'openfa1h','nchort','saatbidari5','twoHourAras',
+  'opf1','chizayemojazbadeopfa2','opf2',
+  'takhghmojaz0','takhmojmotns',
+  'mohtmoj100','budandarjayemojaz100','kharidemojaz100',
+  'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
+  'noCarb','noghahveyebiruni','nolimunadbiruni',
+  'nocopypasteazaighable12pm','preplan12',
+  'takhirAvg','takhirN','takhirSum',
   'doneJson','complete'];
 
 const MIN_REACT_SEC = 2;
-const OPF1_HOURS = [15,16,17,18,19,20,21,22,23,0,1];
-const BID_DIFFS = [0,1,2,3,4,5,8,10,12,15];
-const TAKHIR_SECS = [2,3,4,5,8,10,15,20,30,45,60];
+const TAKHIR_SECS = [1, 1.5, 2, 3, 4, 5, 8, 10, 15];
+const TAKHIR_OK = 1.5;
 
 const META_STORE = {
   moodToFlow: 'moodToFlowMin',
@@ -482,17 +534,36 @@ function fillMetaGaps(keep, extra) {
   ['moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin'].forEach(k => {
     if (!(Number(keep[k]) > 0) && Number(extra[k]) > 0) keep[k] = extra[k];
   });
-  ['fastMode','opf1','opf2'].forEach(k => {
-    if (!keep[k] && extra[k]) keep[k] = extra[k];
-  });
   META_FLAG_IDS.forEach(k => {
     if (!keep[k] && extra[k]) keep[k] = extra[k];
   });
-  if (keep.bidDiffMin === '' || keep.bidDiffMin == null) keep.bidDiffMin = extra.bidDiffMin;
-  if (keep.mintakhir === '' || keep.mintakhir == null) keep.mintakhir = extra.mintakhir;
+  if (!(Number(keep.takhirN) > 0) && Number(extra.takhirN) > 0) {
+    keep.takhirN = extra.takhirN;
+    keep.takhirSum = extra.takhirSum;
+    keep.takhirAvg = extra.takhirAvg;
+  }
   keep.done = Object.assign({}, parseDone(extra), parseDone(keep));
   keep.doneJson = JSON.stringify(keep.done);
   keep.complete = isComplete(keep) ? 1 : 0;
+}
+function migrateMeta(rec) {
+  if (!rec) return rec;
+  if (!rec.openfa1h && rec.fastMode && /open/i.test(String(rec.fastMode))) rec.openfa1h = 1;
+  if (!rec.chizayemojazbadeopfa2 && rec.cleanAfterOpen) rec.chizayemojazbadeopfa2 = rec.cleanAfterOpen;
+  if (!rec.takhghmojaz0 && rec.adametakhghmoj0) rec.takhghmojaz0 = rec.adametakhghmoj0;
+  if (!rec.saatbidari5 && rec.bidDiffMin !== '' && rec.bidDiffMin != null && Number(rec.bidDiffMin) <= 5) {
+    rec.saatbidari5 = 1;
+  }
+  if (rec.opf1 && rec.opf1 !== 1 && rec.opf1 !== 0 && rec.opf1 !== '0' && rec.opf1 !== '1') rec.opf1 = 1;
+  if (rec.opf2 && rec.opf2 !== 1 && rec.opf2 !== 0 && rec.opf2 !== '0' && rec.opf2 !== '1') rec.opf2 = 1;
+  rec.opf1 = rec.opf1 ? 1 : 0;
+  rec.opf2 = rec.opf2 ? 1 : 0;
+  if (!(Number(rec.takhirN) > 0) && rec.mintakhir !== '' && rec.mintakhir != null) {
+    rec.takhirN = 1;
+    rec.takhirSum = Number(rec.mintakhir);
+    rec.takhirAvg = Number(rec.mintakhir);
+  }
+  return rec;
 }
 async function metaFor(day) {
   const all = await getAll('meta');
@@ -507,6 +578,7 @@ async function metaFor(day) {
   const keep = hits[0];
   const oldUid = keep.uid;
   for (let i = 1; i < hits.length; i++) fillMetaGaps(keep, hits[i]);
+  migrateMeta(keep);
   const want = metaUid(day);
   if (oldUid !== want || hits.length > 1) {
     keep.uid = want;
@@ -525,8 +597,7 @@ function blankMeta(day) {
     createdAt: new Date().toISOString(),
     dateShamsi: day,
     moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0,
-    fastMode:'',
-    bidDiffMin:'', opf1:'', opf2:'', mintakhir:'',
+    takhirAvg:'', takhirN:0, takhirSum:0,
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
   META_FLAG_IDS.forEach(k => { rec[k] = 0; });
@@ -556,11 +627,12 @@ function totalLine(it, rec) {
   if (!rec) return '—';
   if (it.kind === 'accumDur') return 'today: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
   if (it.kind === 'flag') return rec[it.id] ? 'SET' : 'not set';
-  if (it.kind === 'xor') return rec.fastMode || 'not set';
-  if (it.kind === 'min15') return rec.bidDiffMin === '' || rec.bidDiffMin == null ? 'not set' : (rec.bidDiffMin + 'm');
-  if (it.kind === 'opf1') return rec.opf1 || 'not set';
-  if (it.kind === 'opf2') return rec.opf2 || 'not set';
-  if (it.kind === 'secchips') return rec.mintakhir === '' || rec.mintakhir == null ? 'not set' : (rec.mintakhir + 's');
+  if (it.kind === 'avgSec') {
+    const n = Number(rec.takhirN) || 0;
+    if (!n) return 'not set';
+    const avg = Number(rec.takhirAvg) || 0;
+    return 'avg ' + avg.toFixed(2) + 's  n=' + n + (avg >= TAKHIR_OK ? '  flag=1' : '  flag=0');
+  }
   return '';
 }
 
@@ -576,21 +648,6 @@ async function paintMetaStatus() {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
     if (it.kind === 'flag' && it._btn) it._btn.classList.toggle('on', !!(rec && rec[it.id]));
-    if (it.kind === 'xor') {
-      const box = $('mw_' + it.id);
-      if (box) box.querySelectorAll('button').forEach(b =>
-        b.classList.toggle('on', !!(rec && rec.fastMode === b.textContent)));
-    }
-    if (it.kind === 'min15') {
-      const box = $('mw_' + it.id);
-      if (box) box.querySelectorAll('button').forEach(b =>
-        b.classList.toggle('on', !!(rec && rec.bidDiffMin !== '' && rec.bidDiffMin != null && String(rec.bidDiffMin) === b.textContent)));
-    }
-    if (it.kind === 'secchips') {
-      const box = $('mw_' + it.id);
-      if (box) box.querySelectorAll('button').forEach(b =>
-        b.classList.toggle('on', !!(rec && rec.mintakhir !== '' && rec.mintakhir != null && String(rec.mintakhir) === b.textContent)));
-    }
   });
 }
 
@@ -613,6 +670,46 @@ function pickBar(host, values, selected, onPick) {
   host.appendChild(d);
 }
 
+function groupFlags(gid) {
+  return META_ITEMS.filter(it => it.group === gid && it.kind === 'flag');
+}
+
+function mountMetaItem(host, it) {
+  const box = document.createElement('div');
+  box.className = 'mblock';
+  const needPut = it.kind === 'accumDur';
+  box.innerHTML =
+    `<h3>${it.label}</h3>` +
+    `<p class="hint" id="tot_${it.id}">—</p>` +
+    `<div id="mw_${it.id}"></div>` +
+    (needPut ? `<button type="button" class="put" data-id="${it.id}">put</button>` : '');
+  host.appendChild(box);
+  const h = $('mw_' + it.id);
+  if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0);
+  if (it.kind === 'flag') {
+    const row = document.createElement('div');
+    row.className = 'flagrow';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = it.label;
+    b.addEventListener('click', () => putMetaItem(it.id));
+    row.appendChild(b);
+    h.appendChild(row);
+    it._btn = b;
+  }
+  if (it.kind === 'avgSec') {
+    const hint = document.createElement('p');
+    hint.className = 'hint';
+    hint.textContent = 'har sample put mishavad. avg < 1.5s → flag 0';
+    h.appendChild(hint);
+    const bar = document.createElement('div');
+    h.appendChild(bar);
+    pickBar(bar, TAKHIR_SECS, null, v => putMetaItem(it.id, v));
+  }
+  const putBtn = box.querySelector('.put');
+  if (putBtn) putBtn.addEventListener('click', () => putMetaItem(it.id));
+}
+
 function buildMeta() {
   let paintT = null;
   mDate = makeDateWheel($('mDate'), () => {
@@ -621,53 +718,52 @@ function buildMeta() {
   });
   const host = $('metaBlocks');
   host.innerHTML = '';
-  META_ITEMS.forEach(it => {
-    const box = document.createElement('div');
-    box.className = 'mblock';
-    const needPut = it.kind === 'accumDur' || it.kind === 'opf1' || it.kind === 'opf2';
-    box.innerHTML =
-      `<h3>${it.label}</h3>` +
-      `<p class="hint" id="tot_${it.id}">—</p>` +
-      `<div id="mw_${it.id}"></div>` +
-      (needPut ? `<button type="button" class="put" data-id="${it.id}">put</button>` : '');
-    host.appendChild(box);
-    const h = $('mw_' + it.id);
-    if (it.kind === 'accumDur') mW[it.id] = makeDurWheel(h, 0, 0);
-    if (it.kind === 'opf1') mW.opf1 = makeClockWheel(h, 15, 0, OPF1_HOURS);
-    if (it.kind === 'opf2') mW.opf2 = makeClockWheel(h, 18, 0);
-    if (it.kind === 'flag') {
-      const row = document.createElement('div');
-      row.className = 'flagrow';
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = it.label;
-      b.addEventListener('click', () => putMetaItem(it.id, 1));
-      row.appendChild(b);
-      h.appendChild(row);
-      it._btn = b;
+  META_GROUPS.forEach(g => {
+    if (g.hr) {
+      const hr = document.createElement('hr');
+      hr.className = 'mhr';
+      host.appendChild(hr);
     }
-    if (it.kind === 'xor') {
-      const row = document.createElement('div');
-      row.className = 'flagrow';
-      it.options.forEach(opt => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = opt;
-        b.addEventListener('click', () => putMetaItem(it.id, opt));
-        row.appendChild(b);
-      });
-      h.appendChild(row);
-    }
-    if (it.kind === 'min15') {
-      pickBar(h, BID_DIFFS, 0, v => putMetaItem(it.id, v));
-    }
-    if (it.kind === 'secchips') {
-      pickBar(h, TAKHIR_SECS, 2, v => putMetaItem(it.id, v));
-    }
-    const putBtn = box.querySelector('.put');
-    if (putBtn) putBtn.addEventListener('click', () => putMetaItem(it.id));
+    const wrap = document.createElement('div');
+    wrap.className = 'mgrp';
+    const flags = groupFlags(g.id);
+    wrap.innerHTML =
+      `<div class="gtitle">${g.title}</div>` +
+      (flags.length
+        ? `<div class="mall">` +
+          `<button type="button" data-g="${g.id}" data-all="1">select all</button>` +
+          `<button type="button" data-g="${g.id}" data-all="0">unselect all</button>` +
+          `</div>`
+        : '');
+    host.appendChild(wrap);
+    wrap.querySelectorAll('.mall button').forEach(b => {
+      b.addEventListener('click', () => setGroupFlags(g.id, b.dataset.all === '1'));
+    });
+    META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
   });
   paintMetaStatus();
+}
+
+async function setGroupFlags(gid, on) {
+  const day = selectedMetaDay();
+  let rec = await metaFor(day) || blankMeta(day);
+  const done = parseDone(rec);
+  groupFlags(gid).forEach(it => {
+    rec[it.id] = on ? 1 : 0;
+    if (on) done[it.id] = 1;
+    else delete done[it.id];
+  });
+  rec.done = done;
+  rec.doneJson = JSON.stringify(done);
+  rec.complete = isComplete(rec) ? 1 : 0;
+  rec.synced = 0;
+  rec.createdAt = rec.createdAt || new Date().toISOString();
+  await put('meta', rec);
+  vibrate(25);
+  toast(on ? gid + ' all' : gid + ' none');
+  await paintMetaStatus();
+  updateQueueBadge();
+  trySync();
 }
 
 async function putMetaItem(id, picked) {
@@ -675,6 +771,7 @@ async function putMetaItem(id, picked) {
   const day = selectedMetaDay();
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
+  let markDone = true;
 
   if (it.kind === 'accumDur') {
     const add = mW[id].minutes();
@@ -683,35 +780,23 @@ async function putMetaItem(id, picked) {
     mW[id].reset();
     toast(id + ' = ' + fmtChunk(rec[key]));
   }
-  if (it.kind === 'opf1') {
-    rec.opf1 = mW.opf1.value();
-    const hr = Number(rec.opf1.split(':')[0]);
-    if (OPF1_HOURS.indexOf(hr) < 0) { toast('opf1 15:00-01:00', true); return; }
-    toast('opf1 ' + rec.opf1);
-  }
-  if (it.kind === 'opf2') {
-    rec.opf2 = mW.opf2.value();
-    toast('opf2 ' + rec.opf2);
-  }
   if (it.kind === 'flag') {
-    rec[id] = 1;
-    toast(id + ' SET');
+    const on = picked === 0 || picked === 1 ? !!picked : !rec[id];
+    rec[id] = on ? 1 : 0;
+    markDone = on;
+    toast(id + (on ? ' SET' : ' OFF'));
   }
-  if (it.kind === 'xor') {
-    rec.fastMode = picked;
-    toast(picked);
-  }
-  if (it.kind === 'min15') {
-    rec.bidDiffMin = Number(picked);
-    toast('tafazol ' + rec.bidDiffMin + 'm');
-  }
-  if (it.kind === 'secchips') {
-    rec.mintakhir = Number(picked);
-    if (rec.mintakhir < MIN_REACT_SEC) { toast('mintakhir >= 2', true); return; }
-    toast('mintakhir ' + rec.mintakhir);
+  if (it.kind === 'avgSec') {
+    const sample = Number(picked);
+    rec.takhirN = (Number(rec.takhirN) || 0) + 1;
+    rec.takhirSum = (Number(rec.takhirSum) || 0) + sample;
+    rec.takhirAvg = rec.takhirSum / rec.takhirN;
+    markDone = rec.takhirAvg >= TAKHIR_OK;
+    toast('takhir avg ' + rec.takhirAvg.toFixed(2) + 's n=' + rec.takhirN);
   }
 
-  done[id] = 1;
+  if (markDone) done[id] = 1;
+  else delete done[id];
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
   rec.complete = isComplete(rec) ? 1 : 0;
@@ -855,6 +940,14 @@ function openComposer() {
     b.classList.add('on');
     vibrate(8);
   }));
+  let qdurHost = $('qDurHost');
+  if (!qdurHost) {
+    qdurHost = document.createElement('div');
+    qdurHost.id = 'qDurHost';
+    qh.insertAdjacentElement('afterend', qdurHost);
+  }
+  qdurHost.innerHTML = '';
+  dyn.qdur = makeDurWheel(addField(qdurHost, 'مدت همین کیفیت'), 0, 0);
   settleWheels();
 }
 
@@ -897,6 +990,13 @@ function collectSession() {
     }
   }
   if (c.metric === 'accum') rec.count = num($('f_count').value) || 1;
+  if (dyn.qdur) {
+    const qm = dyn.qdur.minutes();
+    if (qm > 0) {
+      const qh = 'q=' + fmtChunk(qm);
+      rec.tags = rec.tags ? rec.tags + ',' + qh : qh;
+    }
+  }
   const filled = [rec.minutes, rec.count, rec.reactSec].some(v => v !== '' && v !== 0);
   if (c.metric === 'accum' && rec.count) return rec;
   if (!filled) { toast('مقدار خالی است', true); return null; }
@@ -911,7 +1011,8 @@ function esc(s) {
 }
 
 async function paintNotebook() {
-  const day = sDate ? sDate.value() : '';
+  if (!sDate) return;
+  const day = sDate.value();
   const rows = (await getAll('sessions'))
     .filter(r => r.dateShamsi === day)
     .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
@@ -961,6 +1062,20 @@ async function paintNotebook() {
 
 let activeTab = 'meta';
 
+function pinHeader() {
+  const h = document.querySelector('header');
+  if (h) document.documentElement.style.setProperty('--hdr', h.offsetHeight + 'px');
+}
+
+let sessionReady = false;
+function ensureSessionUi() {
+  if (sessionReady) return;
+  sessionReady = true;
+  sDate = makeDateWheel($('sDate'), () => paintNotebook());
+  buildParts();
+  fillActivityList();
+}
+
 function showTab(name) {
   activeTab = name;
   $('paneSession').classList.toggle('hide', name !== 'session');
@@ -974,6 +1089,8 @@ function showTab(name) {
   const bar = document.querySelector('.bar');
   if (bar) bar.classList.toggle('hide', name !== 'session');
   document.body.style.paddingBottom = name === 'session' ? '100px' : '24px';
+  if (name === 'session') ensureSessionUi();
+  requestAnimationFrame(pinHeader);
   settleWheels();
   if (name === 'meta') paintMetaStatus();
   if (name === 'session') { paintNotebook(); paintMetaStatus(); }
@@ -998,13 +1115,13 @@ async function doSave() {
 /* ═════════════════════════════ 8. SYNC ═════════════════════════════════════ */
 
 async function forceMetaResyncOnce() {
-  if (cfgGet('meta_resync') === 'v18') return;
+  if (cfgGet('meta_resync') === 'v30') return;
   const all = await getAll('meta');
   for (const r of all) {
     r.synced = 0;
     await put('meta', r);
   }
-  cfgSet('meta_resync', 'v18');
+  cfgSet('meta_resync', 'v30');
 }
 
 function execHint(url) {
@@ -1152,17 +1269,10 @@ function metaBits(rec) {
       const n = Number(rec[META_STORE[it.id]]) || 0;
       if (n) bits.push({ id: it.id, text: it.id + '=' + fmtChunk(n) });
     } else if (it.kind === 'flag' && rec[it.id]) {
-      bits.push({ id: it.id, text: it.id });
-    } else if (it.kind === 'xor' && rec.fastMode) {
-      bits.push({ id: it.id, text: rec.fastMode });
-    } else if (it.kind === 'min15' && rec.bidDiffMin !== '' && rec.bidDiffMin != null) {
-      bits.push({ id: it.id, text: 'tafazol=' + rec.bidDiffMin + 'm' });
-    } else if (it.kind === 'opf1' && rec.opf1) {
-      bits.push({ id: it.id, text: 'opf1=' + rec.opf1 });
-    } else if (it.kind === 'opf2' && rec.opf2) {
-      bits.push({ id: it.id, text: 'opf2=' + rec.opf2 });
-    } else if (it.kind === 'secchips' && rec.mintakhir !== '' && rec.mintakhir != null) {
-      bits.push({ id: it.id, text: 'mintakhir=' + rec.mintakhir + 's' });
+      bits.push({ id: it.id, text: it.label });
+    } else if (it.kind === 'avgSec' && Number(rec.takhirN) > 0) {
+      const avg = Number(rec.takhirAvg) || 0;
+      bits.push({ id: it.id, text: 'takhirAvg=' + avg.toFixed(2) + 's' + (avg >= TAKHIR_OK ? '' : ' flag0') });
     }
   });
   return bits;
@@ -1176,11 +1286,7 @@ function clearMetaField(rec, itemId) {
   if (!rec || !it) return rec;
   if (it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
   if (it.kind === 'flag') rec[it.id] = 0;
-  if (it.kind === 'xor') rec.fastMode = '';
-  if (it.kind === 'min15') rec.bidDiffMin = '';
-  if (it.kind === 'opf1') rec.opf1 = '';
-  if (it.kind === 'opf2') rec.opf2 = '';
-  if (it.kind === 'secchips') rec.mintakhir = '';
+  if (it.kind === 'avgSec') { rec.takhirAvg = ''; rec.takhirN = 0; rec.takhirSum = 0; }
   const done = parseDone(rec);
   delete done[itemId];
   rec.done = done;
@@ -1352,9 +1458,7 @@ async function boot() {
     navigator.storage.persist().catch(() => {});
   }
 
-  sDate = makeDateWheel($('sDate'), () => paintNotebook());
-  buildParts();
-  fillActivityList();
+  pinHeader();
   buildMeta();
 
   $('cfg_url').value    = cfgGet('url');
@@ -1424,11 +1528,11 @@ async function boot() {
   window.addEventListener('online',  () => { updateNetPill(); trySync(); });
   window.addEventListener('offline', updateNetPill);
   window.addEventListener('pageshow', settleWheels);
-  window.addEventListener('resize',  settleWheels);
+  window.addEventListener('resize',  () => { pinHeader(); settleWheels(); });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
-      sDate.today();
-      mDate.today();
+      if (sDate) sDate.today();
+      if (mDate) mDate.today();
       settleWheels();
       paintNotebook();
       paintMetaStatus();
