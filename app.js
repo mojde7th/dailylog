@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v50 · meta';
+const APP_VERSION = 'v51 · meta';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1798,17 +1798,27 @@ async function paintDashboard() {
   const hostB = $('dashBars');
   const hostM = $('dashMeta');
   const hostF = $('dashFlags');
+  const hostP = $('dashParts');
+  const hostC = $('dashCats');
+  const hostL = $('dashLaws');
   if (!hostS) return;
   const span = dashSpan();
   const from = span.from, to = span.to;
   const sess = (await getAll('sessions')).filter(r => r.dateShamsi >= from && r.dateShamsi <= to);
   const meta = (await getAll('meta')).filter(r => r.dateShamsi >= from && r.dateShamsi <= to);
   const byDay = {};
+  const byPart = PARTS.map(p => ({ lab: p.label, n: 0 }));
+  const byCat = {};
   sess.forEach(r => {
     const d = r.dateShamsi;
     if (!byDay[d]) byDay[d] = { daftar: 0, n: 0 };
     byDay[d].daftar += Number(r.minutes) || 0;
     byDay[d].n += 1;
+    const pid = Number(r.partId);
+    if (byPart[pid]) byPart[pid].n += Number(r.minutes) || 0;
+    const cat = catName(r.category || '—');
+    if (!byCat[cat]) byCat[cat] = 0;
+    byCat[cat] += Number(r.minutes) || 0;
   });
   let daftar = 0;
   Object.keys(byDay).forEach(d => { daftar += byDay[d].daftar; });
@@ -1818,6 +1828,7 @@ async function paintDashboard() {
   const flagSum = {};
   flagItems.forEach(it => { flagSum[it.id] = 0; });
   let lawN = 0, lawMin = 0, takhirW = 0, takhirN = 0;
+  const lawMap = {};
   meta.forEach(r => {
     META_ITEMS.filter(it => it.kind === 'accumDur').forEach(it => {
       durSum[it.id] += Number(r[META_STORE[it.id]]) || 0;
@@ -1826,6 +1837,11 @@ async function paintDashboard() {
     const laws = parseLaws(r);
     lawN += laws.length;
     lawMin += laws.reduce((s, x) => s + (Number(x.min) || 0), 0);
+    laws.forEach(x => {
+      if (!lawMap[x.name]) lawMap[x.name] = { n: 0, min: 0 };
+      lawMap[x.name].n += 1;
+      lawMap[x.name].min += Number(x.min) || 0;
+    });
     const tn = Number(r.takhirN) || 0;
     if (tn) { takhirW += (Number(r.takhirAvg) || 0) * tn; takhirN += tn; }
   });
@@ -1862,6 +1878,25 @@ async function paintDashboard() {
       fb.unshift({ lab: g.id, n: ok, val: ok + '/' + (items.length * dayN), fill: '#7a5428', unit: 'n' });
     });
     hostF.innerHTML = svgBars(fb);
+  }
+  if (hostP) {
+    hostP.innerHTML = svgBars(byPart.map((p, i) => ({
+      lab: p.lab, n: p.n, fill: ['#7a5a18', '#3a6288', '#5a3d78', '#2f6b4e'][i] || '#3a6288'
+    })));
+  }
+  if (hostC) {
+    const cats = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
+    hostC.innerHTML = svgBars(cats.map(c => ({ lab: c, n: byCat[c], fill: '#6db3f2' })));
+  }
+  if (hostL) {
+    const names = Object.keys(lawMap);
+    hostL.innerHTML = svgBars(names.length
+      ? names.map(n => ({
+          lab: n, n: lawMap[n].n,
+          val: lawMap[n].n + (lawMap[n].min ? ' · ' + fmtChunk(lawMap[n].min) : ''),
+          fill: '#c9a0ff', unit: 'n'
+        }))
+      : [{ lab: 'ghanoonMohem', n: 0, val: '0', fill: '#c9a0ff', unit: 'n' }]);
   }
 }
 
@@ -1961,33 +1996,12 @@ async function refreshData() {
   $('cntQ').textContent = s.filter(r => !r.synced).length + m.filter(r => !r.synced).length;
   const [y, mo, d] = todayJ();
   const today = fmtJ(y, mo, d);
-  const rows = s.filter(r => r.dateShamsi === today);
   $('verBox').innerHTML =
     `نسخهٔ اپ: <b>${APP_VERSION}</b><br/>` +
     `نسخهٔ شیت باید: <b>${SCRIPT_VERSION}</b><br/>` +
     `امروز به شمسی: <b>${today}</b><br/>` +
     `آدرس اپ: <span class="brk">${location.origin + location.pathname}</span><br/>` +
     `آدرس وب‌اپ شیت: <span class="brk">${cfgGet('url') || 'خالی'}</span>`;
-  const byCat = {};
-  let totalMin = 0;
-  rows.forEach(r => {
-    const mi = Number(r.minutes) || 0;
-    totalMin += mi;
-    if (!byCat[catName(r.category)]) byCat[catName(r.category)] = { min:0, n:0 };
-    byCat[catName(r.category)].min += mi;
-    byCat[catName(r.category)].n++;
-  });
-  let html = `<b>${today}</b> — جمع دفتر: <b>${fmtHM(totalMin)}</b> · خط: <b>${rows.length}</b>`;
-  const cats = Object.keys(byCat);
-  if (cats.length) {
-    html += '<div class="catlines">' +
-      cats.map(c => esc(c) + ': <b>' + esc(fmtHM(byCat[c].min)) + '</b>').join('<br/>') + '</div>';
-  }
-  const todayMeta = m.find(r => r.dateShamsi === today);
-  const hold = document.createElement('div');
-  paintSummary(hold, todayMeta || null, await sessionWork(today));
-  html += hold.innerHTML;
-  $('todaySum').innerHTML = html;
   const mixed = [];
   s.forEach(r => mixed.push({
     at: r.createdAt || '',

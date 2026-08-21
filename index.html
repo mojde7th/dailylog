@@ -78,7 +78,8 @@ main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc
 .card h2{margin:0 0 4px;font-size:.98rem}
 .hint{color:var(--muted);font-size:.79rem;margin:0 0 10px}
 .mblock .hint{direction:ltr;unicode-bidi:isolate;text-align:left;font-family:Consolas,monospace}
-label.lb{display:block;font-size:.84rem;margin:14px 0 6px;color:#cfdcea}
+label.lb{display:block;font-size:.84rem;margin:14px 0 6px;color:#cfdcea;direction:rtl;text-align:right}
+label.lb.ltr,#compTitle{direction:ltr;unicode-bidi:isolate;text-align:left}
 label.lb .req{color:var(--bad)}
 input,select,textarea{
   width:100%;background:#0b1016;border:1px solid var(--line);color:var(--ink);
@@ -376,8 +377,14 @@ button.gput{
   border-radius:14px;padding:8px;margin:10px 0
 }
 .catbox .catlab{margin:0 0 6px;color:var(--c,var(--muted));font-family:Consolas,monospace;direction:ltr;text-align:left}
-#nbList,.catbox,#nbComposer{direction:ltr;text-align:left}
+#nbList,.catbox{direction:ltr;text-align:left}
+#nbComposer{direction:rtl;text-align:right}
+#nbComposer .wheels,#nbComposer .chips,#nbComposer .whoBox,#nbComposer .pick,#nbComposer .qchips{
+  direction:ltr;text-align:left
+}
 #compTitle{direction:ltr;unicode-bidi:isolate;text-align:left;font-family:Consolas,monospace}
+#s_note{direction:rtl;text-align:right}
+#s_note::placeholder{direction:rtl;text-align:right;color:#6a7a8c}
 .whoBox{
   display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;
   direction:ltr;justify-content:flex-start
@@ -393,7 +400,10 @@ button.gput{
   margin-top:8px;background:#2a1618;border:1px solid var(--bad);color:#f8c9cd;
   border-radius:8px;padding:7px 10px;font-size:.75rem;font-family:inherit;cursor:pointer
 }
-.chartbox{direction:ltr;unicode-bidi:isolate;text-align:left;overflow-x:auto;margin-top:8px}
+.chartlab{
+  margin:14px 0 0;font-size:.72rem;color:var(--muted);
+  direction:rtl;text-align:right
+}
 .dayflags,.daylaws{margin-top:10px}
 .dayflags .chip,.daylaws .chip{width:auto;display:inline-block}
 .chartbox svg{display:block;width:100%;height:auto;max-width:100%}
@@ -476,8 +486,8 @@ button.gput{
         <div id="dynFields"></div>
         <div id="whoBox" class="whoBox hide"></div>
         <input id="s_tags" class="hide" />
-        <label class="lb">یادداشت خط</label>
-        <textarea id="s_note" placeholder="اختیاری"></textarea>
+        <label class="lb">یادداشت اختیاری</label>
+        <textarea id="s_note" placeholder="یادداشت اختیاری"></textarea>
       </div>
     </div>
   </section>
@@ -492,9 +502,18 @@ button.gput{
         <button type="button" data-d="fasl">۵/۳۱–۶/۳۱</button>
       </div>
       <div class="stat" id="dashStat">—</div>
+      <p class="chartlab">دفتر / روز</p>
       <div class="chartbox" id="dashBars"></div>
+      <p class="chartlab">مدت متا · قانون · تأخیر</p>
       <div class="chartbox" id="dashMeta"></div>
+      <p class="chartlab">پارت</p>
+      <div class="chartbox" id="dashParts"></div>
+      <p class="chartlab">دسته</p>
+      <div class="chartbox" id="dashCats"></div>
+      <p class="chartlab">پرچم</p>
       <div class="chartbox" id="dashFlags"></div>
+      <p class="chartlab">قانون مهم</p>
+      <div class="chartbox" id="dashLaws"></div>
     </div>
   </section>
 
@@ -506,7 +525,6 @@ button.gput{
         <span>متاها: <b id="cntM">0</b></span>
         <span>در صف: <b id="cntQ">0</b></span>
       </div>
-      <div class="sum" id="todaySum">—</div>
     </div>
     <div class="card">
       <h2>خروجی و پشتیبان</h2>
@@ -553,6 +571,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=50"></script>
+<script src="app.js?v=51"></script>
 </body>
 </html>
