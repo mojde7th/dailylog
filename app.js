@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v43 · meta';
+const APP_VERSION = 'v44 · meta';
 const SCRIPT_VERSION = 'v10-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
