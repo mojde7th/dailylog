@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v51 · meta';
+const APP_VERSION = 'v53 · dash';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1696,25 +1696,19 @@ function tileTitle(it) {
 }
 function svgBars(rows) {
   rows = (rows || []).filter(r => r && r.lab);
-  if (!rows.length) return '';
+  if (!rows.length) return '<p class="muted" style="margin:0">—</p>';
   const max = Math.max(1, ...rows.map(r => Number(r.n) || 0));
-  const w = 360, barH = 16, gap = 7, labW = 118, pad = 8;
-  const track = w - labW - pad * 2 - 52;
-  const h = pad * 2 + rows.length * (barH + gap) - gap;
-  let y = pad;
-  const parts = rows.map(r => {
+  return '<div class="hbars">' + rows.map(r => {
     const n = Number(r.n) || 0;
-    const bw = Math.round(track * n / max);
+    const pct = Math.max(0, Math.min(100, Math.round(100 * n / max)));
     const val = esc(r.val || (r.unit === 'n' ? String(n) : fmtChunk(n)));
-    const line =
-      `<rect x="${labW}" y="${y}" width="${track}" height="${barH}" rx="4" fill="#121820"/>` +
-      `<text x="${pad}" y="${y + 12}" fill="#93a4b8" font-size="10" font-family="Consolas,monospace">${esc(r.lab)}</text>` +
-      (bw ? `<rect x="${labW}" y="${y}" width="${Math.max(4, bw)}" height="${barH}" rx="4" fill="${r.fill || '#3a6288'}"/>` : '') +
-      `<text x="${labW + track + 6}" y="${y + 12}" fill="#c8f0d8" font-size="10" font-family="Consolas,monospace">${val}</text>`;
-    y += barH + gap;
-    return line;
-  }).join('');
-  return `<svg viewBox="0 0 ${w} ${h}" role="img">${parts}</svg>`;
+    const fill = r.fill || '#3a6288';
+    return '<div class="hbar">' +
+      '<span class="hbar-lab ltr" title="' + esc(r.lab) + '">' + esc(r.lab) + '</span>' +
+      '<span class="hbar-track"><i style="width:' + pct + '%;background:' + fill + '"></i></span>' +
+      '<span class="hbar-val ltr">' + val + '</span>' +
+      '</div>';
+  }).join('') + '</div>';
 }
 function flagScore(rec, gid) {
   const items = META_ITEMS.filter(it => it.group === gid && it.kind === 'flag');
@@ -1780,17 +1774,57 @@ function queueSessionDelete(uid) {
   if (a.indexOf(uid) < 0) a.push(uid);
   cfgSet('del_sessions', JSON.stringify(a));
 }
+function parseJ(s) {
+  const p = String(s || '').split('/');
+  return [Number(p[0]) || 0, Number(p[1]) || 0, Number(p[2]) || 0];
+}
+function addDaysJ(y, m, d, n) {
+  d += n;
+  let guard = 0;
+  while (guard++ < 800) {
+    if (d < 1) {
+      m -= 1;
+      if (m < 1) { m = 12; y -= 1; }
+      d += jMonthLen(y, m);
+      continue;
+    }
+    const len = jMonthLen(y, m);
+    if (d > len) {
+      d -= len;
+      m += 1;
+      if (m > 12) { m = 1; y += 1; }
+      continue;
+    }
+    break;
+  }
+  return [y, m, d];
+}
+function eachJ(from, to) {
+  const out = [];
+  let [y, m, d] = parseJ(from);
+  let guard = 0;
+  while (fmtJ(y, m, d) <= to && guard++ < 400) {
+    out.push(fmtJ(y, m, d));
+    [y, m, d] = addDaysJ(y, m, d, 1);
+  }
+  return out;
+}
+function jShort(s) {
+  const p = parseJ(s);
+  return pad2(p[1]) + '/' + pad2(p[2]);
+}
 function daysAgoJ(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return fmtJ(...toJalali(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+  const [y, m, d] = todayJ();
+  return fmtJ(...addDaysJ(y, m, d, -n));
 }
 function dashSpan() {
   const [ty, tm, td] = todayJ();
   const to = fmtJ(ty, tm, td);
-  if (dashDays === 'fasl') return { from: fmtJ(ty, 5, 31), to: fmtJ(ty, 6, 31) };
+  if (dashDays === 'fasl') {
+    return { from: fmtJ(ty, 5, 31), to: fmtJ(ty, 6, 31), n: null, kind: 'fasl' };
+  }
   const n = Math.max(1, Number(dashDays) || 7);
-  return { from: daysAgoJ(n - 1), to };
+  return { from: fmtJ(...addDaysJ(ty, tm, td, -(n - 1))), to, n, kind: 'days' };
 }
 let dashDays = 7;
 async function paintDashboard() {
@@ -1846,16 +1880,21 @@ async function paintDashboard() {
     if (tn) { takhirW += (Number(r.takhirAvg) || 0) * tn; takhirN += tn; }
   });
   const dayN = meta.length || Object.keys(byDay).length || 1;
+  const days = eachJ(from, to);
+  const rangeLab = span.kind === 'fasl' ? '۵/۳۱–۶/۳۱' : (span.n + ' روز شمسی');
   hostS.innerHTML =
+    `<span>بازه <b>${rangeLab}</b></span>` +
     `<span>از <b class="ltr">${from}</b></span>` +
     `<span>تا <b class="ltr">${to}</b></span>` +
+    `<span>محور <b class="ltr">${jShort(from)} → ${jShort(to)}</b></span>` +
     `<span>دفتر <b>${fmtChunk(daftar)}</b></span>` +
     `<span>خط <b>${sess.length}</b></span>` +
     `<span>قانون <b>${lawN}</b></span>` +
     `<span>پرچم <b>${flagItems.reduce((s, it) => s + flagSum[it.id], 0)}</b></span>`;
-  const dayKeys = Object.keys(byDay).sort();
-  hostB.innerHTML = svgBars(dayKeys.map(d => ({
-    lab: d.slice(5), n: byDay[d].daftar, fill: '#3a6288'
+  hostB.innerHTML = svgBars(days.map(d => ({
+    lab: jShort(d),
+    n: (byDay[d] && byDay[d].daftar) || 0,
+    fill: '#3a6288'
   })));
   const metaBars = META_ITEMS.filter(it => it.kind === 'accumDur').map(it => ({
     lab: tileTitle(it), n: durSum[it.id] || 0, fill: '#6a4a8a'
@@ -1865,7 +1904,7 @@ async function paintDashboard() {
   hostM.innerHTML = svgBars(metaBars);
   if (hostF) {
     const fb = flagItems.map(it => ({
-      lab: it.id.length > 18 ? it.id.slice(0, 16) + '…' : it.id,
+      lab: it.id,
       n: flagSum[it.id] || 0,
       val: (flagSum[it.id] || 0) + '/' + dayN,
       fill: '#3ecf8e',

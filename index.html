@@ -48,7 +48,7 @@ h1{font-size:1.02rem;margin:0;letter-spacing:.04em}
 }
 .tabs button.active{background:#1e2b3c;border-color:var(--accent);color:var(--ink)}
 main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc(12px + var(--hdr, 108px));overflow-x:hidden}
-#paneMeta,#paneSession,#paneDash,.mgrids,.sumdash,.sumhero,.sumflags,.flaggrid,.flagchips{min-width:0;max-width:100%}
+#paneMeta,#paneSession,#paneDash,.mgrids,.sumdash,.sumhero,.sumflags,.flaggrid,.flagchips,.dashgrid,.chartbox,.stat{min-width:0;max-width:100%}
 .mgrids{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .mgrp{border:1px solid var(--line);border-radius:14px;padding:10px;margin:0;background:var(--panel);min-width:0;max-width:100%;overflow:hidden}
 .mgrp.span2{grid-column:1 / -1}
@@ -187,8 +187,12 @@ button.cancel{
 #toast.show{opacity:1}
 #toast.err{background:#2a1618;border-color:var(--bad);color:#f8c9cd}
 .hide{display:none}
-.stat{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
-.stat b{color:var(--ink)}
+.stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;font-size:.8rem;color:var(--muted);min-width:0;max-width:100%}
+.stat span{
+  background:#0b1016;border:1px solid var(--line);border-radius:10px;
+  padding:8px 10px;min-width:0;max-width:100%;overflow-wrap:anywhere
+}
+.stat b{color:var(--ink);unicode-bidi:isolate}
 .sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
 .sumdash{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .sumhero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
@@ -401,12 +405,31 @@ button.gput{
   border-radius:8px;padding:7px 10px;font-size:.75rem;font-family:inherit;cursor:pointer
 }
 .chartlab{
-  margin:14px 0 0;font-size:.72rem;color:var(--muted);
+  margin:0 0 8px;font-size:.72rem;color:var(--muted);
   direction:rtl;text-align:right
 }
 .dayflags,.daylaws{margin-top:10px}
 .dayflags .chip,.daylaws .chip{width:auto;display:inline-block}
+.chartbox{min-width:0;max-width:100%;overflow:hidden}
 .chartbox svg{display:block;width:100%;height:auto;max-width:100%}
+.dashgrid{display:grid;grid-template-columns:1fr;gap:10px;min-width:0}
+@media (min-width:720px){.dashgrid{grid-template-columns:1fr 1fr}}
+.dashgrid .card{margin:0}
+.dashgrid .span2{grid-column:1 / -1}
+.hbars{display:flex;flex-direction:column;gap:7px;min-width:0}
+.hbar{
+  display:grid;grid-template-columns:minmax(0,38%) minmax(48px,1fr) auto;
+  gap:8px;align-items:center;min-width:0
+}
+.hbar-lab{
+  font:11px Consolas,monospace;color:#93a4b8;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0
+}
+.hbar-track{
+  display:block;height:12px;background:#121820;border-radius:99px;overflow:hidden;min-width:0
+}
+.hbar-track i{display:block;height:100%;max-width:100%;border-radius:99px}
+.hbar-val{font:11px Consolas,monospace;color:#c8f0d8;white-space:nowrap}
 .tabs button#tabDash.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
 .catbox .alist.stick{margin:0;border:0;padding:0;background:transparent}
 .cat-takhsis{--c:#c9a0ff;--bg:rgba(160,110,220,.12);--bd:#5a3d78}
@@ -501,19 +524,34 @@ button.gput{
         <button type="button" data-d="30">۳۰ روز</button>
         <button type="button" data-d="fasl">۵/۳۱–۶/۳۱</button>
       </div>
+      <p class="hint">هفت روز یعنی از شش روز قبل تا امروز، هر دو سر شامل. اگر امروز سی مرداد باشد محور از بیست‌وچهار تا سی است، نه از اول ماه. روز بدون ثبت هم با صفر می‌ماند.</p>
       <div class="stat" id="dashStat">—</div>
-      <p class="chartlab">دفتر / روز</p>
-      <div class="chartbox" id="dashBars"></div>
-      <p class="chartlab">مدت متا · قانون · تأخیر</p>
-      <div class="chartbox" id="dashMeta"></div>
-      <p class="chartlab">پارت</p>
-      <div class="chartbox" id="dashParts"></div>
-      <p class="chartlab">دسته</p>
-      <div class="chartbox" id="dashCats"></div>
-      <p class="chartlab">پرچم</p>
-      <div class="chartbox" id="dashFlags"></div>
-      <p class="chartlab">قانون مهم</p>
-      <div class="chartbox" id="dashLaws"></div>
+    </div>
+    <div class="dashgrid">
+      <div class="card span2">
+        <p class="chartlab">دفتر / روز · همهٔ روزهای بازه</p>
+        <div class="chartbox" id="dashBars"></div>
+      </div>
+      <div class="card">
+        <p class="chartlab">مدت متا · قانون · تأخیر</p>
+        <div class="chartbox" id="dashMeta"></div>
+      </div>
+      <div class="card">
+        <p class="chartlab">پارت</p>
+        <div class="chartbox" id="dashParts"></div>
+      </div>
+      <div class="card">
+        <p class="chartlab">دسته</p>
+        <div class="chartbox" id="dashCats"></div>
+      </div>
+      <div class="card">
+        <p class="chartlab">قانون مهم</p>
+        <div class="chartbox" id="dashLaws"></div>
+      </div>
+      <div class="card span2">
+        <p class="chartlab">پرچم</p>
+        <div class="chartbox" id="dashFlags"></div>
+      </div>
     </div>
   </section>
 
@@ -547,7 +585,7 @@ button.gput{
         <button type="button" id="btnWipe">پاک‌کردن همه</button>
       </div>
       <div class="sum" id="syncOut">—</div>
-      <p class="hint">کد را در صفحهٔ ویرایشگر بگذار و ذخیره کن. بعد استقرار را با مداد همان نشانی فعلی نسخهٔ جدید کن. استقرار تازه نساز.</p>
+      <p class="hint">کد را در صفحهٔ ویرایشگر بگذار و ذخیره کن. بعد استقرار را با مداد همان نشانی فعلی نسخهٔ جدید کن. استقرار تازه نساز. برای بازسازی گزارش‌ها، در ویرایشگر از فهرست توابع همان تابع بازسازی را انتخاب کن و دکمهٔ اجرا را بزن. خود تابع دکمهٔ اجرا ندارد.</p>
     </div>
     <div class="card">
       <h2>نسخه و کش</h2>
@@ -571,6 +609,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=51"></script>
+<script src="app.js?v=53"></script>
 </body>
 </html>
