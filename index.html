@@ -90,6 +90,10 @@ textarea{min-height:52px;resize:vertical}
   background:#0b1016;border:1px solid var(--line);color:var(--muted);border-radius:999px;
   padding:7px 12px;font-size:.8rem;font-family:inherit;cursor:pointer
 }
+.chips a.btnlike{
+  display:inline-block;background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:999px;
+  padding:7px 12px;font-size:.8rem;text-decoration:none
+}
 .chips button:active,.chips button.on{border-color:var(--accent);color:var(--ink)}
 .parts{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
 .parts button{
@@ -167,6 +171,14 @@ button.cancel{
   width:100%;margin-top:8px;background:#1b3a2e;border:1px solid var(--good);color:#d7f5e7;
   border-radius:10px;padding:10px;font-family:inherit;cursor:pointer
 }
+.lawlist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.lawcard{
+  border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#0b1016;
+  direction:ltr;text-align:left
+}
+.lawcard b{display:block;font-family:Consolas,monospace}
+.lawcard .desc{display:block;color:var(--muted);font-size:.78rem;overflow-wrap:anywhere}
+.lawcard .cancel{margin-top:6px}
 button.gput{
   width:100%;margin-top:10px;background:#1b3a2e;border:1px solid var(--good);color:#d7f5e7;
   border-radius:12px;padding:14px;font-family:inherit;font-weight:bold;cursor:pointer;font-size:.92rem
@@ -312,6 +324,7 @@ button.gput{
       <div class="sum" id="verBox">—</div>
       <div class="chips">
         <button type="button" id="btnHardReload">پاک‌کردن کش و بارگذاری دوباره</button>
+        <a class="btnlike" href="workshop.html">کارگاه از صفر</a>
       </div>
     </div>
     <div class="card">
@@ -329,6 +342,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=34"></script>
+<script src="app.js?v=35"></script>
 </body>
 </html>

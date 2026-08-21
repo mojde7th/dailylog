@@ -5,8 +5,8 @@
 
 'use strict';
 
-const APP_VERSION = 'v34 · meta';
-const SCRIPT_VERSION = 'v8-meta';
+const APP_VERSION = 'v35 · meta';
+const SCRIPT_VERSION = 'v9-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -77,7 +77,8 @@ const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category
 const META_GROUPS = [
   { id:'openfa', title:'openfa' },
   { id:'raayat', title:'raayat / mojaz / no' },
-  { id:'andaze', title:'andaze / ghanoon', hr:true }
+  { id:'andaze', title:'andaze / ghanoon', hr:true },
+  { id:'laws',   title:'ghanoon mohem' }
 ];
 
 const META_ITEMS = [
@@ -144,7 +145,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
   'noCarb','noghahveyebiruni','nolimunadbiruni',
   'nocopypasteazaighable12pm','preplan12',
-  'takhirAvg','takhirN','takhirSum',
+  'takhirAvg','takhirN','takhirSum','lawsJson','lawsMin',
   'doneJson','complete'];
 
 const MIN_REACT_SEC = 2;
@@ -525,6 +526,10 @@ function fillMetaGaps(keep, extra) {
     keep.takhirSum = extra.takhirSum;
     keep.takhirAvg = extra.takhirAvg;
   }
+  if ((!keep.lawsJson || keep.lawsJson === '[]') && extra.lawsJson && extra.lawsJson !== '[]') {
+    keep.lawsJson = extra.lawsJson;
+    keep.lawsMin = extra.lawsMin;
+  }
   keep.done = Object.assign({}, parseDone(extra), parseDone(keep));
   keep.doneJson = JSON.stringify(keep.done);
   keep.complete = isComplete(keep) ? 1 : 0;
@@ -580,7 +585,7 @@ function blankMeta(day) {
     createdAt: new Date().toISOString(),
     dateShamsi: day,
     moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0,
-    takhirAvg:'', takhirN:0, takhirSum:0,
+    takhirAvg:'', takhirN:0, takhirSum:0, lawsJson:'[]', lawsMin:0,
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
   META_FLAG_IDS.forEach(k => { rec[k] = 0; });
@@ -593,6 +598,7 @@ let mDate = null;
 const mW = {};
 const flagDraft = {};
 const takhirDraft = [];
+let lawDraft = [];
 let lastMetaRec = null;
 
 function flagOn(rec, id) {
@@ -603,6 +609,35 @@ function flagOn(rec, id) {
 function clearFlagDraft() {
   Object.keys(flagDraft).forEach(k => delete flagDraft[k]);
   takhirDraft.length = 0;
+}
+
+function parseLaws(rec) {
+  try {
+    const a = JSON.parse((rec && rec.lawsJson) || '[]');
+    return Array.isArray(a) ? a : [];
+  } catch (e) { return []; }
+}
+function lawCatalog() {
+  try {
+    const a = JSON.parse(cfgGet('law_catalog') || '[]');
+    return Array.isArray(a) ? a : [];
+  } catch (e) { return []; }
+}
+function lawCatalogSave(name, desc) {
+  const n = String(name || '').trim();
+  if (!n) return;
+  const cat = lawCatalog().filter(x => x.name !== n);
+  cat.unshift({ name: n, desc: String(desc || '').trim() });
+  cfgSet('law_catalog', JSON.stringify(cat.slice(0, 40)));
+}
+async function loadLawDraft() {
+  const rec = await metaFor(selectedMetaDay());
+  lawDraft = parseLaws(rec).map(x => ({
+    name: String(x.name || ''),
+    desc: String(x.desc || ''),
+    min: Number(x.min) || 0
+  }));
+  paintLawList();
 }
 
 function selectedMetaDay() {
@@ -649,6 +684,7 @@ async function paintMetaStatus() {
     if (tot) tot.textContent = totalLine(it, rec);
     if (it.kind === 'flag' && it._btn) it._btn.classList.toggle('on', flagOn(rec, it.id));
   });
+  paintLawList();
 }
 
 function pickBar(host, values, selected, onPick) {
@@ -710,12 +746,96 @@ function mountMetaItem(host, it) {
   }
 }
 
+function paintLawList() {
+  const host = $('lawList');
+  if (!host) return;
+  if (!lawDraft.length) {
+    host.innerHTML = '<p class="hint">henuz ghanooni baraye in ruz nist</p>';
+    return;
+  }
+  host.innerHTML = lawDraft.map((x, i) =>
+    `<div class="lawcard">` +
+      `<b>${esc(x.name)}</b>` +
+      `<span class="desc">${esc(x.desc || '')}</span>` +
+      `<span class="desc">${fmtChunk(x.min)}</span>` +
+      `<button type="button" class="cancel" data-law="${i}">hazf</button>` +
+    `</div>`
+  ).join('');
+  host.querySelectorAll('[data-law]').forEach(b => {
+    b.addEventListener('click', () => {
+      lawDraft.splice(Number(b.dataset.law), 1);
+      paintLawList();
+      vibrate(8);
+    });
+  });
+}
+
+function paintLawCatalog() {
+  const host = $('lawCat');
+  if (!host) return;
+  const cat = lawCatalog();
+  if (!cat.length) { host.innerHTML = ''; return; }
+  host.innerHTML = cat.map(x =>
+    `<button type="button" data-n="${esc(x.name)}">${esc(x.name)}</button>`
+  ).join('');
+  host.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      const hit = lawCatalog().find(x => x.name === b.dataset.n);
+      if (!hit) return;
+      $('lawName').value = hit.name;
+      $('lawDesc').value = hit.desc || '';
+      vibrate(8);
+    });
+  });
+}
+
+function mountLawsPanel(wrap) {
+  const box = document.createElement('div');
+  box.className = 'mblock';
+  box.innerHTML =
+    `<h3>name + tozih + saat — bedune taghire app</h3>` +
+    `<p class="hint">nam ra yekbar besaz. ruzhaye baad az chipha bardar. ta put paye daste, saf nemishavad.</p>` +
+    `<div class="chips qchips" id="lawCat"></div>` +
+    `<label class="lb">nam</label>` +
+    `<input id="lawName" class="ltr" placeholder="masalan: sokut-12"/>` +
+    `<label class="lb">tozih</label>` +
+    `<textarea id="lawDesc" class="ltr" placeholder="in ghanoon chist"></textarea>` +
+    `<label class="lb">saat</label>` +
+    `<div id="lawDur"></div>` +
+    `<button type="button" class="put" id="lawAdd">add be pishnevis</button>` +
+    `<div class="lawlist" id="lawList"></div>`;
+  wrap.appendChild(box);
+  mW.lawDur = makeDurWheel($('lawDur'), 0, 30);
+  $('lawAdd').addEventListener('click', () => {
+    const name = ($('lawName').value || '').trim();
+    if (!name) { toast('nam khali ast', true); return; }
+    const desc = ($('lawDesc').value || '').trim();
+    const min = mW.lawDur ? mW.lawDur.minutes() : 0;
+    const i = lawDraft.findIndex(x => x.name === name);
+    const row = { name, desc, min };
+    if (i >= 0) lawDraft[i] = row;
+    else lawDraft.push(row);
+    lawCatalogSave(name, desc);
+    paintLawCatalog();
+    paintLawList();
+    $('lawName').value = '';
+    $('lawDesc').value = '';
+    if (mW.lawDur) mW.lawDur.reset();
+    vibrate(8);
+    toast(name + ' draft');
+  });
+  paintLawCatalog();
+  paintLawList();
+}
+
 function buildMeta() {
   let paintT = null;
   mDate = makeDateWheel($('mDate'), () => {
     clearFlagDraft();
     clearTimeout(paintT);
-    paintT = setTimeout(() => paintMetaStatus(), 220);
+    paintT = setTimeout(() => {
+      loadLawDraft().then(() => paintMetaStatus());
+    }, 220);
   });
   const host = $('metaBlocks');
   host.innerHTML = '';
@@ -740,7 +860,8 @@ function buildMeta() {
     wrap.querySelectorAll('.mall button').forEach(b => {
       b.addEventListener('click', () => draftGroupFlags(g.id, b.dataset.all === '1'));
     });
-    META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
+    if (g.id === 'laws') mountLawsPanel(wrap);
+    else META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
     const putBtn = document.createElement('button');
     putBtn.type = 'button';
     putBtn.className = 'gput';
@@ -748,7 +869,7 @@ function buildMeta() {
     putBtn.addEventListener('click', () => putGroup(g.id));
     wrap.appendChild(putBtn);
   });
-  paintMetaStatus();
+  loadLawDraft().then(() => paintMetaStatus());
 }
 
 function draftGroupFlags(gid, on) {
@@ -767,6 +888,23 @@ async function putGroup(gid) {
   const day = selectedMetaDay();
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
+  if (gid === 'laws') {
+    rec.lawsJson = JSON.stringify(lawDraft);
+    rec.lawsMin = lawDraft.reduce((s, x) => s + (Number(x.min) || 0), 0);
+    lawDraft.forEach(x => lawCatalogSave(x.name, x.desc));
+    rec.done = done;
+    rec.doneJson = JSON.stringify(done);
+    rec.complete = isComplete(rec) ? 1 : 0;
+    rec.synced = 0;
+    rec.createdAt = rec.createdAt || new Date().toISOString();
+    await put('meta', rec);
+    vibrate(25);
+    toast('laws put n=' + lawDraft.length);
+    await paintMetaStatus();
+    updateQueueBadge();
+    trySync();
+    return;
+  }
   META_ITEMS.filter(it => it.group === gid).forEach(it => {
     if (it.kind === 'flag') {
       const on = flagOn(rec, it.id);
@@ -1127,13 +1265,13 @@ async function doSave() {
 /* ═════════════════════════════ 8. SYNC ═════════════════════════════════════ */
 
 async function forceMetaResyncOnce() {
-  if (cfgGet('meta_resync') === 'v30') return;
+  if (cfgGet('meta_resync') === 'v35') return;
   const all = await getAll('meta');
   for (const r of all) {
     r.synced = 0;
     await put('meta', r);
   }
-  cfgSet('meta_resync', 'v30');
+  cfgSet('meta_resync', 'v35');
 }
 
 function execHint(url) {
@@ -1288,6 +1426,9 @@ function metaBits(rec) {
       bits.push({ id: it.id, text: 'takhirAvg=' + avg.toFixed(2) + 's' + (avg >= TAKHIR_OK ? '' : ' flag0') });
     }
   });
+  parseLaws(rec).forEach(x => {
+    bits.push({ id: 'law:' + x.name, text: x.name + '=' + fmtChunk(x.min) });
+  });
   return bits;
 }
 function metaSummary(rec) {
@@ -1296,10 +1437,17 @@ function metaSummary(rec) {
 }
 function clearMetaField(rec, itemId) {
   const it = META_ITEMS.find(x => x.id === itemId);
-  if (!rec || !it) return rec;
-  if (it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
-  if (it.kind === 'flag') rec[it.id] = 0;
-  if (it.kind === 'avgSec') { rec.takhirAvg = ''; rec.takhirN = 0; rec.takhirSum = 0; }
+  if (!rec) return rec;
+  if (String(itemId).indexOf('law:') === 0) {
+    const name = String(itemId).slice(4);
+    const left = parseLaws(rec).filter(x => x.name !== name);
+    rec.lawsJson = JSON.stringify(left);
+    rec.lawsMin = left.reduce((s, x) => s + (Number(x.min) || 0), 0);
+    lawDraft = left.slice();
+  } else if (!it) return rec;
+  if (it && it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
+  if (it && it.kind === 'flag') rec[it.id] = 0;
+  if (it && it.kind === 'avgSec') { rec.takhirAvg = ''; rec.takhirN = 0; rec.takhirSum = 0; }
   const done = parseDone(rec);
   delete done[itemId];
   rec.done = done;
