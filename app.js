@@ -668,11 +668,7 @@ function parseLaws(rec) {
   } catch (e) { return []; }
 }
 function lawsForSummary(rec) {
-  const saved = rec ? parseLaws(rec) : [];
-  const day = rec ? rec.dateShamsi : (mDate ? selectedMetaDay() : '');
-  if (mDate && day && day === selectedMetaDay()) return lawDraft.slice();
-  if (mDate && !rec) return lawDraft.slice();
-  return saved;
+  return rec ? parseLaws(rec) : [];
 }
 function lawCatalog() {
   try {
@@ -688,13 +684,46 @@ function lawCatalogSave(name, desc) {
   cfgSet('law_catalog', JSON.stringify(cat.slice(0, 40)));
 }
 async function loadLawDraft() {
-  const rec = await metaFor(selectedMetaDay());
-  lawDraft = parseLaws(rec).map(x => ({
-    name: String(x.name || ''),
-    desc: String(x.desc || ''),
-    min: Number(x.min) || 0
-  }));
+  paintSavedLaws();
   paintLawList();
+}
+
+function lawFormRow() {
+  const name = (($('lawName') && $('lawName').value) || '').trim();
+  if (!name) return null;
+  return {
+    name,
+    desc: (($('lawDesc') && $('lawDesc').value) || '').trim(),
+    min: mW.lawDur ? mW.lawDur.minutes() : 0
+  };
+}
+function mergeLawRows(base, extra) {
+  const items = base.slice();
+  extra.forEach(row => {
+    if (!row || !row.name) return;
+    const i = items.findIndex(x => x.name === row.name);
+    if (i >= 0) items[i] = row;
+    else items.push(row);
+  });
+  return items;
+}
+async function saveDayLaws(items) {
+  const day = selectedMetaDay();
+  const rec = await metaFor(day) || blankMeta(day);
+  rec.lawsJson = JSON.stringify(items);
+  rec.lawsMin = items.reduce((s, x) => s + (Number(x.min) || 0), 0);
+  rec.done = parseDone(rec);
+  rec.doneJson = JSON.stringify(rec.done);
+  rec.complete = isComplete(rec) ? 1 : 0;
+  rec.synced = 0;
+  rec.createdAt = rec.createdAt || new Date().toISOString();
+  await put('meta', rec);
+  lastMetaRec = rec;
+  items.forEach(x => lawCatalogSave(x.name, x.desc));
+  await paintMetaStatus();
+  updateQueueBadge();
+  trySync();
+  return rec;
 }
 
 function selectedMetaDay() {
@@ -739,6 +768,7 @@ async function paintMetaStatus() {
     if (tot) tot.textContent = totalLine(it, rec);
     if (it.kind === 'flag' && it._btn) it._btn.classList.toggle('on', flagOn(rec, it.id));
   });
+  paintSavedLaws();
   paintLawList();
 }
 
@@ -811,11 +841,38 @@ function mountMetaItem(host, it) {
   }
 }
 
+function paintSavedLaws() {
+  const host = $('lawSaved');
+  if (!host) return;
+  const items = parseLaws(lastMetaRec);
+  if (!items.length) {
+    host.innerHTML = '<p class="hint">sabt shode baraye in ruz nist</p>';
+    return;
+  }
+  host.innerHTML = items.map((x, i) =>
+    `<div class="lawcard saved">` +
+      `<b>${esc(x.name)}</b>` +
+      (x.desc ? `<span class="desc">${esc(x.desc)}</span>` : '') +
+      `<span class="desc">${fmtChunk(x.min)}</span>` +
+      `<button type="button" class="cancel" data-saved-law="${i}">hazf az ruz</button>` +
+    `</div>`
+  ).join('');
+  host.querySelectorAll('[data-saved-law]').forEach(b => {
+    b.addEventListener('click', async () => {
+      const items = parseLaws(lastMetaRec);
+      items.splice(Number(b.dataset.savedLaw), 1);
+      await saveDayLaws(items);
+      toast('hazf shod');
+      vibrate(8);
+    });
+  });
+}
+
 function paintLawList() {
   const host = $('lawList');
   if (!host) return;
   if (!lawDraft.length) {
-    host.innerHTML = '<p class="hint">henuz ghanooni baraye in ruz nist</p>';
+    host.innerHTML = '<p class="hint">pishnevis khali — ta put tu kart nemiayad</p>';
     return;
   }
   host.innerHTML = lawDraft.map((x, i) =>
@@ -823,14 +880,13 @@ function paintLawList() {
       `<b>${esc(x.name)}</b>` +
       (x.desc ? `<span class="desc">${esc(x.desc)}</span>` : '') +
       `<span class="desc">${fmtChunk(x.min)}</span>` +
-      `<button type="button" class="cancel" data-law="${i}">hazf</button>` +
+      `<button type="button" class="cancel" data-law="${i}">hazf az pishnevis</button>` +
     `</div>`
   ).join('');
   host.querySelectorAll('[data-law]').forEach(b => {
     b.addEventListener('click', () => {
       lawDraft.splice(Number(b.dataset.law), 1);
       paintLawList();
-      scheduleSummary();
       vibrate(8);
     });
   });
@@ -860,7 +916,7 @@ function mountLawsPanel(wrap) {
   box.className = 'mblock';
   box.innerHTML =
     `<h3>name + saat — tozih ekhtiari</h3>` +
-    `<p class="hint">tozih lazeme nist. nam kafist. ta put, dar kart pishnevis shomaresh mishavad.</p>` +
+    `<p class="hint">pishnevis ta put tu kart nist. add be in ruz mostaghim tu kart miravad.</p>` +
     `<div class="chips qchips" id="lawCat"></div>` +
     `<label class="lb">nam</label>` +
     `<input id="lawName" class="ltr" placeholder="masalan: sokut-12"/>` +
@@ -868,30 +924,44 @@ function mountLawsPanel(wrap) {
     `<textarea id="lawDesc" class="ltr" placeholder="in ghanoon chist"></textarea>` +
     `<label class="lb">saat</label>` +
     `<div id="lawDur"></div>` +
-    `<button type="button" class="put" id="lawAdd">add be pishnevis</button>` +
+    `<div class="mall">` +
+      `<button type="button" id="lawAdd">add be pishnevis</button>` +
+      `<button type="button" class="putg" id="lawNow">add be in ruz</button>` +
+    `</div>` +
+    `<p class="hint">sabt shode in ruz</p>` +
+    `<div class="lawlist" id="lawSaved"></div>` +
+    `<p class="hint">pishnevis</p>` +
     `<div class="lawlist" id="lawList"></div>`;
   wrap.appendChild(box);
   mW.lawDur = makeDurWheel($('lawDur'), 0, 30);
   $('lawAdd').addEventListener('click', () => {
-    const name = ($('lawName').value || '').trim();
-    if (!name) { toast('nam khali ast', true); return; }
-    const desc = ($('lawDesc').value || '').trim();
-    const min = mW.lawDur ? mW.lawDur.minutes() : 0;
-    const i = lawDraft.findIndex(x => x.name === name);
-    const row = { name, desc, min };
+    const row = lawFormRow();
+    if (!row) { toast('nam khali ast', true); return; }
+    const i = lawDraft.findIndex(x => x.name === row.name);
     if (i >= 0) lawDraft[i] = row;
     else lawDraft.push(row);
-    lawCatalogSave(name, desc);
+    lawCatalogSave(row.name, row.desc);
     paintLawCatalog();
     paintLawList();
     $('lawName').value = '';
     $('lawDesc').value = '';
     if (mW.lawDur) mW.lawDur.reset();
     vibrate(8);
-    toast(name + ' draft');
-    scheduleSummary();
+    toast(row.name + ' pishnevis');
+  });
+  $('lawNow').addEventListener('click', async () => {
+    const row = lawFormRow();
+    if (!row) { toast('nam khali ast', true); return; }
+    const items = mergeLawRows(parseLaws(lastMetaRec), [row]);
+    await saveDayLaws(items);
+    $('lawName').value = '';
+    $('lawDesc').value = '';
+    if (mW.lawDur) mW.lawDur.reset();
+    vibrate(25);
+    toast(row.name + ' ruz');
   });
   paintLawCatalog();
+  paintSavedLaws();
   paintLawList();
 }
 
@@ -899,6 +969,7 @@ function buildMeta() {
   let paintT = null;
   mDate = makeDateWheel($('mDate'), () => {
     clearFlagDraft();
+    lawDraft = [];
     clearTimeout(paintT);
     paintT = setTimeout(() => {
       loadLawDraft().then(() => paintMetaStatus());
@@ -952,17 +1023,21 @@ async function putGroup(gid) {
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
   if (gid === 'laws') {
-    rec.lawsJson = JSON.stringify(lawDraft);
-    rec.lawsMin = lawDraft.reduce((s, x) => s + (Number(x.min) || 0), 0);
-    lawDraft.forEach(x => lawCatalogSave(x.name, x.desc));
+    const items = mergeLawRows(parseLaws(rec), lawDraft);
+    rec.lawsJson = JSON.stringify(items);
+    rec.lawsMin = items.reduce((s, x) => s + (Number(x.min) || 0), 0);
+    items.forEach(x => lawCatalogSave(x.name, x.desc));
     rec.done = done;
     rec.doneJson = JSON.stringify(done);
     rec.complete = isComplete(rec) ? 1 : 0;
     rec.synced = 0;
     rec.createdAt = rec.createdAt || new Date().toISOString();
     await put('meta', rec);
+    lastMetaRec = rec;
+    const n = lawDraft.length;
+    lawDraft = [];
     vibrate(25);
-    toast('laws put n=' + lawDraft.length);
+    toast('laws put n=' + n);
     await paintMetaStatus();
     updateQueueBadge();
     trySync();
