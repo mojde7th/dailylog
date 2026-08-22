@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v63 · sent';
+const APP_VERSION = 'v64 · bits';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1801,10 +1801,31 @@ function updateNetPill() {
 
 /* ═════════════════════════════ 9. DATA / CSV ═══════════════════════════════ */
 
+function hasBidari(rec) {
+  if (!rec) return false;
+  if (rec.saatbidari5) return true;
+  if (rec.bidDiffMin !== '' && rec.bidDiffMin != null) return true;
+  return !!parseDone(rec).saatbidari5;
+}
+function bidariText(rec) {
+  const wake = rec && rec.bidWake ? String(rec.bidWake) : '3:30';
+  const diff = rec && rec.bidDiffMin !== '' && rec.bidDiffMin != null ? Number(rec.bidDiffMin) : null;
+  return 'saatbidari=' + wake + (diff != null ? (' · ' + diff + 'm') : '');
+}
+function clearBidari(rec) {
+  rec.bidWake = '3:30';
+  rec.bidDiffMin = '';
+  rec.saatbidari5 = 0;
+  if (mW.bidWake && mW.bidWake.setHM) mW.bidWake.setHM(3, 30);
+  if (mW.bidDiff && mW.bidDiff.reset) mW.bidDiff.reset();
+  bidPaintDay = '';
+}
 function metaBits(rec) {
   if (!rec) return [];
   const bits = [];
+  if (hasBidari(rec)) bits.push({ id: 'bidari', text: bidariText(rec) });
   META_ITEMS.forEach(it => {
+    if (it.id === 'saatbidari5') return;
     if (it.kind === 'accumDur') {
       const n = Number(rec[META_STORE[it.id]]) || 0;
       if (n) bits.push({ id: it.id, text: it.label + '=' + fmtChunk(n) });
@@ -2199,6 +2220,17 @@ function metaSummary(rec) {
 function clearMetaField(rec, itemId) {
   const it = META_ITEMS.find(x => x.id === itemId);
   if (!rec) return rec;
+  if (itemId === 'bidari' || itemId === 'saatbidari5') {
+    clearBidari(rec);
+    const done = parseDone(rec);
+    delete done.saatbidari5;
+    delete done.bidari;
+    rec.done = done;
+    rec.doneJson = JSON.stringify(done);
+    rec.complete = isComplete(rec) ? 1 : 0;
+    rec.synced = 0;
+    return rec;
+  }
   if (String(itemId).indexOf('law:') === 0) {
     const name = String(itemId).slice(4);
     const left = parseLaws(rec).filter(x => x.name !== name);
@@ -2244,6 +2276,7 @@ async function refreshData() {
     part: r.part || '',
     code: r.code || '',
     val: r.chunk || r.hm || r.count || '',
+    who: r.who || '',
     synced: r.synced,
     store: 'sessions',
     uid: r.uid
@@ -2277,6 +2310,7 @@ async function refreshData() {
         (r.part ? '<span class="logpart ' + dirOf(r.part) + '">' + esc(r.part) + '</span>' : '') +
         (r.code ? '<span class="logcode">' + esc(r.code) + '</span>' : '') +
         (r.val ? '<span class="logdur">' + esc(r.val) + '</span>' : '') +
+        (r.who ? '<span class="logcode">' + esc(r.who) + '</span>' : '') +
       '</div>';
     }
     return '<div class="logcard">' +
