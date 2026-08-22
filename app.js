@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v68 · pick';
+const APP_VERSION = 'v69 · one';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1905,15 +1905,12 @@ function metaBits(rec) {
       bits.push({ id: it.id, text: it.label });
     } else if (it.kind === 'avgSec') {
       const st = takhirStats(rec);
-      if (st.n) {
+      st.samples.forEach((sec, i) => {
         bits.push({
-          id: 'takhirAvg',
-          text: 'takhirAvg=' + Number(st.avg).toFixed(2) + 's n=' + st.n + (st.ok ? '' : ' flag0')
+          id: 'takhir-' + i,
+          text: 'takhir ' + sec + 's · avg ' + Number(st.avg).toFixed(2) + 's n=' + st.n
         });
-        st.samples.forEach((sec, i) => {
-          bits.push({ id: 'takhir:' + i, text: 'takhir ' + sec + 's' });
-        });
-      }
+      });
     }
   });
   parseLaws(rec).forEach(x => {
@@ -2307,8 +2304,8 @@ function clearMetaField(rec, itemId) {
     rec.synced = 0;
     return rec;
   }
-  if (String(itemId).indexOf('takhir:') === 0) {
-    const ix = Number(String(itemId).slice(7));
+  if (/^takhir[-:]/.test(String(itemId))) {
+    const ix = Number(String(itemId).replace(/^takhir[-:]/, ''));
     const samples = parseTakhirSamples(rec);
     if (ix >= 0 && ix < samples.length) samples.splice(ix, 1);
     writeTakhirSamples(rec, samples);
@@ -2385,17 +2382,29 @@ async function refreshData() {
   mixed.sort((a, b) => String(b.at).localeCompare(String(a.at)));
   const host = $('logList');
   if (!host) return;
-  host.innerHTML = mixed.slice(0, 30).map(r => {
-    const actions = tagCell(r.synced) + (r.uid
-      ? '<button type="button" class="cancel" data-store="' + esc(r.store) +
-        '" data-uid="' + esc(r.uid) + '" data-day="' + esc(r.date || '') + '">برگشت</button>'
-      : '');
+  const rows = [];
+  mixed.forEach(r => {
+    if (r.store === 'sessions') {
+      rows.push(r);
+      return;
+    }
+    (r.bits || []).forEach(b => {
+      rows.push({
+        at: r.at, date: r.date, kind: r.kind, synced: r.synced,
+        store: 'meta', uid: r.uid, itemId: b.id, bitText: b.text
+      });
+    });
+  });
+  host.innerHTML = rows.slice(0, 80).map(r => {
+    const undo = r.store === 'sessions'
+      ? '<button type="button" class="cancel" data-store="sessions" data-uid="' + esc(r.uid) + '">برگشت</button>'
+      : (r.itemId
+        ? '<button type="button" class="undobit" data-meta-item="' + esc(r.itemId) + '" data-uid="' + esc(r.uid) + '">برگشت</button>'
+        : '');
+    const actions = tagCell(r.synced) + undo;
     let body = '';
-    if (r.store === 'meta' && r.bits && r.bits.length) {
-      body = '<div class="logchips">' + r.bits.map(b => {
-        const x = '<button type="button" class="cancel" data-meta-item="' + esc(b.id) + '" data-uid="' + esc(r.uid) + '">برگشت</button>';
-        return '<span class="logchip">' + esc(b.text) + x + '</span>';
-      }).join('') + '</div>';
+    if (r.store === 'meta' && r.bitText) {
+      body = '<div class="logline"><span class="logcode">' + esc(r.bitText) + '</span></div>';
     } else if (r.store === 'sessions') {
       body = '<div class="logline">' +
         (r.part ? '<span class="logpart ' + dirOf(r.part) + '">' + esc(r.part) + '</span>' : '') +
@@ -2525,8 +2534,10 @@ async function boot() {
   $('logList').addEventListener('click', async ev => {
     const itemBtn = ev.target.closest('[data-meta-item]');
     if (itemBtn) {
+      ev.stopPropagation();
       const uid = itemBtn.dataset.uid;
       const itemId = itemBtn.dataset.metaItem;
+      if (!itemId) return;
       const all = await getAll('meta');
       const rec = all.find(r => r.uid === uid);
       if (!rec) return;
