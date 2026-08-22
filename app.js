@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v59 · names';
+const APP_VERSION = 'v60 · red2';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -91,7 +91,7 @@ const META_GROUPS = [
   { id:'raayat', title:'raayat / mojaz / no' },
   { id:'andaze', title:'andaze / ghanoon', hr:true },
   { id:'laws',   title:'ghanoon mohem' },
-  { id:'khatghermez', title:'layeaval(mesle konjkavi, dorugh, stalk,...)' }
+  { id:'khatghermez', title:'' }
 ];
 
 const META_ITEMS = [
@@ -161,7 +161,7 @@ const META_ITEMS = [
     label:'takhirinputoutput3thout<1.5s' },
 
   { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag',
-    label:'layeaval(mesle konjkavi, dorugh, stalk,...)' },
+    label:'yeknanolayeamdiezafetaronvane' },
   { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag',
     label:'konjkavi,dorugh,stalk' }
 ];
@@ -1062,7 +1062,7 @@ function buildMeta() {
     wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws' || g.id === 'khatghermez') ? ' span2' : '');
     const flags = groupFlags(g.id);
     wrap.innerHTML =
-      `<div class="gtitle">${g.title}</div>` +
+      (g.title ? `<div class="gtitle">${g.title}</div>` : '') +
       (flags.length
         ? `<div class="mall">` +
           `<button type="button" data-all="1">select all</button>` +
@@ -1081,7 +1081,7 @@ function buildMeta() {
     const putBtn = document.createElement('button');
     putBtn.type = 'button';
     putBtn.className = 'gput';
-    putBtn.textContent = 'put ' + g.title;
+    putBtn.textContent = g.title ? ('put ' + g.title) : 'put';
     putBtn.addEventListener('click', () => putGroup(g.id));
     wrap.appendChild(putBtn);
   });
