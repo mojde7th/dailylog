@@ -102,10 +102,12 @@ textarea{min-height:52px;resize:vertical}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;direction:ltr;justify-content:flex-start;text-align:left}
 #paneData .chips{
-  direction:rtl;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;max-width:100%
+  direction:rtl;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;max-width:100%;
+  gap:4px;-webkit-overflow-scrolling:touch
 }
 #paneData .chips button,#paneData .chips a{
-  flex:0 0 auto;white-space:nowrap;direction:rtl;unicode-bidi:isolate;text-align:center
+  flex:0 0 auto;white-space:nowrap;direction:rtl;unicode-bidi:isolate;text-align:center;
+  padding:5px 8px;font-size:.68rem
 }
 #paneDash #dashRange{
   direction:ltr;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;max-width:100%
@@ -661,6 +663,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=66"></script>
+<script src="app.js?v=67"></script>
 </body>
 </html>

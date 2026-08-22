@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v66 · takhir';
+const APP_VERSION = 'v67 · avg';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -587,14 +587,16 @@ function parseDone(rec) {
   try { return JSON.parse(rec.doneJson || '{}'); } catch (e) { return {}; }
 }
 function parseTakhirSamples(rec) {
-  try {
-    const a = JSON.parse((rec && rec.takhirJson) || '[]');
-    if (Array.isArray(a) && a.length) {
-      return a.map(x => Number(x)).filter(x => !isNaN(x));
-    }
-  } catch (e) {}
-  const n = Number(rec && rec.takhirN) || 0;
-  const avg = Number(rec && rec.takhirAvg);
+  if (!rec) return [];
+  if (rec.takhirJson != null && rec.takhirJson !== '') {
+    try {
+      const a = JSON.parse(rec.takhirJson);
+      if (Array.isArray(a)) return a.map(x => Number(x)).filter(x => !isNaN(x));
+    } catch (e) {}
+    return [];
+  }
+  const n = Number(rec.takhirN) || 0;
+  const avg = Number(rec.takhirAvg);
   if (n > 0 && !isNaN(avg)) return Array.from({ length: n }, () => avg);
   return [];
 }
@@ -605,12 +607,15 @@ function writeTakhirSamples(rec, samples) {
   rec.takhirSum = a.reduce((s, x) => s + x, 0);
   rec.takhirAvg = a.length ? (rec.takhirSum / a.length) : '';
 }
-function takhirIsOk(rec, extra) {
-  extra = extra || [];
-  const samples = parseTakhirSamples(rec).concat(extra.map(Number));
-  if (!samples.length) return false;
+function takhirStats(rec, extra) {
+  const samples = parseTakhirSamples(rec).concat((extra || []).map(Number).filter(x => !isNaN(x)));
+  const n = samples.length;
   const sum = samples.reduce((s, x) => s + x, 0);
-  return (sum / samples.length) < TAKHIR_OK;
+  const avg = n ? (sum / n) : '';
+  return { samples, n, sum, avg, ok: n ? avg < TAKHIR_OK : false };
+}
+function takhirIsOk(rec, extra) {
+  return takhirStats(rec, extra).ok;
 }
 function isComplete(rec) {
   const d = parseDone(rec);
@@ -831,13 +836,9 @@ function totalLine(it, rec) {
   if (it.kind === 'accumDur') return 'today: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
   if (it.kind === 'flag') return flagOn(rec, it.id) ? 'SET' : 'not set';
   if (it.kind === 'avgSec') {
-    const n = Number(rec.takhirN) || 0;
-    const pending = takhirDraft.length;
-    if (!n && !pending) return 'no samples yet';
-    const avg = n ? (Number(rec.takhirAvg) || 0) : 0;
-    let line = n ? ('avg ' + avg.toFixed(2) + 's  n=' + n + (takhirIsOk(rec, takhirDraft) ? '  ok' : '  slow')) : 'draft only';
-    if (pending) line += '  draft+' + pending;
-    return line;
+    const st = takhirStats(rec, takhirDraft);
+    if (!st.n) return 'no samples yet';
+    return 'avg ' + Number(st.avg).toFixed(2) + 's  n=' + st.n + (st.ok ? '  ok' : '  slow');
   }
   return '';
 }
@@ -1893,14 +1894,13 @@ function metaBits(rec) {
     } else if (it.kind === 'flag' && rec[it.id]) {
       bits.push({ id: it.id, text: it.label });
     } else if (it.kind === 'avgSec') {
-      const samples = parseTakhirSamples(rec);
-      if (samples.length) {
-        const avg = samples.reduce((s, x) => s + x, 0) / samples.length;
+      const st = takhirStats(rec);
+      if (st.n) {
         bits.push({
           id: 'takhirAvg',
-          text: 'takhirAvg=' + avg.toFixed(2) + 's n=' + samples.length + (takhirIsOk(rec) ? '' : ' flag0')
+          text: 'takhirAvg=' + Number(st.avg).toFixed(2) + 's n=' + st.n + (st.ok ? '' : ' flag0')
         });
-        samples.forEach((sec, i) => {
+        st.samples.forEach((sec, i) => {
           bits.push({ id: 'takhir:' + i, text: 'takhir ' + sec + 's' });
         });
       }
@@ -1929,19 +1929,14 @@ function metaItemView(rec, it) {
     };
   }
   if (it.kind === 'avgSec') {
-    const n = Number(rec && rec.takhirN) || 0;
-    const pending = takhirDraft.length;
-    if (!n && !pending) {
+    const st = takhirStats(rec, takhirDraft);
+    if (!st.n) {
       return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '—', min: 0 };
     }
-    let sum = Number(rec && rec.takhirSum) || 0;
-    takhirDraft.forEach(s => { sum += Number(s) || 0; });
-    const avg = (n + pending) ? (sum / (n + pending)) : 0;
-    const ok = takhirIsOk(rec, takhirDraft);
     return {
       id: it.id, group: it.group, kind: it.kind, label: it.label,
-      state: ok ? 'ok' : 'miss',
-      val: avg.toFixed(2) + 's n=' + (n + pending),
+      state: st.ok ? 'ok' : 'miss',
+      val: Number(st.avg).toFixed(2) + 's n=' + st.n,
       min: 0
     };
   }
@@ -2043,6 +2038,7 @@ async function resetMetaItem(id) {
   toast(id + ' reset');
   vibrate(8);
   await paintMetaStatus();
+  await refreshData();
   updateQueueBadge();
   trySync();
 }
