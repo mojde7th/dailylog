@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v62 · undo';
+const APP_VERSION = 'v63 · sent';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -550,8 +550,11 @@ function openDB() {
   });
 }
 const store = (n, m) => openDB().then(db => db.transaction(n, m).objectStore(n));
-const put = (n, o) => store(n, 'readwrite').then(s => new Promise((res, rej) => {
-  const r = s.put(o); r.onsuccess = () => res(o); r.onerror = () => rej(r.error);
+const put = (n, o) => openDB().then(db => new Promise((res, rej) => {
+  const tx = db.transaction(n, 'readwrite');
+  tx.oncomplete = () => res(o);
+  tx.onerror = () => rej(tx.error);
+  tx.objectStore(n).put(o);
 }));
 const delKey = (n, key) => store(n, 'readwrite').then(s => new Promise((res, rej) => {
   const r = s.delete(key); r.onsuccess = () => res(); r.onerror = () => rej(r.error);
@@ -1671,7 +1674,7 @@ async function checkSheet(loud) {
 
 function fetchPlain(url, body) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 12000);
+  const t = setTimeout(() => ctrl.abort(), 45000);
   return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1723,16 +1726,21 @@ async function trySync(loud) {
       (x.deleted ? ' -' + x.deleted : '')
     ).join(' · ');
     paintSyncOut(line);
-    if (loud) toast('شیت به‌روز شد');
+    if (loud) toast('ارسال شد');
   } catch (e) {
     const msg = String(e.message || e);
-    paintSyncOut(msg);
-    if (loud) toast(msg.indexOf('old script') >= 0 ? 'همین آدرس کهنه است' : 'ارسال نشد، در صف ماند', true);
+    const abort = msg.indexOf('abort') >= 0 || msg.indexOf('Abort') >= 0;
+    paintSyncOut(abort ? 'شیت نوشت ولی پاسخ دیر آمد. دوباره همگام بزن' : msg);
+    if (loud) toast(
+      msg.indexOf('old script') >= 0 ? 'همین آدرس کهنه است'
+        : (abort ? 'دوباره همگام بزن' : 'ارسال نشد، در صف ماند'),
+      true
+    );
   } finally {
     trySync._busy = false;
   }
   updateQueueBadge();
-  if (activeTab === 'data') refreshData();
+  await refreshData();
 }
 
 async function pushBatch(url, secret, type, rows, fields) {
@@ -2211,7 +2219,7 @@ function clearMetaField(rec, itemId) {
 }
 
 function tagCell(synced) {
-  return `<span class="tag ${synced ? 'sent' : 'pending'}">${synced ? 'رفت' : 'صف'}</span>`;
+  return `<span class="tag ${synced ? 'sent' : 'pending'}">${synced ? 'ارسال شد' : 'صف'}</span>`;
 }
 
 async function refreshData() {
