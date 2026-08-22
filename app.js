@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v58 · queue';
+const APP_VERSION = 'v59 · names';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -20,7 +20,7 @@ const PARTS = [
 ];
 
 const TAKH_WHO = [
-  { id:'showSE', label:'showSE' },
+  { id:'SHOSE', label:'SHOSE' },
   { id:'MAD', label:'MAD' },
   { id:'PED', label:'PED' },
   { id:'BR', label:'BR' },
@@ -28,6 +28,7 @@ const TAKH_WHO = [
   { id:'DUS', label:'DUS' },
   { id:'RAYIS', label:'RAYIS' }
 ];
+const TAKH_WHO_SHOSE_CODES = ['takhmojmotn'];
 
 const QUALITY_TAGS = [
   'bigharrshadid','zajrshadid','dardshadid','fesharshadi','karesakht',
@@ -90,7 +91,7 @@ const META_GROUPS = [
   { id:'raayat', title:'raayat / mojaz / no' },
   { id:'andaze', title:'andaze / ghanoon', hr:true },
   { id:'laws',   title:'ghanoon mohem' },
-  { id:'khatghermez', title:'khat ghermez' }
+  { id:'khatghermez', title:'layeaval(mesle konjkavi, dorugh, stalk,...)' }
 ];
 
 const META_ITEMS = [
@@ -109,7 +110,7 @@ const META_ITEMS = [
   { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
     label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
   { id:'opf2', group:'openfa', kind:'flag',
-    label:'openfa2after18' },
+    label:'openfa2after6pm' },
   { id:'afterFastMood', group:'openfa', kind:'accumDur',
     label:'afterfastmoodtoflow' },
 
@@ -143,7 +144,7 @@ const META_ITEMS = [
   { id:'afzayesheshans', group:'andaze', kind:'accumDur',
     label:'afzayesheshans' },
   { id:'taghiratchaos', group:'andaze', kind:'flag',
-    label:'hattataghiratmohembarname,taghirat,taghirmetamindset,hattashadidbehamrikhtegi,inchaos,exceptions,moods,outofroutines,inall,hattasathbikar,rules,sathrayat' },
+    label:'hattataghiratmohembarname,taghirat,taghirmetamindset,hattashadidbehamrikhtegi,inchaos,exceptions,moods,outofroutinesall,hata100bikar,ghavanin100rayat' },
   { id:'hattaaeradekhordan', group:'andaze', kind:'flag',
     label:'hattabaeradekhordanhamnemishenaghz' },
   { id:'sarsaatresidan', group:'andaze', kind:'flag',
@@ -151,7 +152,7 @@ const META_ITEMS = [
   { id:'fastingmode', group:'andaze', kind:'flag',
     label:'fastingmode(ab,qahve,chaysabz)' },
   { id:'abkhoshmaze2test', group:'andaze', kind:'flag',
-    label:'abkhoshmaze(2test)' },
+    label:'abkhshmaze?(doptest)' },
   { id:'layers', group:'andaze', kind:'accumDur',
     label:'bigharrshadid,zajrshadid,dardshadid,fesharshadi,karesakht,flowshadid,tamarkozshaid,amighshadid,withthinkshadid' },
   { id:'sokut', group:'andaze', kind:'accumDur', optional:true,
@@ -160,9 +161,9 @@ const META_ITEMS = [
     label:'takhirinputoutput3thout<1.5s' },
 
   { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag',
-    label:'yeklayeamdiezafe' },
+    label:'layeaval(mesle konjkavi, dorugh, stalk,...)' },
   { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag',
-    label:'ynoesteghra,konjkavi' }
+    label:'konjkavi,dorugh,stalk' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
@@ -1287,13 +1288,19 @@ function quickChips(parent, values, cb) {
   parent.appendChild(d);
 }
 
+function whoOptionsFor(code) {
+  const c = String(code || '');
+  if (!/takh/.test(c)) return [];
+  if (TAKH_WHO_SHOSE_CODES.indexOf(c) >= 0) return TAKH_WHO;
+  return TAKH_WHO.filter(w => w.id !== 'SHOSE');
+}
 function paintWhoBox(code) {
   const box = $('whoBox');
   if (!box) return;
-  const on = /takh/.test(String(code || ''));
-  box.classList.toggle('hide', !on);
-  if (!on) { box.innerHTML = ''; return; }
-  box.innerHTML = TAKH_WHO.map(w =>
+  const list = whoOptionsFor(code);
+  box.classList.toggle('hide', !list.length);
+  if (!list.length) { box.innerHTML = ''; return; }
+  box.innerHTML = list.map(w =>
     `<label class="whochk"><input type="checkbox" data-who="${esc(w.id)}"/> ${esc(w.label)}</label>`
   ).join('');
   box.querySelectorAll('input').forEach(inp => {
@@ -1406,8 +1413,8 @@ function collectSession() {
   };
   const who = selectedWho();
   if (who.length) {
-    rec.who = who.join(',');
-    const marked = who.map(w => 'who:' + w);
+    rec.who = who.map(w => w === 'showSE' ? 'SHOSE' : w).join(',');
+    const marked = who.map(w => 'who:' + (w === 'showSE' ? 'SHOSE' : w));
     rec.tags = marked.concat(rec.tags ? rec.tags.split(',').map(s => s.trim()).filter(Boolean) : []).join(',');
   }
   if (c.metric === 'dur') {
