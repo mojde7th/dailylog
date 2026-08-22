@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v64 · bits';
+const APP_VERSION = 'v65 · queue';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -690,7 +690,7 @@ function blankMeta(day) {
     dateShamsi: day,
     moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, ghanoonFarayeMin:0, afzayeshShansMin:0, layersMin:0, sokut:0,
     takhirAvg:'', takhirN:0, takhirSum:0, lawsJson:'[]', lawsMin:0,
-    bidWake:'3:30', bidDiffMin:'',
+    bidWake:'', bidDiffMin:'',
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
   META_FLAG_IDS.forEach(k => { rec[k] = 0; });
@@ -705,6 +705,7 @@ const flagDraft = {};
 const takhirDraft = [];
 let lawDraft = [];
 let lastMetaRec = null;
+let bidariDraft = false;
 
 function flagOn(rec, id) {
   if (Object.prototype.hasOwnProperty.call(flagDraft, id)) return !!flagDraft[id];
@@ -849,18 +850,34 @@ function paintBidWakeFields(rec) {
   if (!hint) return;
   const wake = rec && rec.bidWake ? String(rec.bidWake) : '3:30';
   const diff = rec && rec.bidDiffMin !== '' && rec.bidDiffMin != null ? Number(rec.bidDiffMin) : null;
-  hint.textContent = 'wake ' + wake + (diff != null ? (' · tafavot ' + diff + 'm' + (diff <= BID_DIFF_OK_MIN ? ' ok' : '')) : '');
+  hint.textContent = hasBidari(rec)
+    ? ('wake ' + wake + (diff != null ? (' · tafavot ' + diff + 'm' + (diff <= BID_DIFF_OK_MIN ? ' ok' : '')) : ''))
+    : 'set nashode · charkh pishfarz 3:30, put nashode';
   const day = rec && rec.dateShamsi || '';
   if (day === bidPaintDay) return;
   bidPaintDay = day;
-  if (mW.bidWake && mW.bidWake.setHM) {
-    const p = wake.split(':');
-    mW.bidWake.setHM(Number(p[0]) || 3, Number(p[1]) || 30);
+  bidariDraft = false;
+  paintBidWakeFields._silent = true;
+  try {
+    if (mW.bidWake && mW.bidWake.setHM) {
+      const p = wake.split(':');
+      mW.bidWake.setHM(Number(p[0]) || 3, Number(p[1]) || 30);
+    }
+    if (mW.bidDiff) {
+      if (diff != null) mW.bidDiff.setMinutes(diff);
+      else if (mW.bidDiff.reset) mW.bidDiff.reset();
+    }
+  } finally {
+    paintBidWakeFields._silent = false;
   }
-  if (mW.bidDiff && diff != null) mW.bidDiff.setMinutes(diff);
 }
 
 let sumTimer = null;
+function markBidariDraft() {
+  if (paintBidWakeFields._silent) return;
+  bidariDraft = true;
+  scheduleSummary();
+}
 function scheduleSummary() {
   clearTimeout(sumTimer);
   sumTimer = setTimeout(() => { paintMetaStatus(); }, 180);
@@ -1023,8 +1040,8 @@ function mountBidWakePanel(wrap) {
     '<div id="bidDiffW"></div>';
   const putBtn = wrap.querySelector('.gput');
   wrap.insertBefore(box, putBtn || null);
-  mW.bidWake = makeClockWheel($('bidWakeW'), 3, 30, null, scheduleSummary, true);
-  mW.bidDiff = makeDurWheel($('bidDiffW'), 0, 0, scheduleSummary, true);
+  mW.bidWake = makeClockWheel($('bidWakeW'), 3, 30, null, markBidariDraft, true);
+  mW.bidDiff = makeDurWheel($('bidDiffW'), 0, 0, markBidariDraft, true);
 }
 
 function mountLawsPanel(wrap) {
@@ -1077,6 +1094,7 @@ function buildMeta() {
   mDate = makeDateWheel($('mDate'), () => {
     clearFlagDraft();
     lawDraft = [];
+    bidariDraft = false;
     clearTimeout(paintT);
     paintT = setTimeout(() => {
       loadLawDraft().then(() => paintMetaStatus());
@@ -1190,13 +1208,14 @@ async function putGroup(gid) {
       else delete done[it.id];
     }
   });
-  if (gid === 'openfa' && mW.bidWake && mW.bidDiff) {
+  if (gid === 'openfa' && mW.bidWake && mW.bidDiff && bidariDraft) {
     rec.bidWake = mW.bidWake.value();
     rec.bidDiffMin = mW.bidDiff.minutes();
     const diff = Number(rec.bidDiffMin) || 0;
     rec.saatbidari5 = diff <= BID_DIFF_OK_MIN ? 1 : 0;
     if (diff <= BID_DIFF_OK_MIN) done.saatbidari5 = 1;
     else delete done.saatbidari5;
+    bidariDraft = false;
   }
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
@@ -1674,7 +1693,7 @@ async function checkSheet(loud) {
 
 function fetchPlain(url, body) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 45000);
+  const t = setTimeout(() => ctrl.abort(), 60000);
   return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1687,18 +1706,31 @@ async function trySync(loud) {
   const url = cfgGet('url'), secret = cfgGet('secret');
   if (!url) { if (loud) toast('آدرس وب‌اپ خالی است', true); return; }
   if (!navigator.onLine) { if (loud) toast('آفلاین هستی', true); return; }
-  if (trySync._busy) { if (loud) toast('در حال ارسال'); return; }
+  if (trySync._busy) {
+    if (Date.now() - (trySync._since || 0) > 70000) trySync._busy = false;
+    else { if (loud) toast('در حال ارسال'); return; }
+  }
 
+  const allM = await getAll('meta');
+  for (const r of allM) {
+    if (!r.synced && !metaHasPayload(r)) {
+      r.synced = 1;
+      await put('meta', r);
+    }
+  }
   const s = (await getAll('sessions')).filter(r => !r.synced);
-  const m = (await getAll('meta')).filter(r => !r.synced);
+  const m = (await getAll('meta')).filter(r => !r.synced && metaHasPayload(r));
   const dels = pendingDeletes();
   const metaDels = pendingMetaDeletes();
   if (!s.length && !m.length && !dels.length && !metaDels.uids.length && !metaDels.days.length) {
     if (loud) toast('صف خالی است');
+    await refreshData();
+    updateQueueBadge();
     return;
   }
 
   trySync._busy = true;
+  trySync._since = Date.now();
   try {
     let info = [];
     if (s.length) info.push(await pushBatch(url, secret, 'session', s, SESSION_FIELDS));
@@ -1730,6 +1762,13 @@ async function trySync(loud) {
   } catch (e) {
     const msg = String(e.message || e);
     const abort = msg.indexOf('abort') >= 0 || msg.indexOf('Abort') >= 0;
+    if (abort && !trySync._retried) {
+      trySync._retried = true;
+      trySync._busy = false;
+      paintSyncOut('پاسخ دیر آمد · یک‌بار دیگر می‌فرستم');
+      return trySync(loud);
+    }
+    trySync._retried = false;
     paintSyncOut(abort ? 'شیت نوشت ولی پاسخ دیر آمد. دوباره همگام بزن' : msg);
     if (loud) toast(
       msg.indexOf('old script') >= 0 ? 'همین آدرس کهنه است'
@@ -1739,6 +1778,7 @@ async function trySync(loud) {
   } finally {
     trySync._busy = false;
   }
+  trySync._retried = false;
   updateQueueBadge();
   await refreshData();
 }
@@ -1805,7 +1845,17 @@ function hasBidari(rec) {
   if (!rec) return false;
   if (rec.saatbidari5) return true;
   if (rec.bidDiffMin !== '' && rec.bidDiffMin != null) return true;
+  if (rec.bidWake && String(rec.bidWake) !== '') return true;
   return !!parseDone(rec).saatbidari5;
+}
+function metaHasPayload(rec) {
+  if (!rec) return false;
+  if (hasBidari(rec)) return true;
+  if (Number(rec.takhirN) > 0) return true;
+  if (parseLaws(rec).length) return true;
+  if (META_ITEMS.some(it => it.kind === 'accumDur' && Number(rec[META_STORE[it.id]]) > 0)) return true;
+  if (META_FLAG_IDS.some(id => rec[id])) return true;
+  return Object.keys(parseDone(rec)).length > 0;
 }
 function bidariText(rec) {
   const wake = rec && rec.bidWake ? String(rec.bidWake) : '3:30';
@@ -1813,9 +1863,10 @@ function bidariText(rec) {
   return 'saatbidari=' + wake + (diff != null ? (' · ' + diff + 'm') : '');
 }
 function clearBidari(rec) {
-  rec.bidWake = '3:30';
+  rec.bidWake = '';
   rec.bidDiffMin = '';
   rec.saatbidari5 = 0;
+  bidariDraft = false;
   if (mW.bidWake && mW.bidWake.setHM) mW.bidWake.setHM(3, 30);
   if (mW.bidDiff && mW.bidDiff.reset) mW.bidDiff.reset();
   bidPaintDay = '';
