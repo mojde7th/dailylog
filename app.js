@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v65 · queue';
+const APP_VERSION = 'v66 · takhir';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -209,7 +209,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'ghanoonFarayeMin','afzayeshShansMin',
   'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
   'yeklayeamdiezafe','esteghrakonjkavi',
-  'takhirAvg','takhirN','takhirSum','lawsJson','lawsMin','sokut',
+  'takhirAvg','takhirN','takhirSum','takhirJson','lawsJson','lawsMin','sokut',
   'doneJson','complete'];
 
 const MIN_REACT_SEC = 2;
@@ -586,14 +586,31 @@ function parseDone(rec) {
   if (rec.done && typeof rec.done === 'object') return rec.done;
   try { return JSON.parse(rec.doneJson || '{}'); } catch (e) { return {}; }
 }
+function parseTakhirSamples(rec) {
+  try {
+    const a = JSON.parse((rec && rec.takhirJson) || '[]');
+    if (Array.isArray(a) && a.length) {
+      return a.map(x => Number(x)).filter(x => !isNaN(x));
+    }
+  } catch (e) {}
+  const n = Number(rec && rec.takhirN) || 0;
+  const avg = Number(rec && rec.takhirAvg);
+  if (n > 0 && !isNaN(avg)) return Array.from({ length: n }, () => avg);
+  return [];
+}
+function writeTakhirSamples(rec, samples) {
+  const a = (samples || []).map(x => Number(x)).filter(x => !isNaN(x));
+  rec.takhirJson = JSON.stringify(a);
+  rec.takhirN = a.length;
+  rec.takhirSum = a.reduce((s, x) => s + x, 0);
+  rec.takhirAvg = a.length ? (rec.takhirSum / a.length) : '';
+}
 function takhirIsOk(rec, extra) {
   extra = extra || [];
-  const n = Number(rec && rec.takhirN) || 0;
-  if (!n && !extra.length) return false;
-  let sum = Number(rec && rec.takhirSum) || 0;
-  extra.forEach(s => { sum += Number(s) || 0; });
-  const avg = (n + extra.length) ? (sum / (n + extra.length)) : 999;
-  return avg < TAKHIR_OK;
+  const samples = parseTakhirSamples(rec).concat(extra.map(Number));
+  if (!samples.length) return false;
+  const sum = samples.reduce((s, x) => s + x, 0);
+  return (sum / samples.length) < TAKHIR_OK;
 }
 function isComplete(rec) {
   const d = parseDone(rec);
@@ -624,10 +641,8 @@ function fillMetaGaps(keep, extra) {
       if (!keep[k] && extra[k]) keep[k] = extra[k];
     });
   });
-  if (!(Number(keep.takhirN) > 0) && Number(extra.takhirN) > 0) {
-    keep.takhirN = extra.takhirN;
-    keep.takhirSum = extra.takhirSum;
-    keep.takhirAvg = extra.takhirAvg;
+  if (!parseTakhirSamples(keep).length && parseTakhirSamples(extra).length) {
+    writeTakhirSamples(keep, parseTakhirSamples(extra));
   }
   if ((!keep.lawsJson || keep.lawsJson === '[]') && extra.lawsJson && extra.lawsJson !== '[]') {
     keep.lawsJson = extra.lawsJson;
@@ -689,7 +704,7 @@ function blankMeta(day) {
     createdAt: new Date().toISOString(),
     dateShamsi: day,
     moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, ghanoonFarayeMin:0, afzayeshShansMin:0, layersMin:0, sokut:0,
-    takhirAvg:'', takhirN:0, takhirSum:0, lawsJson:'[]', lawsMin:0,
+    takhirAvg:'', takhirN:0, takhirSum:0, takhirJson:'[]', lawsJson:'[]', lawsMin:0,
     bidWake:'', bidDiffMin:'',
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
@@ -1196,15 +1211,10 @@ async function putGroup(gid) {
       if (Number(rec[key]) > 0) done[it.id] = 1;
     }
     if (it.kind === 'avgSec') {
-      takhirDraft.forEach(sample => {
-        rec.takhirN = (Number(rec.takhirN) || 0) + 1;
-        rec.takhirSum = (Number(rec.takhirSum) || 0) + Number(sample);
-      });
+      const samples = parseTakhirSamples(rec).concat(takhirDraft.map(Number));
       takhirDraft.length = 0;
-      if (Number(rec.takhirN) > 0) {
-        rec.takhirAvg = rec.takhirSum / rec.takhirN;
-      }
-      if (Number(rec.takhirN) > 0 && takhirIsOk(rec)) done[it.id] = 1;
+      writeTakhirSamples(rec, samples);
+      if (samples.length && takhirIsOk(rec)) done[it.id] = 1;
       else delete done[it.id];
     }
   });
@@ -1882,9 +1892,18 @@ function metaBits(rec) {
       if (n) bits.push({ id: it.id, text: it.label + '=' + fmtChunk(n) });
     } else if (it.kind === 'flag' && rec[it.id]) {
       bits.push({ id: it.id, text: it.label });
-    } else if (it.kind === 'avgSec' && Number(rec.takhirN) > 0) {
-      const avg = Number(rec.takhirAvg) || 0;
-      bits.push({ id: it.id, text: 'takhirAvg=' + avg.toFixed(2) + 's' + (takhirIsOk(rec) ? '' : ' flag0') });
+    } else if (it.kind === 'avgSec') {
+      const samples = parseTakhirSamples(rec);
+      if (samples.length) {
+        const avg = samples.reduce((s, x) => s + x, 0) / samples.length;
+        bits.push({
+          id: 'takhirAvg',
+          text: 'takhirAvg=' + avg.toFixed(2) + 's n=' + samples.length + (takhirIsOk(rec) ? '' : ' flag0')
+        });
+        samples.forEach((sec, i) => {
+          bits.push({ id: 'takhir:' + i, text: 'takhir ' + sec + 's' });
+        });
+      }
     }
   });
   parseLaws(rec).forEach(x => {
@@ -2282,6 +2301,21 @@ function clearMetaField(rec, itemId) {
     rec.synced = 0;
     return rec;
   }
+  if (String(itemId).indexOf('takhir:') === 0) {
+    const ix = Number(String(itemId).slice(7));
+    const samples = parseTakhirSamples(rec);
+    if (ix >= 0 && ix < samples.length) samples.splice(ix, 1);
+    writeTakhirSamples(rec, samples);
+    const done = parseDone(rec);
+    if (!samples.length) delete done.takhirAvg;
+    else if (!takhirIsOk(rec)) delete done.takhirAvg;
+    else done.takhirAvg = 1;
+    rec.done = done;
+    rec.doneJson = JSON.stringify(done);
+    rec.complete = isComplete(rec) ? 1 : 0;
+    rec.synced = 0;
+    return rec;
+  }
   if (String(itemId).indexOf('law:') === 0) {
     const name = String(itemId).slice(4);
     const left = parseLaws(rec).filter(x => x.name !== name);
@@ -2291,7 +2325,7 @@ function clearMetaField(rec, itemId) {
   } else if (!it) return rec;
   if (it && it.kind === 'accumDur') rec[META_STORE[it.id]] = 0;
   if (it && it.kind === 'flag') applyFlagBundle(rec, it.id, 0);
-  if (it && it.kind === 'avgSec') { rec.takhirAvg = ''; rec.takhirN = 0; rec.takhirSum = 0; }
+  if (it && it.kind === 'avgSec') writeTakhirSamples(rec, []);
   const done = parseDone(rec);
   delete done[itemId];
   rec.done = done;
