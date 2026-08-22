@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v67 · avg';
+const APP_VERSION = 'v68 · pick';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -722,7 +722,7 @@ function blankMeta(day) {
 let mDate = null;
 const mW = {};
 const flagDraft = {};
-const takhirDraft = [];
+let takhirPick = null;
 let lawDraft = [];
 let lastMetaRec = null;
 let bidariDraft = false;
@@ -735,7 +735,7 @@ function flagOn(rec, id) {
 
 function clearFlagDraft() {
   Object.keys(flagDraft).forEach(k => delete flagDraft[k]);
-  takhirDraft.length = 0;
+  takhirPick = null;
 }
 
 function parseLaws(rec) {
@@ -836,9 +836,12 @@ function totalLine(it, rec) {
   if (it.kind === 'accumDur') return 'today: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
   if (it.kind === 'flag') return flagOn(rec, it.id) ? 'SET' : 'not set';
   if (it.kind === 'avgSec') {
-    const st = takhirStats(rec, takhirDraft);
-    if (!st.n) return 'no samples yet';
-    return 'avg ' + Number(st.avg).toFixed(2) + 's  n=' + st.n + (st.ok ? '  ok' : '  slow');
+    const st = takhirStats(rec);
+    let line = st.n
+      ? ('avg ' + Number(st.avg).toFixed(2) + 's  n=' + st.n + (st.ok ? '  ok' : '  slow'))
+      : 'no samples yet';
+    if (takhirPick != null) line += ' · pishnevis ' + takhirPick + 's (bad az put)';
+    return line;
   }
   return '';
 }
@@ -858,6 +861,12 @@ async function paintMetaStatus() {
   paintSavedLaws();
   paintLawList();
   paintBidWakeFields(rec);
+  const pick = document.querySelector('#mw_takhirAvg .pick');
+  if (pick) {
+    pick.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('on', takhirPick != null && String(b.textContent) === String(takhirPick));
+    });
+  }
 }
 
 let bidPaintDay = '';
@@ -953,7 +962,7 @@ function mountMetaItem(host, it) {
     const bar = document.createElement('div');
     h.appendChild(bar);
     pickBar(bar, TAKHIR_SECS, null, v => {
-      takhirDraft.push(Number(v));
+      takhirPick = Number(v);
       scheduleSummary();
       vibrate(8);
     });
@@ -1212,8 +1221,9 @@ async function putGroup(gid) {
       if (Number(rec[key]) > 0) done[it.id] = 1;
     }
     if (it.kind === 'avgSec') {
-      const samples = parseTakhirSamples(rec).concat(takhirDraft.map(Number));
-      takhirDraft.length = 0;
+      const samples = parseTakhirSamples(rec);
+      if (takhirPick != null && !isNaN(Number(takhirPick))) samples.push(Number(takhirPick));
+      takhirPick = null;
       writeTakhirSamples(rec, samples);
       if (samples.length && takhirIsOk(rec)) done[it.id] = 1;
       else delete done[it.id];
@@ -1929,7 +1939,7 @@ function metaItemView(rec, it) {
     };
   }
   if (it.kind === 'avgSec') {
-    const st = takhirStats(rec, takhirDraft);
+    const st = takhirStats(rec);
     if (!st.n) {
       return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '—', min: 0 };
     }
@@ -2030,7 +2040,7 @@ function paintDayChart(el, rec, work) {
 async function resetMetaItem(id) {
   const day = selectedMetaDay();
   const rec = await metaFor(day) || blankMeta(day);
-  takhirDraft.length = 0;
+  takhirPick = null;
   clearMetaField(rec, id);
   if (mW[id] && mW[id].reset) mW[id].reset();
   await put('meta', rec);
