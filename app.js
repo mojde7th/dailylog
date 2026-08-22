@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v61 · laye';
+const APP_VERSION = 'v62 · undo';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -28,8 +28,6 @@ const TAKH_WHO = [
   { id:'DUS', label:'DUS' },
   { id:'RAYIS', label:'RAYIS' }
 ];
-const TAKH_WHO_SHOSE_CODES = ['takhmojmotn'];
-
 const QUALITY_TAGS = [
   'bigharrshadid','zajrshadid','dardshadid','fesharshadi','karesakht',
   'flowshadid','tamarkozshaid','amighshadid','withthinkshadid'
@@ -743,6 +741,15 @@ function lawCatalogSave(name, desc) {
   cat.unshift({ name: n, desc: String(desc || '').trim() });
   cfgSet('law_catalog', JSON.stringify(cat.slice(0, 40)));
 }
+function lawCatalogRemove(name) {
+  const n = String(name || '').trim();
+  cfgSet('law_catalog', JSON.stringify(lawCatalog().filter(x => x.name !== n)));
+}
+function clearLawForm() {
+  if ($('lawName')) $('lawName').value = '';
+  if ($('lawDesc')) $('lawDesc').value = '';
+  if (mW.lawDur) mW.lawDur.reset();
+}
 async function loadLawDraft() {
   paintSavedLaws();
   paintLawList();
@@ -976,15 +983,27 @@ function paintLawCatalog() {
   const cat = lawCatalog();
   if (!cat.length) { host.innerHTML = ''; return; }
   host.innerHTML = cat.map(x =>
-    `<button type="button" data-n="${esc(x.name)}">${esc(x.name)}</button>`
+    `<span class="lawchip">` +
+      `<button type="button" data-n="${esc(x.name)}">${esc(x.name)}</button>` +
+      `<button type="button" class="cancel" data-del-cat="${esc(x.name)}">hazf</button>` +
+    `</span>`
   ).join('');
-  host.querySelectorAll('button').forEach(b => {
+  host.querySelectorAll('button[data-n]').forEach(b => {
     b.addEventListener('click', () => {
       const hit = lawCatalog().find(x => x.name === b.dataset.n);
       if (!hit) return;
       $('lawName').value = hit.name;
       $('lawDesc').value = hit.desc || '';
       vibrate(8);
+    });
+  });
+  host.querySelectorAll('[data-del-cat]').forEach(b => {
+    b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      lawCatalogRemove(b.dataset.delCat);
+      paintLawCatalog();
+      vibrate(8);
+      toast('pishnevis hazf');
     });
   });
 }
@@ -1019,6 +1038,7 @@ function mountLawsPanel(wrap) {
     `<div id="lawDur"></div>` +
     `<div class="mall">` +
       `<button type="button" id="lawAdd">add be pishnevis</button>` +
+      `<button type="button" id="lawClear">hazf pishnevis</button>` +
     `</div>` +
     `<div class="lawlist" id="lawSaved"></div>` +
     `<div class="lawlist" id="lawList"></div>`;
@@ -1033,11 +1053,16 @@ function mountLawsPanel(wrap) {
     lawCatalogSave(row.name, row.desc);
     paintLawCatalog();
     paintLawList();
-    $('lawName').value = '';
-    $('lawDesc').value = '';
-    if (mW.lawDur) mW.lawDur.reset();
+    clearLawForm();
     vibrate(8);
     toast(row.name + ' pishnevis');
+  });
+  $('lawClear').addEventListener('click', () => {
+    lawDraft = [];
+    clearLawForm();
+    paintLawList();
+    vibrate(8);
+    toast('pishnevis khali');
   });
   paintLawCatalog();
   paintSavedLaws();
@@ -1121,9 +1146,7 @@ async function putGroup(gid) {
     await put('meta', rec);
     lastMetaRec = rec;
     lawDraft = [];
-    if ($('lawName')) $('lawName').value = '';
-    if ($('lawDesc')) $('lawDesc').value = '';
-    if (mW.lawDur) mW.lawDur.reset();
+    clearLawForm();
     vibrate(25);
     toast('laws put n=' + items.length);
     await paintMetaStatus();
@@ -1289,10 +1312,8 @@ function quickChips(parent, values, cb) {
 }
 
 function whoOptionsFor(code) {
-  const c = String(code || '');
-  if (!/takh/.test(c)) return [];
-  if (TAKH_WHO_SHOSE_CODES.indexOf(c) >= 0) return TAKH_WHO;
-  return TAKH_WHO.filter(w => w.id !== 'SHOSE');
+  if (String(code || '') !== 'takhmojmotn') return [];
+  return TAKH_WHO;
 }
 function paintWhoBox(code) {
   const box = $('whoBox');
@@ -1668,7 +1689,8 @@ async function trySync(loud) {
   const s = (await getAll('sessions')).filter(r => !r.synced);
   const m = (await getAll('meta')).filter(r => !r.synced);
   const dels = pendingDeletes();
-  if (!s.length && !m.length && !dels.length) {
+  const metaDels = pendingMetaDeletes();
+  if (!s.length && !m.length && !dels.length && !metaDels.uids.length && !metaDels.days.length) {
     if (loud) toast('صف خالی است');
     return;
   }
@@ -1681,10 +1703,19 @@ async function trySync(loud) {
     if (dels.length) {
       try {
         info.push(await pushDeletes(url, secret, dels));
+        cfgSet('del_sessions', '[]');
       } catch (e) {
         info.push({ type: 'del', error: String(e.message || e) });
       }
-      cfgSet('del_sessions', '[]');
+    }
+    const metaDels = pendingMetaDeletes();
+    if (metaDels.uids.length || metaDels.days.length) {
+      try {
+        info.push(await pushMetaDeletes(url, secret, metaDels));
+        cfgSet('del_meta', '[]');
+      } catch (e) {
+        info.push({ type: 'mdel', error: String(e.message || e) });
+      }
     }
     const line = info.map(x =>
       (x.tab || x.type || '') + ' ' + (x.version || x.error || '') +
@@ -1732,11 +1763,25 @@ async function pushDeletes(url, secret, uids) {
   outp.type = 'del';
   return outp;
 }
+async function pushMetaDeletes(url, secret, pack) {
+  const payload = { secret, type: 'metaDelete', uids: pack.uids || [], days: pack.days || [] };
+  const res = await fetchPlain(url, payload);
+  const raw = await res.text();
+  let outp;
+  try { outp = JSON.parse(raw); } catch (e) { throw new Error('پاسخ شیت جیسان نیست'); }
+  if (!outp.ok) throw new Error(outp.error || 'server');
+  if (String(outp.version || '') !== SCRIPT_VERSION) {
+    throw new Error('old script ' + (outp.version || ''));
+  }
+  outp.type = 'mdel';
+  return outp;
+}
 
 async function updateQueueBadge() {
   const s = (await getAll('sessions')).filter(r => !r.synced).length;
   const m = (await getAll('meta')).filter(r => !r.synced).length;
-  const n = s + m + pendingDeletes().length;
+  const md = pendingMetaDeletes();
+  const n = s + m + pendingDeletes().length + md.uids.length + md.days.length;
   $('queuePill').textContent = 'صف ' + n;
   $('queuePill').className = 'pill ' + (n ? 'off' : 'on');
 }
@@ -1912,6 +1957,28 @@ function queueSessionDelete(uid) {
   const a = pendingDeletes();
   if (a.indexOf(uid) < 0) a.push(uid);
   cfgSet('del_sessions', JSON.stringify(a));
+}
+function pendingMetaDeletes() {
+  try {
+    const a = JSON.parse(cfgGet('del_meta') || '[]');
+    if (!Array.isArray(a)) return { uids: [], days: [] };
+    const uids = [];
+    const days = [];
+    a.forEach(x => {
+      if (!x) return;
+      if (typeof x === 'string') { uids.push(x); return; }
+      if (x.uid) uids.push(String(x.uid));
+      if (x.day) days.push(String(x.day));
+    });
+    return { uids: uids.filter(Boolean), days: days.filter(Boolean) };
+  } catch (e) { return { uids: [], days: [] }; }
+}
+function queueMetaDelete(uid, day) {
+  let a;
+  try { a = JSON.parse(cfgGet('del_meta') || '[]'); } catch (e) { a = []; }
+  if (!Array.isArray(a)) a = [];
+  a.push({ uid: String(uid || ''), day: String(day || '') });
+  cfgSet('del_meta', JSON.stringify(a));
 }
 function parseJ(s) {
   const p = String(s || '').split('/');
@@ -2187,8 +2254,9 @@ async function refreshData() {
   const host = $('logList');
   if (!host) return;
   host.innerHTML = mixed.slice(0, 30).map(r => {
-    const actions = tagCell(r.synced) + (r.store === 'sessions' && r.uid
-      ? '<button type="button" class="cancel" data-store="sessions" data-uid="' + esc(r.uid) + '">برگشت</button>'
+    const actions = tagCell(r.synced) + (r.uid
+      ? '<button type="button" class="cancel" data-store="' + esc(r.store) +
+        '" data-uid="' + esc(r.uid) + '" data-day="' + esc(r.date || '') + '">برگشت</button>'
       : '');
     let body = '';
     if (r.store === 'meta' && r.bits && r.bits.length) {
@@ -2349,6 +2417,12 @@ async function boot() {
       const rows = await getAll('sessions');
       const row = rows.find(r => r.uid === id);
       if (row && row.synced) queueSessionDelete(id);
+      await delKey(store, id);
+    } else if (store === 'meta') {
+      const rows = await getAll('meta');
+      const row = rows.find(r => r.uid === id);
+      const day = (b.dataset.day || (row && row.dateShamsi) || '');
+      if (row && row.synced) queueMetaDelete(id, day);
       await delKey(store, id);
     } else {
       await delKey(store, id);
