@@ -23,7 +23,7 @@ html{margin:0;max-width:100%;overflow-x:hidden;overflow-y:auto;background:#0b101
 body{
   margin:0;padding:0;overflow-x:hidden;overflow-y:auto;
   font-family:Tahoma,"Segoe UI",system-ui,sans-serif;color:var(--ink);
-  line-height:1.75;padding-bottom:100px;-webkit-text-size-adjust:100%;
+  line-height:1.75;padding-bottom:88px;-webkit-text-size-adjust:100%;
   background:
     radial-gradient(900px 420px at 100% -8%, rgba(109,179,242,.07), transparent 55%),
     linear-gradient(180deg, #0d131b 0%, #0b1016 40%);
@@ -41,7 +41,7 @@ h1{font-size:1.02rem;margin:0;letter-spacing:.04em}
 .pill{font-size:.68rem;border:1px solid var(--line);border-radius:4px;padding:3px 8px;color:var(--muted);font-family:Consolas,monospace;direction:ltr;unicode-bidi:isolate}
 .pill.on{border-color:var(--good);color:var(--good)}
 .pill.off{border-color:var(--warn);color:var(--warn)}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tabs{display:flex;flex-wrap:nowrap;gap:6px;margin:0}
 .tabs button{
   flex:1 1 22%;min-width:72px;background:var(--panel);border:1px solid var(--line);color:var(--muted);
   border-radius:10px;padding:8px 4px;font-size:.78rem;font-family:inherit;cursor:pointer
@@ -101,6 +101,18 @@ textarea{min-height:52px;resize:vertical}
 .wcap span{flex:1;text-align:center;font-size:.72rem;color:var(--muted)}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;direction:ltr;justify-content:flex-start;text-align:left}
+#paneData .chips{
+  direction:rtl;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;max-width:100%
+}
+#paneData .chips button,#paneData .chips a{
+  flex:0 0 auto;white-space:nowrap;direction:rtl;unicode-bidi:isolate;text-align:center
+}
+#paneDash #dashRange{
+  direction:ltr;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;max-width:100%
+}
+#paneDash #dashRange button{
+  flex:0 0 auto;white-space:nowrap;direction:ltr;unicode-bidi:isolate;text-align:center
+}
 .chips button{
   background:#0b1016;border:1px solid var(--line);color:var(--muted);border-radius:999px;
   padding:7px 12px;font-size:.8rem;font-family:inherit;cursor:pointer;
@@ -129,9 +141,15 @@ textarea{min-height:52px;resize:vertical}
   background:#152033;border:1px solid var(--accent);border-radius:12px;padding:12px;margin-top:8px
 }
 .accum b{font-size:1.2rem}
+.dock{
+  position:fixed;bottom:0;left:0;right:0;z-index:20;
+  background:#131922;border-top:1px solid var(--line);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom))
+}
+.dock .tabs{margin:0}
 .bar{
-  position:fixed;bottom:0;left:0;right:0;background:#131922;border-top:1px solid var(--line);
-  padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:20
+  position:relative;bottom:auto;left:auto;right:auto;
+  background:transparent;border:0;padding:0 0 8px;z-index:20
 }
 .bar .inner{max-width:880px;margin:0 auto;display:flex;gap:8px;width:100%}
 button.primary{
@@ -183,7 +201,7 @@ button.cancel{
 }
 .logchips .cancel{padding:3px 7px}
 #toast{
-  position:fixed;bottom:100px;right:50%;transform:translateX(50%);background:#12312a;
+  position:fixed;bottom:160px;right:50%;transform:translateX(50%);background:#12312a;
   border:1px solid var(--good);color:#bff0dc;padding:10px 18px;border-radius:10px;
   font-size:.87rem;opacity:0;transition:opacity .22s;pointer-events:none;z-index:40;white-space:nowrap
 }
@@ -195,7 +213,15 @@ button.cancel{
   background:#0b1016;border:1px solid var(--line);border-radius:10px;
   padding:8px 10px;min-width:0;max-width:100%;overflow-wrap:anywhere
 }
+.stat .statlab,.stat .statval{background:transparent;border:0;padding:0}
 .stat b{color:var(--ink);unicode-bidi:isolate}
+.statrow{
+  display:flex;direction:rtl;align-items:baseline;justify-content:space-between;gap:8px;
+  background:#0b1016;border:1px solid var(--line);border-radius:10px;padding:8px 10px
+}
+.statlab{color:var(--muted)}
+.statval{color:var(--ink);unicode-bidi:isolate}
+.statval.ltr{direction:ltr;text-align:left}
 .sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
 .sumdash{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .sumhero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0;direction:ltr}
@@ -380,14 +406,17 @@ button.gput{
 .mgrp.tone-raayat,.sumcard.tone-raayat{background:linear-gradient(180deg,#163024,#171d25 42%);border-color:#2f6b4e}
 .mgrp.tone-andaze,.sumcard.tone-andaze{background:linear-gradient(180deg,#15263a,#171d25 42%);border-color:#3a6288}
 .mgrp.tone-laws,.sumcard.tone-laws{background:linear-gradient(180deg,#241833,#171d25 42%);border-color:#6a4a8a}
+.mgrp.tone-khatghermez,.sumcard.tone-khatghermez{background:linear-gradient(180deg,#3a1218,#171d25 42%);border-color:#f07178}
 .mgrp.tone-openfa .gtitle,.sumcard.tone-openfa h4{color:#f0b429}
 .mgrp.tone-raayat .gtitle,.sumcard.tone-raayat h4{color:#5ee0a8}
 .mgrp.tone-andaze .gtitle,.sumcard.tone-andaze h4{color:#8cc8f5}
 .mgrp.tone-laws .gtitle,.sumcard.tone-laws h4{color:#d2b3ff}
+.mgrp.tone-khatghermez .gtitle,.sumcard.tone-khatghermez h4{color:#f8c9cd}
 .mgrp.tone-openfa .flaggrid button.on,.mgrp.tone-openfa button.gput{border-color:#f0b429;background:#3a2a12;color:#ffe7b3}
 .mgrp.tone-raayat .flaggrid button.on,.mgrp.tone-raayat button.gput{border-color:#3ecf8e;background:#12312a;color:#c8f0d8}
 .mgrp.tone-andaze .flaggrid button.on,.mgrp.tone-andaze button.gput{border-color:#6db3f2;background:#152033;color:#d6ebff}
 .mgrp.tone-laws button.gput,.mgrp.tone-laws .put{border-color:#c9a0ff;background:#2a1a3a;color:#ead9ff}
+.mgrp.tone-khatghermez .flaggrid button.on,.mgrp.tone-khatghermez button.gput{border-color:#f07178;background:#2a1618;color:#f8c9cd}
 .catbox{
   border:1px solid var(--bd, var(--line));background:var(--bg,#0b1016);
   border-radius:14px;padding:8px;margin:10px 0
@@ -486,12 +515,6 @@ button.gput{
       <span class="pill" id="queuePill">صف ۰</span>
     </div>
   </div>
-  <div class="tabs">
-    <button id="tabMeta" class="active" type="button">متای روز</button>
-    <button id="tabSession" type="button">دفتر نوبت</button>
-    <button id="tabDash" type="button">داشبورد</button>
-    <button id="tabData" type="button">داده‌ها</button>
-  </div>
 </header>
 
 <main>
@@ -536,12 +559,12 @@ button.gput{
     <div class="card">
       <h2>داشبورد</h2>
       <div class="chips qchips" id="dashRange">
-        <button type="button" data-d="7" class="on">۷ روز</button>
-        <button type="button" data-d="14">۱۴ روز</button>
-        <button type="button" data-d="30">۳۰ روز</button>
-        <button type="button" data-d="fasl">۵/۳۱–۶/۳۱</button>
+        <button type="button" data-d="since531" class="on" dir="ltr">از ۵/۳۱</button>
+        <button type="button" data-d="7" dir="ltr">۷ روز</button>
+        <button type="button" data-d="14" dir="ltr">۱۴ روز</button>
+        <button type="button" data-d="30" dir="ltr">۳۰ روز</button>
+        <button type="button" data-d="fasl" dir="ltr">۵/۳۱–۶/۳۱</button>
       </div>
-      <p class="hint">هفت روز یعنی از شش روز قبل تا امروز، هر دو سر شامل. اگر امروز سی مرداد باشد محور از بیست‌وچهار تا سی است، نه از اول ماه. روز بدون ثبت هم با صفر می‌ماند.</p>
       <div class="stat" id="dashStat">—</div>
     </div>
     <div class="dashgrid">
@@ -602,14 +625,12 @@ button.gput{
         <button type="button" id="btnWipe">پاک‌کردن همه</button>
       </div>
       <div class="sum" id="syncOut">—</div>
-      <p class="hint">کد را در صفحهٔ ویرایشگر بگذار و ذخیره کن. بعد استقرار را با مداد همان نشانی فعلی نسخهٔ جدید کن. استقرار تازه نساز. برای بازسازی گزارش‌ها، در ویرایشگر از فهرست توابع همان تابع بازسازی را انتخاب کن و دکمهٔ اجرا را بزن. خود تابع دکمهٔ اجرا ندارد.</p>
     </div>
     <div class="card">
       <h2>نسخه و کش</h2>
       <div class="sum" id="verBox">—</div>
       <div class="chips">
         <button type="button" id="btnHardReload">پاک‌کردن کش و بارگذاری دوباره</button>
-        <a class="btnlike" href="workshop.html">کارگاه از صفر تا صد</a>
       </div>
     </div>
     <div class="card">
@@ -620,13 +641,21 @@ button.gput{
 
 </main>
 
-<div class="bar">
-  <div class="inner">
-    <button class="primary" id="btnSave" type="button">ثبت</button>
+<div class="dock">
+  <div class="bar">
+    <div class="inner">
+      <button class="primary" id="btnSave" type="button">ثبت</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button id="tabMeta" class="active" type="button">متای روز</button>
+    <button id="tabSession" type="button">دفتر نوبت</button>
+    <button id="tabDash" type="button">داشبورد</button>
+    <button id="tabData" type="button">داده‌ها</button>
   </div>
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=57"></script>
+<script src="app.js?v=58"></script>
 </body>
 </html>

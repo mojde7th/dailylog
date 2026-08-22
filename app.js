@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v57 · center';
+const APP_VERSION = 'v58 · queue';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -20,12 +20,13 @@ const PARTS = [
 ];
 
 const TAKH_WHO = [
-  { id:'ماد', label:'ماد' },
-  { id:'پد', label:'پد' },
-  { id:'بیار', label:'بیار' },
-  { id:'بیارزد', label:'بیارزد' },
+  { id:'showSE', label:'showSE' },
+  { id:'MAD', label:'MAD' },
+  { id:'PED', label:'PED' },
+  { id:'BR', label:'BR' },
+  { id:'BRZ', label:'BRZ' },
   { id:'DUS', label:'DUS' },
-  { id:'رئیس', label:'رئیس' }
+  { id:'RAYIS', label:'RAYIS' }
 ];
 
 const QUALITY_TAGS = [
@@ -82,13 +83,14 @@ function catName(c) {
 }
 
 const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category','code','metric',
-                        'minutes','hm','chunk','tags','reactSec','count','reps','perRep','kind','note'];
+                        'minutes','hm','chunk','tags','who','reactSec','count','reps','perRep','kind','note'];
 
 const META_GROUPS = [
   { id:'openfa', title:'openfa' },
   { id:'raayat', title:'raayat / mojaz / no' },
   { id:'andaze', title:'andaze / ghanoon', hr:true },
-  { id:'laws',   title:'ghanoon mohem' }
+  { id:'laws',   title:'ghanoon mohem' },
+  { id:'khatghermez', title:'khat ghermez' }
 ];
 
 const META_ITEMS = [
@@ -118,26 +120,49 @@ const META_ITEMS = [
   { id:'budandarjayemojaz100', group:'raayat', kind:'flag',
     label:'budandarjayemojaz,kharidemojaz,mohtavayemojaz' },
   { id:'raatayeghavanineakhlaghietayinshode100', group:'raayat', kind:'flag',
-    label:'raatayeghavanineakhlaghietayinshode100%' },
+    label:'rayateghavaninetayinshode100%' },
   { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
-    label:'rayyatepartbandieruz100%' },
+    label:'rayat100%' },
   { id:'noCarb', group:'raayat', kind:'flag',
     label:'no(noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajil)' },
   { id:'noghahveyebiruni', group:'raayat', kind:'flag',
     label:'noghahveyebiruni,nolimunadbiruni' },
   { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
-    label:'nocopypasteazaighable12pm' },
+    label:'noaicopybeforeopenfa2' },
+  { id:'promptafter2', group:'raayat', kind:'flag',
+    label:'promptafter2' },
+  { id:'nopromptbefore2pm', group:'raayat', kind:'flag',
+    label:'noaiprompt,anypromptbefore2pm' },
   { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
   { id:'ghanoon', group:'andaze', kind:'accumDur',
     label:'ghanoonfarayeman' },
+  { id:'ghanoonfarayehattayarade', group:'andaze', kind:'accumDur',
+    label:'ghanoonfarayehattaerademan' },
+  { id:'afzayesheshans', group:'andaze', kind:'accumDur',
+    label:'afzayesheshans' },
+  { id:'taghiratchaos', group:'andaze', kind:'flag',
+    label:'hattataghiratmohembarname,taghirat,taghirmetamindset,hattashadidbehamrikhtegi,inchaos,exceptions,moods,outofroutines,inall,hattasathbikar,rules,sathrayat' },
+  { id:'hattaaeradekhordan', group:'andaze', kind:'flag',
+    label:'hattabaeradekhordanhamnemishenaghz' },
+  { id:'sarsaatresidan', group:'andaze', kind:'flag',
+    label:'sarsaatresidanbeja' },
+  { id:'fastingmode', group:'andaze', kind:'flag',
+    label:'fastingmode(ab,qahve,chaysabz)' },
+  { id:'abkhoshmaze2test', group:'andaze', kind:'flag',
+    label:'abkhoshmaze(2test)' },
   { id:'layers', group:'andaze', kind:'accumDur',
     label:'bigharrshadid,zajrshadid,dardshadid,fesharshadi,karesakht,flowshadid,tamarkozshaid,amighshadid,withthinkshadid' },
   { id:'sokut', group:'andaze', kind:'accumDur', optional:true,
     label:'roozsokut' },
   { id:'takhirAvg', group:'andaze', kind:'avgSec',
-    label:'takhirinputoutput3thout<=1.5s' }
+    label:'takhirinputoutput3thout<1.5s' },
+
+  { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag',
+    label:'yeklayeamdiezafe' },
+  { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag',
+    label:'ynoesteghra,konjkavi' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
@@ -180,18 +205,25 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'budandarjayemojaz100',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
   'noCarb','noghahveyebiruni',
-  'nocopypasteazaighable12pm','preplan12',
+  'nocopypasteazaighable12pm','promptafter2','nopromptbefore2pm','preplan12',
+  'bidWake','bidDiffMin',
+  'ghanoonFarayeMin','afzayeshShansMin',
+  'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
+  'yeklayeamdiezafe','esteghrakonjkavi',
   'takhirAvg','takhirN','takhirSum','lawsJson','lawsMin','sokut',
   'doneJson','complete'];
 
 const MIN_REACT_SEC = 2;
-const TAKHIR_SECS = [1, 1.5, 2, 3, 4, 5, 8, 10, 15];
+const TAKHIR_SECS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 8, 10, 15];
 const TAKHIR_OK = 1.5;
+const BID_DIFF_OK_MIN = 5;
 
 const META_STORE = {
   moodToFlow: 'moodToFlowMin',
   afterFastMood: 'afterFastMoodMin',
   ghanoon: 'ghanoonMin',
+  ghanoonfarayehattayarade: 'ghanoonFarayeMin',
+  afzayesheshans: 'afzayeshShansMin',
   layers: 'layersMin',
   sokut: 'sokut'
 };
@@ -364,7 +396,7 @@ function wheelColumn(items, initial, onChange, opts) {
 function wheelGroup(host, cols, captions, ltr, slim) {
   host.innerHTML = '';
   const row = document.createElement('div');
-  row.className = 'wheels' + (ltr ? ' ltr' : '') + (slim ? ' slim' : '');
+  row.className = 'wheels' + (ltr ? ' ltr' : '') + (slim ? ' tiny' : '');
   cols.forEach(c => row.appendChild(c.el));
   host.appendChild(row);
   if (captions) {
@@ -433,25 +465,34 @@ function minuteIndex(m) {
   const snapped = Math.round((m || 0) / 5) * 5;
   return Math.max(0, Math.min(12, snapped / 5));
 }
-function makeClockWheel(host, defH, defM, hourList, onChange) {
+function makeClockWheel(host, defH, defM, hourList, onChange, slim) {
   const hours = hourList && hourList.length ? hourList : [...Array(24).keys()];
   const hh = hours.map(h => pad2(h));
   const mm = minuteItems();
   const h0 = Math.max(0, hours.indexOf(defH == null ? hours[0] : defH));
+  const m0 = minuteIndex(defM);
   const notify = () => { if (onChange) onChange(hh[wh.get()] + ':' + mm[wm.get()]); };
   const wh = wheelColumn(hh, h0, notify, { loop: true });
-  const wm = wheelColumn(mm, minuteIndex(defM), notify, { loop: true });
-  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
-  return { value: () => hh[wh.get()] + ':' + mm[wm.get()] };
+  const wm = wheelColumn(mm, m0, notify, { loop: true });
+  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true, slim);
+  return {
+    value: () => hh[wh.get()] + ':' + mm[wm.get()],
+    setHM: (h, m) => {
+      const hi = hours.indexOf(Number(h));
+      wh.set(hi >= 0 ? hi : h0);
+      wm.set(minuteIndex(m));
+    },
+    apply: () => { wh.apply(); wm.apply(); }
+  };
 }
-function makeDurWheel(host, defH, defM, onChange) {
+function makeDurWheel(host, defH, defM, onChange, slim) {
   const hh = [];
   for (let i = 0; i <= 24; i++) hh.push(String(i));
   const mm = minuteItems();
   const notify = () => { if (onChange) onChange(); };
   const wh = wheelColumn(hh, Math.min(24, defH || 0), notify, { loop: true });
   const wm = wheelColumn(mm, minuteIndex(defM), notify, { loop: true });
-  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true);
+  wheelGroup(host, [wh, wm], ['ساعت', 'دقیقه'], true, slim);
   return {
     minutes: () => Number(hh[wh.get()]) * 60 + Number(mm[wm.get()]),
     hm: () => fmtHM(Number(hh[wh.get()]) * 60 + Number(mm[wm.get()])),
@@ -546,17 +587,20 @@ function parseDone(rec) {
 function takhirIsOk(rec, extra) {
   extra = extra || [];
   const n = Number(rec && rec.takhirN) || 0;
-  if (!n && !extra.length) return true;
+  if (!n && !extra.length) return false;
   let sum = Number(rec && rec.takhirSum) || 0;
   extra.forEach(s => { sum += Number(s) || 0; });
-  const avg = (n + extra.length) ? (sum / (n + extra.length)) : 0;
-  return avg <= TAKHIR_OK;
+  const avg = (n + extra.length) ? (sum / (n + extra.length)) : 999;
+  return avg < TAKHIR_OK;
 }
 function isComplete(rec) {
   const d = parseDone(rec);
   return META_ITEMS.every(it => {
     if (it.optional) return true;
-    if (it.kind === 'avgSec') return takhirIsOk(rec);
+    if (it.kind === 'avgSec') {
+      const n = Number(rec && rec.takhirN) || 0;
+      return n > 0 && takhirIsOk(rec);
+    }
     return !!d[it.id];
   });
 }
@@ -642,8 +686,9 @@ function blankMeta(day) {
     uid: metaUid(day),
     createdAt: new Date().toISOString(),
     dateShamsi: day,
-    moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, layersMin:0, sokut:0,
+    moodToFlowMin:0, afterFastMoodMin:0, ghanoonMin:0, ghanoonFarayeMin:0, afzayeshShansMin:0, layersMin:0, sokut:0,
     takhirAvg:'', takhirN:0, takhirSum:0, lawsJson:'[]', lawsMin:0,
+    bidWake:'3:30', bidDiffMin:'',
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
   META_FLAG_IDS.forEach(k => { rec[k] = 0; });
@@ -761,9 +806,9 @@ function totalLine(it, rec) {
   if (it.kind === 'avgSec') {
     const n = Number(rec.takhirN) || 0;
     const pending = takhirDraft.length;
-    if (!n && !pending) return 'ok <=1.5s';
+    if (!n && !pending) return 'no samples yet';
     const avg = n ? (Number(rec.takhirAvg) || 0) : 0;
-    let line = n ? ('avg ' + avg.toFixed(2) + 's  n=' + n + (takhirIsOk(rec, takhirDraft) ? '  flag=1' : '  flag=0')) : 'no avg yet';
+    let line = n ? ('avg ' + avg.toFixed(2) + 's  n=' + n + (takhirIsOk(rec, takhirDraft) ? '  ok' : '  slow')) : 'draft only';
     if (pending) line += '  draft+' + pending;
     return line;
   }
@@ -784,6 +829,24 @@ async function paintMetaStatus() {
   });
   paintSavedLaws();
   paintLawList();
+  paintBidWakeFields(rec);
+}
+
+let bidPaintDay = '';
+function paintBidWakeFields(rec) {
+  const hint = $('bidHint');
+  if (!hint) return;
+  const wake = rec && rec.bidWake ? String(rec.bidWake) : '3:30';
+  const diff = rec && rec.bidDiffMin !== '' && rec.bidDiffMin != null ? Number(rec.bidDiffMin) : null;
+  hint.textContent = 'wake ' + wake + (diff != null ? (' · tafavot ' + diff + 'm' + (diff <= BID_DIFF_OK_MIN ? ' ok' : '')) : '');
+  const day = rec && rec.dateShamsi || '';
+  if (day === bidPaintDay) return;
+  bidPaintDay = day;
+  if (mW.bidWake && mW.bidWake.setHM) {
+    const p = wake.split(':');
+    mW.bidWake.setHM(Number(p[0]) || 3, Number(p[1]) || 30);
+  }
+  if (mW.bidDiff && diff != null) mW.bidDiff.setMinutes(diff);
 }
 
 let sumTimer = null;
@@ -925,6 +988,22 @@ function paintLawCatalog() {
   });
 }
 
+function mountBidWakePanel(wrap) {
+  const box = document.createElement('div');
+  box.className = 'mblock bidwake';
+  box.innerHTML =
+    '<h3>saatbidari</h3>' +
+    '<p class="hint" id="bidHint">wake 3:30</p>' +
+    '<label class="lb ltr">wake time</label>' +
+    '<div id="bidWakeW"></div>' +
+    '<label class="lb ltr">tafavot (min)</label>' +
+    '<div id="bidDiffW"></div>';
+  const putBtn = wrap.querySelector('.gput');
+  wrap.insertBefore(box, putBtn || null);
+  mW.bidWake = makeClockWheel($('bidWakeW'), 3, 30, null, scheduleSummary, true);
+  mW.bidDiff = makeDurWheel($('bidDiffW'), 0, 0, scheduleSummary, true);
+}
+
 function mountLawsPanel(wrap) {
   const box = document.createElement('div');
   box.className = 'mblock';
@@ -979,7 +1058,7 @@ function buildMeta() {
   host.className = 'mgrids';
   META_GROUPS.forEach(g => {
     const wrap = document.createElement('div');
-    wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws') ? ' span2' : '');
+    wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws' || g.id === 'khatghermez') ? ' span2' : '');
     const flags = groupFlags(g.id);
     wrap.innerHTML =
       `<div class="gtitle">${g.title}</div>` +
@@ -994,7 +1073,10 @@ function buildMeta() {
       b.addEventListener('click', () => draftGroupFlags(g.id, b.dataset.all === '1'));
     });
     if (g.id === 'laws') mountLawsPanel(wrap);
-    else META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
+    else {
+      META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
+      if (g.id === 'openfa') mountBidWakePanel(wrap);
+    }
     const putBtn = document.createElement('button');
     putBtn.type = 'button';
     putBtn.className = 'gput';
@@ -1077,21 +1159,61 @@ async function putGroup(gid) {
       if (Number(rec.takhirN) > 0) {
         rec.takhirAvg = rec.takhirSum / rec.takhirN;
       }
-      if (takhirIsOk(rec)) done[it.id] = 1;
+      if (Number(rec.takhirN) > 0 && takhirIsOk(rec)) done[it.id] = 1;
       else delete done[it.id];
     }
   });
+  if (gid === 'openfa' && mW.bidWake && mW.bidDiff) {
+    rec.bidWake = mW.bidWake.value();
+    rec.bidDiffMin = mW.bidDiff.minutes();
+    const diff = Number(rec.bidDiffMin) || 0;
+    rec.saatbidari5 = diff <= BID_DIFF_OK_MIN ? 1 : 0;
+    if (diff <= BID_DIFF_OK_MIN) done.saatbidari5 = 1;
+    else delete done.saatbidari5;
+  }
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
   rec.complete = isComplete(rec) ? 1 : 0;
   rec.synced = 0;
   rec.createdAt = rec.createdAt || new Date().toISOString();
+  if (gid === 'khatghermez' && (rec.yeklayeamdiezafe || rec.esteghrakonjkavi)) {
+    if (!confirm('خط قرمز: کل ثبت این روز پاک شود؟')) return;
+    await wipeDayKeepRed(day, rec);
+    vibrate(25);
+    toast('روز پاک شد');
+    await paintMetaStatus();
+    await paintNotebook();
+    await refreshData();
+    updateQueueBadge();
+    trySync();
+    return;
+  }
   await put('meta', rec);
   vibrate(25);
   toast(gid + ' put');
   await paintMetaStatus();
   updateQueueBadge();
   trySync();
+}
+
+async function wipeDayKeepRed(day, rec) {
+  const sess = (await getAll('sessions')).filter(r => r.dateShamsi === day);
+  for (const r of sess) {
+    if (r.synced) queueSessionDelete(r.uid);
+    await delKey('sessions', r.uid);
+  }
+  const next = blankMeta(day);
+  next.yeklayeamdiezafe = rec.yeklayeamdiezafe ? 1 : 0;
+  next.esteghrakonjkavi = rec.esteghrakonjkavi ? 1 : 0;
+  next.done = {};
+  if (next.yeklayeamdiezafe) next.done.yeklayeamdiezafe = 1;
+  if (next.esteghrakonjkavi) next.done.esteghrakonjkavi = 1;
+  next.doneJson = JSON.stringify(next.done);
+  next.complete = 0;
+  next.synced = 0;
+  next.createdAt = rec.createdAt || next.createdAt;
+  await put('meta', next);
+  lastMetaRec = next;
 }
 
 /* ═════════════════════════════ 6. NOTEBOOK ═════════════════════════════════ */
@@ -1168,7 +1290,7 @@ function quickChips(parent, values, cb) {
 function paintWhoBox(code) {
   const box = $('whoBox');
   if (!box) return;
-  const on = code === 'takhmojmotn';
+  const on = /takh/.test(String(code || ''));
   box.classList.toggle('hide', !on);
   if (!on) { box.innerHTML = ''; return; }
   box.innerHTML = TAKH_WHO.map(w =>
@@ -1283,7 +1405,11 @@ function collectSession() {
     synced: 0
   };
   const who = selectedWho();
-  if (who.length) rec.tags = who.concat(rec.tags ? rec.tags.split(',').map(s => s.trim()).filter(Boolean) : []).join(',');
+  if (who.length) {
+    rec.who = who.join(',');
+    const marked = who.map(w => 'who:' + w);
+    rec.tags = marked.concat(rec.tags ? rec.tags.split(',').map(s => s.trim()).filter(Boolean) : []).join(',');
+  }
   if (c.metric === 'dur') {
     rec.minutes = dyn.dur.minutes();
     rec.hm = dyn.dur.hm();
@@ -1409,7 +1535,7 @@ function showTab(name) {
   $('btnSave').textContent = 'این خط را بنویس';
   const bar = document.querySelector('.bar');
   if (bar) bar.classList.toggle('hide', name !== 'session');
-  document.body.style.paddingBottom = name === 'session' ? '100px' : '24px';
+  document.body.style.paddingBottom = name === 'session' ? '168px' : '88px';
   if (name === 'session') ensureSessionUi();
   requestAnimationFrame(pinHeader);
   settleWheels();
@@ -1515,6 +1641,17 @@ async function checkSheet(loud) {
   }
 }
 
+function fetchPlain(url, body) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 12000);
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body),
+    signal: ctrl.signal
+  }).finally(() => clearTimeout(t));
+}
+
 async function trySync(loud) {
   const url = cfgGet('url'), secret = cfgGet('secret');
   if (!url) { if (loud) toast('آدرس وب‌اپ خالی است', true); return; }
@@ -1532,15 +1669,18 @@ async function trySync(loud) {
   trySync._busy = true;
   try {
     let info = [];
-    if (dels.length) {
-      const delOut = await pushDeletes(url, secret, dels);
-      cfgSet('del_sessions', '[]');
-      info.push(delOut);
-    }
     if (s.length) info.push(await pushBatch(url, secret, 'session', s, SESSION_FIELDS));
     if (m.length) info.push(await pushBatch(url, secret, 'meta',    m, META_FIELDS));
+    if (dels.length) {
+      try {
+        info.push(await pushDeletes(url, secret, dels));
+      } catch (e) {
+        info.push({ type: 'del', error: String(e.message || e) });
+      }
+      cfgSet('del_sessions', '[]');
+    }
     const line = info.map(x =>
-      (x.tab || x.type || '') + ' ' + (x.version || '') +
+      (x.tab || x.type || '') + ' ' + (x.version || x.error || '') +
       ' +' + (x.inserted || 0) + ' ~' + (x.updated || 0) +
       (x.deleted ? ' -' + x.deleted : '')
     ).join(' · ');
@@ -1559,11 +1699,7 @@ async function trySync(loud) {
 
 async function pushBatch(url, secret, type, rows, fields) {
   const payload = { secret, type, fields, rows: rows.map(r => fields.map(f => r[f] === undefined ? '' : r[f])) };
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchPlain(url, payload);
   const raw = await res.text();
   let outp;
   try { outp = JSON.parse(raw); } catch (e) { throw new Error('پاسخ شیت جیسان نیست'); }
@@ -1578,11 +1714,7 @@ async function pushBatch(url, secret, type, rows, fields) {
 
 async function pushDeletes(url, secret, uids) {
   const payload = { secret, type: 'sessionDelete', uids };
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetchPlain(url, payload);
   const raw = await res.text();
   let outp;
   try { outp = JSON.parse(raw); } catch (e) { throw new Error('پاسخ شیت جیسان نیست'); }
@@ -1648,13 +1780,13 @@ function metaItemView(rec, it) {
   if (it.kind === 'avgSec') {
     const n = Number(rec && rec.takhirN) || 0;
     const pending = takhirDraft.length;
-    const ok = takhirIsOk(rec, takhirDraft);
     if (!n && !pending) {
-      return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'ok', val: '<=1.5s', min: 0 };
+      return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '—', min: 0 };
     }
     let sum = Number(rec && rec.takhirSum) || 0;
     takhirDraft.forEach(s => { sum += Number(s) || 0; });
     const avg = (n + pending) ? (sum / (n + pending)) : 0;
+    const ok = takhirIsOk(rec, takhirDraft);
     return {
       id: it.id, group: it.group, kind: it.kind, label: it.label,
       state: ok ? 'ok' : 'miss',
@@ -1692,6 +1824,8 @@ function tileTitle(it) {
   if (it.id === 'afterFastMood') return 'afterFastMood';
   if (it.id === 'layers') return 'layers';
   if (it.id === 'ghanoon') return 'ghanoonFarayeman';
+  if (it.id === 'ghanoonfarayehattayarade') return 'ghanoonFaraye';
+  if (it.id === 'afzayesheshans') return 'afzayeshShans';
   if (it.id === 'sokut') return 'roozsokut';
   if (it.id === 'takhirAvg') return 'takhir';
   return it.label;
@@ -1821,10 +1955,19 @@ function dashSpan() {
   if (dashDays === 'fasl') {
     return { from: fmtJ(ty, 5, 31), to: fmtJ(ty, 6, 31), n: null, kind: 'fasl' };
   }
+  if (dashDays === 'since531') {
+    const from = fmtJ(ty, 5, 31);
+    return { from: to >= from ? from : fmtJ(ty - 1, 5, 31), to, n: null, kind: 'since531' };
+  }
   const n = Math.max(1, Number(dashDays) || 7);
   return { from: fmtJ(...addDaysJ(ty, tm, td, -(n - 1))), to, n, kind: 'days' };
 }
-let dashDays = 7;
+let dashDays = 'since531';
+function dashStatRow(lab, val, ltr) {
+  return '<span class="statrow">' +
+    '<span class="statlab">' + esc(lab) + '</span>' +
+    '<b class="statval' + (ltr ? ' ltr' : '') + '">' + val + '</b></span>';
+}
 async function paintDashboard() {
   const hostS = $('dashStat');
   const hostB = $('dashBars');
@@ -1879,16 +2022,18 @@ async function paintDashboard() {
   });
   const dayN = meta.length || Object.keys(byDay).length || 1;
   const days = eachJ(from, to);
-  const rangeLab = span.kind === 'fasl' ? '۵/۳۱–۶/۳۱' : (span.n + ' روز شمسی');
+  const rangeLab = span.kind === 'fasl' ? '۵/۳۱–۶/۳۱'
+    : span.kind === 'since531' ? 'از ۵/۳۱'
+    : (span.n + ' روز');
   hostS.innerHTML =
-    `<span>بازه <b>${rangeLab}</b></span>` +
-    `<span>از <b class="ltr">${from}</b></span>` +
-    `<span>تا <b class="ltr">${to}</b></span>` +
-    `<span>محور <b class="ltr">${jShort(from)} → ${jShort(to)}</b></span>` +
-    `<span>دفتر <b>${fmtChunk(daftar)}</b></span>` +
-    `<span>خط <b>${sess.length}</b></span>` +
-    `<span>قانون <b>${lawN}</b></span>` +
-    `<span>پرچم <b>${flagItems.reduce((s, it) => s + flagSum[it.id], 0)}</b></span>`;
+    dashStatRow('بازه', rangeLab, span.kind === 'days') +
+    dashStatRow('از', esc(from), true) +
+    dashStatRow('تا', esc(to), true) +
+    dashStatRow('محور', esc(jShort(from) + ' → ' + jShort(to)), true) +
+    dashStatRow('دفتر', esc(fmtChunk(daftar)), true) +
+    dashStatRow('خط', esc(sess.length + ' خط'), false) +
+    dashStatRow('قانون', esc(String(lawN)), false) +
+    dashStatRow('پرچم', esc(String(flagItems.reduce((s, it) => s + flagSum[it.id], 0))), false);
   hostB.innerHTML = svgBars(days.map(d => ({
     lab: jShort(d),
     n: (byDay[d] && byDay[d].daftar) || 0,
@@ -2147,7 +2292,7 @@ async function boot() {
   if ($('tabDash')) $('tabDash').addEventListener('click', () => showTab('dash'));
   if ($('dashRange')) {
     $('dashRange').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      dashDays = b.dataset.d === 'fasl' ? 'fasl' : Number(b.dataset.d);
+      dashDays = b.dataset.d === 'fasl' || b.dataset.d === 'since531' ? b.dataset.d : Number(b.dataset.d);
       $('dashRange').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
       paintDashboard();
     }));
@@ -2193,8 +2338,14 @@ async function boot() {
     const store = b.dataset.store;
     const id = b.dataset.uid;
     if (!store || !id) return;
-    if (store === 'sessions') queueSessionDelete(id);
-    await delKey(store, id);
+    if (store === 'sessions') {
+      const rows = await getAll('sessions');
+      const row = rows.find(r => r.uid === id);
+      if (row && row.synced) queueSessionDelete(id);
+      await delKey(store, id);
+    } else {
+      await delKey(store, id);
+    }
     toast('برگشت خورد');
     await refreshData();
     updateQueueBadge();
@@ -2233,6 +2384,11 @@ async function boot() {
     }
   });
 
+  if (cfgGet('del_unlock') !== 'v58') {
+    cfgSet('del_sessions', '[]');
+    cfgSet('del_unlock', 'v58');
+  }
+  trySync._busy = false;
   updateNetPill();
   updateQueueBadge();
   paintNotebook();
