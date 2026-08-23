@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v79 · key';
+const APP_VERSION = 'v80 · key';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -126,8 +126,10 @@ const META_ITEMS = [
     label:'noghahveyebiruni,nolimunadbiruni' },
   { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
     label:'noaicopybeforeopenfa2' },
-  { id:'promptcopyai15', group:'raayat', kind:'flag',
-    label:'promptcopyai<=15m' },
+  { id:'prompt15', group:'raayat', kind:'flag',
+    label:'prompt<=15m' },
+  { id:'copyai15', group:'raayat', kind:'flag',
+    label:'copyai<=15m' },
   { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
@@ -220,7 +222,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'raatayeghavanineakhlaghietayinshode100',
   'noCarb','nokarekheir','notarahomm','nagoofb',
   'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
-  'nocopypasteazaighable12pm','promptcopyai15','preplan12',
+  'nocopypasteazaighable12pm','prompt15','copyai15','preplan12',
   'bidWake','bidDiffMin',
   'ghanoonFarayeMin','afzayeshShansMin',
   'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
