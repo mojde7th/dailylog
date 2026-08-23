@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v71 · lock';
+const APP_VERSION = 'v72 · laye2';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -89,8 +89,11 @@ const META_GROUPS = [
   { id:'raayat', title:'raayat / mojaz / no' },
   { id:'andaze', title:'andaze / ghanoon', hr:true },
   { id:'laws',   title:'ghanoon mohem' },
+  { id:'laye2', title:'laye2 · entekhab = ruz shekast', neg:true },
   { id:'khatghermez', title:'' }
 ];
+const negGroup = gid => !!(META_GROUPS.find(g => g.id === gid) || {}).neg;
+const isNegItem = it => negGroup(it.group);
 
 const META_ITEMS = [
   { id:'moodToFlow', group:'openfa', kind:'accumDur',
@@ -99,20 +102,10 @@ const META_ITEMS = [
     label:'openfa2<=30m' },
   { id:'nchort', group:'openfa', kind:'flag',
     label:'nchort' },
-  { id:'saatbidari5', group:'openfa', kind:'flag', sev:'day',
-    label:'saatbidaritafazollbasaattayinshode<=5m' },
-  { id:'bidarshodanharhal', group:'openfa', kind:'flag', sev:'day',
-    label:'bidarshodanhatadarhalemargazkhab,hata10mkhabidanshabesh,saresaniebidarshodan(khateghermezhatayeksanie)=>60%eruzbidarshodansarezaman' },
-  { id:'tafazolbidari0', group:'openfa', kind:'flag', sev:'day',
-    label:'tafazoltayinshodebidari:0' },
   { id:'twoHourAras', group:'openfa', kind:'flag',
     label:'2saatarasmortakhshoseghableSnapeshose' },
-  { id:'opf1', group:'openfa', kind:'flag', sev:'day',
-    label:'openfa1after15(15g sachetprot)' },
   { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
     label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
-  { id:'opf2', group:'openfa', kind:'flag', sev:'day',
-    label:'openfa2after6pm' },
   { id:'afterFastMood', group:'openfa', kind:'accumDur',
     label:'afterfastmoodtoflow' },
 
@@ -126,14 +119,6 @@ const META_ITEMS = [
     label:'rayateghavaninetayinshode100%' },
   { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
     label:'rayat100%' },
-  { id:'noCarb', group:'raayat', kind:'flag', sev:'day',
-    label:'no(noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajil)' },
-  { id:'nokarekheir', group:'raayat', kind:'flag', sev:'day',
-    label:'nokarekheirhata0.00001%%' },
-  { id:'notarahomm', group:'raayat', kind:'flag', sev:'day',
-    label:'notarahomm0%%%' },
-  { id:'nagoofb', group:'raayat', kind:'flag', sev:'day',
-    label:'nagoo(f,b)(makhsusantuperiodi)' },
   { id:'riztarintakhmojaz', group:'raayat', kind:'flag',
     label:'riztarinchiziaztakhghmojazhatajobrankhadathatayeprintghablewnemishe' },
   { id:'riztarinpartbandi', group:'raayat', kind:'flag',
@@ -173,6 +158,21 @@ const META_ITEMS = [
   { id:'sessionflowamigh', group:'andaze', kind:'flag',
     label:'sessionflowamigh(shakhesepeakemohemlayevala)' },
 
+  { id:'bidarshodanharhal', group:'laye2', kind:'flag', sev:'day',
+    label:'sarezamanbidarnashodam(hatayeksaniedir,hatabamarg,hataba10mkhabeshab)' },
+  { id:'opf1', group:'laye2', kind:'flag', sev:'day',
+    label:'openfa1after15(15gsachetprot)nashod' },
+  { id:'opf2', group:'laye2', kind:'flag', sev:'day',
+    label:'openfa2after6pmnashod' },
+  { id:'noCarb', group:'laye2', kind:'flag', sev:'day',
+    label:'noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajilkhordam' },
+  { id:'nokarekheir', group:'laye2', kind:'flag', sev:'day',
+    label:'karekheirkardam(hata0.00001%)' },
+  { id:'notarahomm', group:'laye2', kind:'flag', sev:'day',
+    label:'tarahomkardam(hata0%)' },
+  { id:'nagoofb', group:'laye2', kind:'flag', sev:'day',
+    label:'goftam(f,b)(makhsusantuperiodi)' },
+
   { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag', sev:'lock',
     label:'yeknanolayeamdiezafetaronvane' },
   { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag', sev:'lock',
@@ -190,7 +190,7 @@ function flagBundleKeys(id) {
   return FLAG_BUNDLES[id] || [id];
 }
 function applyFlagBundle(rec, id, on) {
-  rec[id] = on ? 1 : 0;
+  rec[id] = on ? 1 : '';
   flagBundleKeys(id).forEach(k => { if (k !== id) delete rec[k]; });
 }
 function migrateFlagBundles(rec) {
@@ -198,7 +198,7 @@ function migrateFlagBundles(rec) {
   Object.keys(FLAG_BUNDLES).forEach(primary => {
     const keys = FLAG_BUNDLES[primary];
     const any = keys.some(k => rec[k] || done[k]);
-    rec[primary] = any ? 1 : 0;
+    rec[primary] = any ? 1 : '';
     if (any) done[primary] = 1;
     keys.forEach(k => {
       if (k !== primary) {
@@ -213,8 +213,9 @@ function migrateFlagBundles(rec) {
 
 const META_FIELDS = ['uid','createdAt','dateShamsi',
   'moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin',
-  'openfa1h','nchort','saatbidari5','bidarshodanharhal','tafazolbidari0','twoHourAras',
-  'opf1','chizayemojazbadeopfa2','opf2',
+  'openfa1h','nchort','saatbidari5','twoHourAras',
+  'chizayemojazbadeopfa2',
+  'bidarshodanharhal','opf1','opf2','ruzshekast',
   'takhghmojaz0','takhmojmotns',
   'budandarjayemojaz100',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
@@ -655,6 +656,7 @@ function isComplete(rec) {
   const d = parseDone(rec);
   return META_ITEMS.every(it => {
     if (it.optional) return true;
+    if (isNegItem(it)) return !d[it.id];
     if (it.kind === 'avgSec') {
       const n = Number(rec && rec.takhirN) || 0;
       return n > 0 && takhirIsOk(rec);
@@ -747,7 +749,8 @@ function blankMeta(day) {
     bidWake:'', bidDiffMin:'',
     done: {}, doneJson: '{}', complete: 0, synced: 0
   };
-  META_FLAG_IDS.forEach(k => { rec[k] = 0; });
+  META_FLAG_IDS.forEach(k => { rec[k] = ''; });
+  rec.ruzshekast = '';
   return rec;
 }
 
@@ -1166,7 +1169,7 @@ function buildMeta() {
   host.className = 'mgrids';
   META_GROUPS.forEach(g => {
     const wrap = document.createElement('div');
-    wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws' || g.id === 'khatghermez') ? ' span2' : '');
+    wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws' || g.id === 'laye2' || g.id === 'khatghermez') ? ' span2' : '');
     const flags = groupFlags(g.id);
     wrap.innerHTML =
       (g.title ? `<div class="gtitle">${g.title}</div>` : '') +
@@ -1242,7 +1245,7 @@ async function putGroup(gid) {
   META_ITEMS.filter(it => it.group === gid).forEach(it => {
     if (it.kind === 'flag') {
       const on = flagOn(rec, it.id);
-      rec[it.id] = on ? 1 : 0;
+      rec[it.id] = on ? 1 : '';
       applyFlagBundle(rec, it.id, on);
       if (on) done[it.id] = 1;
       else delete done[it.id];
@@ -1270,10 +1273,15 @@ async function putGroup(gid) {
     rec.bidWake = mW.bidWake.value();
     rec.bidDiffMin = mW.bidDiff.minutes();
     const diff = Number(rec.bidDiffMin) || 0;
-    rec.saatbidari5 = diff <= BID_DIFF_OK_MIN ? 1 : 0;
+    rec.saatbidari5 = diff <= BID_DIFF_OK_MIN ? 1 : '';
     if (diff <= BID_DIFF_OK_MIN) done.saatbidari5 = 1;
     else delete done.saatbidari5;
     bidariDraft = false;
+  }
+  if (negGroup(gid)) {
+    const hits = groupFlags(gid).filter(it => rec[it.id]);
+    if (hits.length && !confirm('لایهٔ دوم: ' + hits.length + ' مورد. کل روز شکسته شود؟')) return;
+    rec.ruzshekast = hits.length ? 1 : '';
   }
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
@@ -1295,7 +1303,7 @@ async function putGroup(gid) {
   }
   await put('meta', rec);
   vibrate(25);
-  toast(gid + ' put');
+  toast(rec.ruzshekast && negGroup(gid) ? 'روز شکست' : (gid + ' put'));
   await paintMetaStatus();
   updateQueueBadge();
   trySync();
@@ -1933,7 +1941,7 @@ function bidariText(rec) {
 function clearBidari(rec) {
   rec.bidWake = '';
   rec.bidDiffMin = '';
-  rec.saatbidari5 = 0;
+  rec.saatbidari5 = '';
   bidariDraft = false;
   if (mW.bidWake && mW.bidWake.setHM) mW.bidWake.setHM(3, 30);
   if (mW.bidDiff && mW.bidDiff.reset) mW.bidDiff.reset();
