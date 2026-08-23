@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v70 · sev';
+const APP_VERSION = 'v71 · lock';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -144,8 +144,6 @@ const META_ITEMS = [
     label:'noaicopybeforeopenfa2' },
   { id:'promptafter2', group:'raayat', kind:'flag',
     label:'promptafter2' },
-  { id:'nopromptbefore2pm', group:'raayat', kind:'flag',
-    label:'noaiprompt,anypromptbefore12' },
   { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
@@ -222,7 +220,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
   'noCarb','nokarekheir','notarahomm','nagoofb',
   'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
-  'nocopypasteazaighable12pm','promptafter2','nopromptbefore2pm','preplan12',
+  'nocopypasteazaighable12pm','promptafter2','preplan12',
   'bidWake','bidDiffMin',
   'ghanoonFarayeMin','afzayeshShansMin',
   'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
@@ -586,6 +584,24 @@ const clearStore = n => store(n, 'readwrite').then(s => new Promise((res, rej) =
 const cfgGet = k => { try { return localStorage.getItem('dl_' + k) || ''; } catch (e) { return ''; } };
 const cfgSet = (k, v) => { try { localStorage.setItem('dl_' + k, v); } catch (e) {} };
 
+const RED_LOCK_DAYS = 14;
+const redLockUntil = () => Number(cfgGet('red_lock_until')) || 0;
+const redLockLeft = () => {
+  const ms = redLockUntil() - Date.now();
+  return ms > 0 ? Math.ceil(ms / 86400000) : 0;
+};
+function armRedLock() {
+  const until = Date.now() + RED_LOCK_DAYS * 86400000;
+  if (until > redLockUntil()) cfgSet('red_lock_until', String(until));
+}
+function redLockBlocks() {
+  const left = redLockLeft();
+  if (!left) return false;
+  toast('قفل خط قرمز · ' + left + ' روز مانده', true);
+  vibrate(60);
+  return true;
+}
+
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 const num = v => (v === '' || v == null || isNaN(Number(v))) ? '' : Number(v);
@@ -817,6 +833,7 @@ function mergeLawRows(base, extra) {
   return items;
 }
 async function saveDayLaws(items) {
+  if (redLockBlocks()) return;
   const day = selectedMetaDay();
   const rec = await metaFor(day) || blankMeta(day);
   rec.lawsJson = JSON.stringify(items);
@@ -1191,6 +1208,7 @@ function toggleFlagDraft(id) {
 }
 
 async function putGroup(gid) {
+  if (redLockBlocks()) return;
   const day = selectedMetaDay();
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
@@ -1263,10 +1281,11 @@ async function putGroup(gid) {
   rec.synced = 0;
   rec.createdAt = rec.createdAt || new Date().toISOString();
   if (gid === 'khatghermez' && (rec.yeklayeamdiezafe || rec.esteghrakonjkavi)) {
-    if (!confirm('خط قرمز: کل ثبت این روز پاک شود؟')) return;
+    if (!confirm('خط قرمز: کل ثبت این روز پاک شود و اپ ' + RED_LOCK_DAYS + ' روز قفل شود؟')) return;
     await wipeDayKeepRed(day, rec);
+    armRedLock();
     vibrate(25);
-    toast('روز پاک شد');
+    toast('روز پاک شد · قفل ' + RED_LOCK_DAYS + ' روزه');
     await paintMetaStatus();
     await paintNotebook();
     await refreshData();
@@ -1636,6 +1655,7 @@ function showTab(name) {
 }
 
 async function doSave() {
+  if (redLockBlocks()) return;
   if (activeTab === 'session') {
     const rec = collectSession();
     if (!rec) return;
@@ -1872,6 +1892,14 @@ async function updateQueueBadge() {
   const n = s + m + pendingDeletes().length + md.uids.length + md.days.length;
   $('queuePill').textContent = 'صف ' + n;
   $('queuePill').className = 'pill ' + (n ? 'off' : 'on');
+  updateLockPill();
+}
+function updateLockPill() {
+  const p = $('lockPill');
+  if (!p) return;
+  const left = redLockLeft();
+  p.hidden = !left;
+  p.textContent = 'قفل ' + left + ' روز';
 }
 function updateNetPill() {
   const p = $('netPill');
