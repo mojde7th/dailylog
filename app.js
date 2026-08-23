@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v74 · trim';
+const APP_VERSION = 'v75 · wipe';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -126,8 +126,6 @@ const META_ITEMS = [
     label:'noghahveyebiruni,nolimunadbiruni' },
   { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
     label:'noaicopybeforeopenfa2' },
-  { id:'promptafter2', group:'raayat', kind:'flag',
-    label:'promptafter2' },
   { id:'promptcopyai15', group:'raayat', kind:'flag',
     label:'promptcopyai<=15m' },
   { id:'preplan12', group:'raayat', kind:'flag',
@@ -222,7 +220,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'raatayeghavanineakhlaghietayinshode100',
   'noCarb','nokarekheir','notarahomm','nagoofb',
   'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
-  'nocopypasteazaighable12pm','promptafter2','promptcopyai15','preplan12',
+  'nocopypasteazaighable12pm','promptcopyai15','preplan12',
   'bidWake','bidDiffMin',
   'ghanoonFarayeMin','afzayeshShansMin',
   'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
@@ -587,19 +585,22 @@ const cfgGet = k => { try { return localStorage.getItem('dl_' + k) || ''; } catc
 const cfgSet = (k, v) => { try { localStorage.setItem('dl_' + k, v); } catch (e) {} };
 
 const RED_LOCK_DAYS = 14;
-const redLockUntil = () => Number(cfgGet('red_lock_until')) || 0;
-const redLockLeft = () => {
-  const ms = redLockUntil() - Date.now();
-  return ms > 0 ? Math.ceil(ms / 86400000) : 0;
-};
-function armRedLock() {
-  const until = Date.now() + RED_LOCK_DAYS * 86400000;
-  if (until > redLockUntil()) cfgSet('red_lock_until', String(until));
+const redLockUntilDay = () => cfgGet('red_lock_until_day');
+function redLockOpenDay() {
+  const until = redLockUntilDay();
+  if (!until) return '';
+  return fmtJ.apply(null, todayJ()) < until ? until : '';
+}
+function armRedLock(day) {
+  const p = parseJ(day);
+  if (!p[0]) return;
+  const until = fmtJ.apply(null, addDaysJ(p[0], p[1], p[2], RED_LOCK_DAYS));
+  if (until > (redLockUntilDay() || '')) cfgSet('red_lock_until_day', until);
 }
 function redLockBlocks() {
-  const left = redLockLeft();
-  if (!left) return false;
-  toast('قفل خط قرمز · ' + left + ' روز مانده', true);
+  const until = redLockOpenDay();
+  if (!until) return false;
+  toast('قفل خط قرمز تا ' + until, true);
   vibrate(60);
   return true;
 }
@@ -1279,22 +1280,24 @@ async function putGroup(gid) {
     else delete done.saatbidari5;
     bidariDraft = false;
   }
-  if (negGroup(gid)) {
-    const hits = groupFlags(gid).filter(it => rec[it.id]);
-    if (hits.length && !confirm('لایهٔ دوم: ' + hits.length + ' مورد. کل روز شکسته شود؟')) return;
-    rec.ruzshekast = hits.length ? 1 : '';
-  }
   rec.done = done;
   rec.doneJson = JSON.stringify(done);
   rec.complete = isComplete(rec) ? 1 : 0;
   rec.synced = 0;
   rec.createdAt = rec.createdAt || new Date().toISOString();
-  if (gid === 'khatghermez' && (rec.yeklayeamdiezafe || rec.esteghrakonjkavi)) {
-    if (!confirm('خط قرمز: کل ثبت این روز پاک شود و اپ ' + RED_LOCK_DAYS + ' روز قفل شود؟')) return;
-    await wipeDayKeepRed(day, rec);
-    armRedLock();
+  const red = gid === 'khatghermez' && (rec.yeklayeamdiezafe || rec.esteghrakonjkavi);
+  const broke = negGroup(gid) && groupFlags(gid).some(it => rec[it.id]);
+  if (red || broke) {
+    const keep = groupFlags(gid).map(it => it.id);
+    const ask = red
+      ? 'خط قرمز: کل ثبت این روز از اپ و شیت پاک شود و اپ ' + RED_LOCK_DAYS + ' روز قفل شود؟'
+      : 'لایهٔ دوم: روز شکست. کل ثبت این روز از اپ و شیت پاک شود؟';
+    if (!confirm(ask)) return;
+    if (broke) rec.ruzshekast = 1;
+    await wipeDayKeepFlags(day, rec, keep.concat(broke ? ['ruzshekast'] : []));
+    if (red) armRedLock(day);
     vibrate(25);
-    toast('روز پاک شد · قفل ' + RED_LOCK_DAYS + ' روزه');
+    toast(red ? ('روز پاک شد · قفل تا ' + redLockUntilDay()) : 'روز شکست · روز پاک شد');
     await paintMetaStatus();
     await paintNotebook();
     await refreshData();
@@ -1302,26 +1305,29 @@ async function putGroup(gid) {
     trySync();
     return;
   }
+  if (negGroup(gid)) rec.ruzshekast = '';
   await put('meta', rec);
   vibrate(25);
-  toast(rec.ruzshekast && negGroup(gid) ? 'روز شکست' : (gid + ' put'));
+  toast(gid + ' put');
   await paintMetaStatus();
   updateQueueBadge();
   trySync();
 }
 
-async function wipeDayKeepRed(day, rec) {
+async function wipeDayKeepFlags(day, rec, keepIds) {
   const sess = (await getAll('sessions')).filter(r => r.dateShamsi === day);
   for (const r of sess) {
     if (r.synced) queueSessionDelete(r.uid);
     await delKey('sessions', r.uid);
   }
+  if (rec && rec.synced) queueMetaDelete(metaUid(day), day);
   const next = blankMeta(day);
-  next.yeklayeamdiezafe = rec.yeklayeamdiezafe ? 1 : 0;
-  next.esteghrakonjkavi = rec.esteghrakonjkavi ? 1 : 0;
   next.done = {};
-  if (next.yeklayeamdiezafe) next.done.yeklayeamdiezafe = 1;
-  if (next.esteghrakonjkavi) next.done.esteghrakonjkavi = 1;
+  keepIds.forEach(id => {
+    if (!rec[id]) return;
+    next[id] = 1;
+    next.done[id] = 1;
+  });
   next.doneJson = JSON.stringify(next.done);
   next.complete = 0;
   next.synced = 0;
@@ -1802,8 +1808,6 @@ async function trySync(loud) {
   trySync._since = Date.now();
   try {
     let info = [];
-    if (s.length) info.push(await pushBatch(url, secret, 'session', s, SESSION_FIELDS));
-    if (m.length) info.push(await pushBatch(url, secret, 'meta',    m, META_FIELDS));
     if (dels.length) {
       try {
         info.push(await pushDeletes(url, secret, dels));
@@ -1812,7 +1816,6 @@ async function trySync(loud) {
         info.push({ type: 'del', error: String(e.message || e) });
       }
     }
-    const metaDels = pendingMetaDeletes();
     if (metaDels.uids.length || metaDels.days.length) {
       try {
         info.push(await pushMetaDeletes(url, secret, metaDels));
@@ -1821,6 +1824,8 @@ async function trySync(loud) {
         info.push({ type: 'mdel', error: String(e.message || e) });
       }
     }
+    if (s.length) info.push(await pushBatch(url, secret, 'session', s, SESSION_FIELDS));
+    if (m.length) info.push(await pushBatch(url, secret, 'meta',    m, META_FIELDS));
     const line = info.map(x =>
       (x.tab || x.type || '') + ' ' + (x.version || x.error || '') +
       ' +' + (x.inserted || 0) + ' ~' + (x.updated || 0) +
@@ -1906,9 +1911,9 @@ async function updateQueueBadge() {
 function updateLockPill() {
   const p = $('lockPill');
   if (!p) return;
-  const left = redLockLeft();
-  p.hidden = !left;
-  p.textContent = 'قفل ' + left + ' روز';
+  const until = redLockOpenDay();
+  p.hidden = !until;
+  p.textContent = 'قفل تا ' + until;
 }
 function updateNetPill() {
   const p = $('netPill');
