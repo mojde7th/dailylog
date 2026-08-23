@@ -41,6 +41,7 @@ h1{font-size:1.02rem;margin:0;letter-spacing:.04em}
 .pill{font-size:.68rem;border:1px solid var(--line);border-radius:4px;padding:3px 8px;color:var(--muted);font-family:Consolas,monospace;direction:ltr;unicode-bidi:isolate}
 .pill.on{border-color:var(--good);color:var(--good)}
 .pill.off{border-color:var(--warn);color:var(--warn)}
+#lockPill{cursor:pointer}
 .tabs{display:flex;flex-wrap:nowrap;gap:6px;margin:0}
 .tabs button{
   flex:1 1 22%;min-width:72px;background:var(--panel);border:1px solid var(--line);color:var(--muted);
@@ -535,8 +536,7 @@ button.gput{
       <span class="pill" id="verPill">…</span>
       <span class="pill" id="netPill">…</span>
       <span class="pill" id="queuePill">صف ۰</span>
-      <span class="pill off" id="lockPill" hidden>قفل</span>
-    </div>
+      <span class="pill off" id="lockPill" hidden>قفل</span>    </div>
   </div>
 </header>
 
@@ -679,6 +679,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=77"></script>
+<script src="app.js?v=78"></script>
 </body>
 </html>

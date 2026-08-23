@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v77 · span';
+const APP_VERSION = 'v78 · key';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -1923,12 +1923,23 @@ async function updateQueueBadge() {
   $('queuePill').className = 'pill ' + (n ? 'off' : 'on');
   updateLockPill();
 }
+function redLockUnlock() {
+  if (!redLockOpenDay()) return;
+  const key = prompt('baraye baz kardan ghofl benevis: BAZKON');
+  if (key == null) return;
+  if (key.trim().toUpperCase() !== 'BAZKON') { toast('key eshtebah', true); return; }
+  cfgSet('red_lock_from_day', '');
+  cfgSet('red_lock_until_day', '');
+  toast('ghofl baz shod');
+  updateLockPill();
+  updateQueueBadge();
+}
 function updateLockPill() {
   const p = $('lockPill');
   if (!p) return;
   const until = redLockOpenDay();
   p.hidden = !until;
-  p.textContent = 'قفل تا ' + until;
+  p.textContent = until ? ('قفل تا ' + until + ' · key') : 'قفل';
 }
 function updateNetPill() {
   const p = $('netPill');
@@ -2569,6 +2580,7 @@ async function hardReload() {
 async function boot() {
   $('verPill').textContent = APP_VERSION;
   $('verPill').className = 'pill on';
+  if ($('lockPill')) $('lockPill').addEventListener('click', redLockUnlock);
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().catch(() => {});
   }
