@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v69 · one';
+const APP_VERSION = 'v70 · sev';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -99,15 +99,19 @@ const META_ITEMS = [
     label:'openfa2<=30m' },
   { id:'nchort', group:'openfa', kind:'flag',
     label:'nchort' },
-  { id:'saatbidari5', group:'openfa', kind:'flag',
+  { id:'saatbidari5', group:'openfa', kind:'flag', sev:'day',
     label:'saatbidaritafazollbasaattayinshode<=5m' },
+  { id:'bidarshodanharhal', group:'openfa', kind:'flag', sev:'day',
+    label:'bidarshodanhatadarhalemargazkhab,hata10mkhabidanshabesh,saresaniebidarshodan(khateghermezhatayeksanie)=>60%eruzbidarshodansarezaman' },
+  { id:'tafazolbidari0', group:'openfa', kind:'flag', sev:'day',
+    label:'tafazoltayinshodebidari:0' },
   { id:'twoHourAras', group:'openfa', kind:'flag',
     label:'2saatarasmortakhshoseghableSnapeshose' },
-  { id:'opf1', group:'openfa', kind:'flag',
+  { id:'opf1', group:'openfa', kind:'flag', sev:'day',
     label:'openfa1after15(15g sachetprot)' },
   { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
     label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
-  { id:'opf2', group:'openfa', kind:'flag',
+  { id:'opf2', group:'openfa', kind:'flag', sev:'day',
     label:'openfa2after6pm' },
   { id:'afterFastMood', group:'openfa', kind:'accumDur',
     label:'afterfastmoodtoflow' },
@@ -122,8 +126,18 @@ const META_ITEMS = [
     label:'rayateghavaninetayinshode100%' },
   { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
     label:'rayat100%' },
-  { id:'noCarb', group:'raayat', kind:'flag',
+  { id:'noCarb', group:'raayat', kind:'flag', sev:'day',
     label:'no(noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajil)' },
+  { id:'nokarekheir', group:'raayat', kind:'flag', sev:'day',
+    label:'nokarekheirhata0.00001%%' },
+  { id:'notarahomm', group:'raayat', kind:'flag', sev:'day',
+    label:'notarahomm0%%%' },
+  { id:'nagoofb', group:'raayat', kind:'flag', sev:'day',
+    label:'nagoo(f,b)(makhsusantuperiodi)' },
+  { id:'riztarintakhmojaz', group:'raayat', kind:'flag',
+    label:'riztarinchiziaztakhghmojazhatajobrankhadathatayeprintghablewnemishe' },
+  { id:'riztarinpartbandi', group:'raayat', kind:'flag',
+    label:'riztarinchizikpartbandiokharabkonemamnoo(hatayechizzehnirukaghaz,faghataftopfa2,ghableshfaghatmishekeywordzad)' },
   { id:'noghahveyebiruni', group:'raayat', kind:'flag',
     label:'noghahveyebiruni,nolimunadbiruni' },
   { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
@@ -131,7 +145,7 @@ const META_ITEMS = [
   { id:'promptafter2', group:'raayat', kind:'flag',
     label:'promptafter2' },
   { id:'nopromptbefore2pm', group:'raayat', kind:'flag',
-    label:'noaiprompt,anypromptbefore2pm' },
+    label:'noaiprompt,anypromptbefore12' },
   { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
@@ -158,9 +172,12 @@ const META_ITEMS = [
   { id:'takhirAvg', group:'andaze', kind:'avgSec',
     label:'takhirinputoutput3thout<1.5s' },
 
-  { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag',
+  { id:'sessionflowamigh', group:'andaze', kind:'flag',
+    label:'sessionflowamigh(shakhesepeakemohemlayevala)' },
+
+  { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag', sev:'lock',
     label:'yeknanolayeamdiezafetaronvane' },
-  { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag',
+  { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag', sev:'lock',
     label:'layeavalghavanin(dorugh, konjkav,stalk, hesadat,...)' }
 ];
 
@@ -198,12 +215,13 @@ function migrateFlagBundles(rec) {
 
 const META_FIELDS = ['uid','createdAt','dateShamsi',
   'moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin',
-  'openfa1h','nchort','saatbidari5','twoHourAras',
+  'openfa1h','nchort','saatbidari5','bidarshodanharhal','tafazolbidari0','twoHourAras',
   'opf1','chizayemojazbadeopfa2','opf2',
   'takhghmojaz0','takhmojmotns',
   'budandarjayemojaz100',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
-  'noCarb','noghahveyebiruni',
+  'noCarb','nokarekheir','notarahomm','nagoofb',
+  'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
   'nocopypasteazaighable12pm','promptafter2','nopromptbefore2pm','preplan12',
   'bidWake','bidDiffMin',
   'ghanoonFarayeMin','afzayeshShansMin',
@@ -943,6 +961,7 @@ function mountMetaItem(host, it) {
     b.type = 'button';
     b.dir = 'ltr';
     b.textContent = it.label;
+    if (it.sev) b.classList.add('sev-' + it.sev);
     b.addEventListener('click', () => toggleFlagDraft(it.id));
     row.appendChild(b);
     it._btn = b;
