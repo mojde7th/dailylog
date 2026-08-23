@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v76 · shekast';
+const APP_VERSION = 'v77 · span';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -585,22 +585,30 @@ const cfgGet = k => { try { return localStorage.getItem('dl_' + k) || ''; } catc
 const cfgSet = (k, v) => { try { localStorage.setItem('dl_' + k, v); } catch (e) {} };
 
 const RED_LOCK_DAYS = 14;
+const redLockFromDay  = () => cfgGet('red_lock_from_day');
 const redLockUntilDay = () => cfgGet('red_lock_until_day');
+function redLockCovers(day) {
+  const from = redLockFromDay(), until = redLockUntilDay();
+  if (!from || !until) return false;
+  const d = String(day || '');
+  return d >= from && d < until;
+}
 function redLockOpenDay() {
-  const until = redLockUntilDay();
-  if (!until) return '';
-  return fmtJ.apply(null, todayJ()) < until ? until : '';
+  return redLockCovers(fmtJ.apply(null, todayJ())) ? redLockUntilDay() : '';
 }
 function armRedLock(day) {
   const p = parseJ(day);
   if (!p[0]) return;
+  const from = fmtJ(p[0], p[1], p[2]);
   const until = fmtJ.apply(null, addDaysJ(p[0], p[1], p[2], RED_LOCK_DAYS));
-  if (until > (redLockUntilDay() || '')) cfgSet('red_lock_until_day', until);
+  if (until <= (redLockUntilDay() || '')) return;
+  cfgSet('red_lock_from_day', from);
+  cfgSet('red_lock_until_day', until);
 }
-function redLockBlocks() {
-  const until = redLockOpenDay();
-  if (!until) return false;
-  toast('قفل خط قرمز تا ' + until, true);
+function redLockBlocks(day) {
+  const hit = redLockCovers(fmtJ.apply(null, todayJ())) || redLockCovers(day);
+  if (!hit) return false;
+  toast('قفل خط قرمز · ' + redLockFromDay() + ' تا ' + redLockUntilDay(), true);
   vibrate(60);
   return true;
 }
@@ -838,8 +846,8 @@ function mergeLawRows(base, extra) {
   return items;
 }
 async function saveDayLaws(items) {
-  if (redLockBlocks()) return;
   const day = selectedMetaDay();
+  if (redLockBlocks(day)) return;
   const rec = await metaFor(day) || blankMeta(day);
   rec.lawsJson = JSON.stringify(items);
   rec.lawsMin = items.reduce((s, x) => s + (Number(x.min) || 0), 0);
@@ -1216,8 +1224,8 @@ function toggleFlagDraft(id) {
 }
 
 async function putGroup(gid) {
-  if (redLockBlocks()) return;
   const day = selectedMetaDay();
+  if (redLockBlocks(day)) return;
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
   if (gid === 'laws') {
@@ -1677,10 +1685,10 @@ function showTab(name) {
 }
 
 async function doSave() {
-  if (redLockBlocks()) return;
   if (activeTab === 'session') {
     const rec = collectSession();
     if (!rec) return;
+    if (redLockBlocks(rec.dateShamsi)) return;
     await put('sessions', rec);
     vibrate(25);
     toast('خط نشست · ' + rec.code + ':' + (rec.chunk || rec.count));
