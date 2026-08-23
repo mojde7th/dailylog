@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v72 · laye2';
+const APP_VERSION = 'v73 · tight';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -67,9 +67,10 @@ const CODES = [
   { cat:'badan',    code:'mokamel', metric:'reps', from:2, def:{r:1,pr:5} },
 
   { cat:'yadgiri',  code:'reswch', metric:'dur', from:2, def:{h:1,m:50} },
+  { cat:'aff',      code:'logevent<=10m', metric:'dur', from:2, def:{h:0,m:10}, stick:true },
 
   { cat:'sabtnam',  code:'sabtnam(tur,kargahravn,kelstakh,zaban,bashgahengh,hamneshin)', metric:'dur', from:3, def:{h:0,m:15} },
-  { cat:'aff',      code:'afflog,affplan,affevenlog', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
+  { cat:'aff',      code:'afflog,affplan', metric:'dur', from:3, def:{h:0,m:15}, stick:true },
   { cat:'badan',    code:'salad', metric:'dur', from:3, def:{h:0,m:20}, kind:true },
   { cat:'badan',    code:'ket<=25m(ketabedast)', metric:'dur', from:3, def:{h:0,m:25} },
   { cat:'badan',    code:'dand', metric:'reps', from:3, def:{r:3,pr:5} }
@@ -129,6 +130,8 @@ const META_ITEMS = [
     label:'noaicopybeforeopenfa2' },
   { id:'promptafter2', group:'raayat', kind:'flag',
     label:'promptafter2' },
+  { id:'promptcopyai15', group:'raayat', kind:'flag',
+    label:'promptcopyai<=15m' },
   { id:'preplan12', group:'raayat', kind:'flag',
     label:'preplaned_ta12' },
 
@@ -156,7 +159,7 @@ const META_ITEMS = [
     label:'takhirinputoutput3thout<1.5s' },
 
   { id:'sessionflowamigh', group:'andaze', kind:'flag',
-    label:'sessionflowamigh(shakhesepeakemohemlayevala)' },
+    label:'sessionflowamigharzeshevala' },
 
   { id:'bidarshodanharhal', group:'laye2', kind:'flag', sev:'day',
     label:'sarezamanbidarnashodam(hatayeksaniedir,hatabamarg,hataba10mkhabeshab)' },
@@ -221,7 +224,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
   'noCarb','nokarekheir','notarahomm','nagoofb',
   'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
-  'nocopypasteazaighable12pm','promptafter2','preplan12',
+  'nocopypasteazaighable12pm','promptafter2','promptcopyai15','preplan12',
   'bidWake','bidDiffMin',
   'ghanoonFarayeMin','afzayeshShansMin',
   'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
@@ -291,7 +294,7 @@ const fmtChunk = min => {
 
 /* ═════════════════════════════ 3. WHEELS ═══════════════════════════════════ */
 
-const ITEM_H = 40;
+const ITEM_H = 32;
 const WHEELS = new Set();
 
 function refreshWheels() { WHEELS.forEach(w => w.apply()); }
