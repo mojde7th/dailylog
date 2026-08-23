@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v75 · wipe';
+const APP_VERSION = 'v76 · shekast';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -873,6 +873,7 @@ function selectedMetaDay() {
 
 function totalLine(it, rec) {
   if (!rec) return '—';
+  if (rec.ruzshekast) return 'ruz shekast';
   if (it.kind === 'accumDur') return 'today: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
   if (it.kind === 'flag') return flagOn(rec, it.id) ? 'SET' : 'not set';
   if (it.kind === 'avgSec') {
@@ -891,6 +892,8 @@ async function paintMetaStatus() {
   const rec = day ? await metaFor(day) : null;
   lastMetaRec = rec;
   const work = await sessionWork(day);
+  const host = $('metaBlocks');
+  if (host) host.classList.toggle('shekast', !!(rec && rec.ruzshekast));
   paintDayChart($('metaDayChart'), rec, work);
   paintSummary($('metaChecks'), rec, work);
   META_ITEMS.forEach(it => {
@@ -1320,7 +1323,11 @@ async function wipeDayKeepFlags(day, rec, keepIds) {
     if (r.synced) queueSessionDelete(r.uid);
     await delKey('sessions', r.uid);
   }
-  if (rec && rec.synced) queueMetaDelete(metaUid(day), day);
+  queueMetaDelete(metaUid(day), day);
+  for (const r of (await getAll('meta')).filter(r => r.dateShamsi === day)) {
+    if (r.uid && r.uid !== metaUid(day)) queueMetaDelete(r.uid, day);
+    await delKey('meta', r.uid);
+  }
   const next = blankMeta(day);
   next.done = {};
   keepIds.forEach(id => {
