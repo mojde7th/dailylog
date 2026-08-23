@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v78 · key';
+const APP_VERSION = 'v79 · key';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -175,7 +175,7 @@ const META_ITEMS = [
   { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag', sev:'lock',
     label:'yeknanolayeamdiezafetaronvane' },
   { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag', sev:'lock',
-    label:'layeavalghavanin(dorugh, konjkav,stalk, hesadat,...)' }
+    label:'layeavalghavanin(dorugh, konjkav,stalk, hesadat, tahghirekhodam, payinavordanearzeshekhodam,...)' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
