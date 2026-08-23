@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v73 · tight';
+const APP_VERSION = 'v74 · trim';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -118,8 +118,6 @@ const META_ITEMS = [
     label:'budandarjayemojaz,kharidemojaz,mohtavayemojaz' },
   { id:'raatayeghavanineakhlaghietayinshode100', group:'raayat', kind:'flag',
     label:'rayateghavaninetayinshode100%' },
-  { id:'rayyatepartbandieruz100', group:'raayat', kind:'flag',
-    label:'rayat100%' },
   { id:'riztarintakhmojaz', group:'raayat', kind:'flag',
     label:'riztarinchiziaztakhghmojazhatajobrankhadathatayeprintghablewnemishe' },
   { id:'riztarinpartbandi', group:'raayat', kind:'flag',
@@ -221,7 +219,7 @@ const META_FIELDS = ['uid','createdAt','dateShamsi',
   'bidarshodanharhal','opf1','opf2','ruzshekast',
   'takhghmojaz0','takhmojmotns',
   'budandarjayemojaz100',
-  'raatayeghavanineakhlaghietayinshode100','rayyatepartbandieruz100',
+  'raatayeghavanineakhlaghietayinshode100',
   'noCarb','nokarekheir','notarahomm','nagoofb',
   'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
   'nocopypasteazaighable12pm','promptafter2','promptcopyai15','preplan12',
