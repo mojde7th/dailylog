@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v80 · key';
+const APP_VERSION = 'v81 · key';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -172,7 +172,7 @@ const META_ITEMS = [
   { id:'notarahomm', group:'laye2', kind:'flag', sev:'day',
     label:'tarahomkardam(hata0%)' },
   { id:'nagoofb', group:'laye2', kind:'flag', sev:'day',
-    label:'goftam(f,b)(makhsusantuperiodi)' },
+    label:'go(f,b)(makhsusantuperiodi)' },
 
   { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag', sev:'lock',
     label:'yeknanolayeamdiezafetaronvane' },
