@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v82 · key';
+const APP_VERSION = 'v83 · tick';
 const SCRIPT_VERSION = 'v11-meta';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -86,98 +86,200 @@ const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category
                         'minutes','hm','chunk','tags','who','reactSec','count','reps','perRep','kind','note'];
 
 const META_GROUPS = [
+  { id:'bidari', title:'bidari' },
+  { id:'khorak', title:'khorak' },
+  { id:'harf', title:'harf / ejtema' },
+  { id:'ghermez', title:'ghermez' },
+  { id:'badan', title:'badan' },
+  { id:'ruz', title:'ruz / raayat' },
   { id:'openfa', title:'openfa' },
-  { id:'raayat', title:'raayat / mojaz / no' },
-  { id:'andaze', title:'andaze / ghanoon', hr:true },
-  { id:'laws',   title:'ghanoon mohem' },
-  { id:'laye2', title:'laye2 · entekhab = ruz shekast', neg:true },
-  { id:'khatghermez', title:'' }
+  { id:'layers', title:'layers / flow' },
+  { id:'laws', title:'ghanoon mohem' }
 ];
-const negGroup = gid => !!(META_GROUPS.find(g => g.id === gid) || {}).neg;
-const isNegItem = it => negGroup(it.group);
+const META_SLOTS = [
+  { id:'all', label:'hame' },
+  { id:0, label:'ta 12' },
+  { id:1, label:'12-2' },
+  { id:2, label:'2-6' },
+  { id:3, label:'bad open' }
+];
+const isNegItem = it => (Number(it.lockDays) || 0) > 0 || it.wipe;
+const negGroup = gid => META_ITEMS.some(it => it.group === gid && isNegItem(it));
 
 const META_ITEMS = [
-  { id:'moodToFlow', group:'openfa', kind:'accumDur',
-    label:'moodtoflowbeforeopenfa2' },
-  { id:'openfa1h', group:'openfa', kind:'flag',
+  /* bidari — tab joda, 1s = 15ruz */
+  { id:'bidarshodanharhal', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true,
+    label:'dir1s · even 1s after alarm · no sit · 15ruz + sokut' },
+  { id:'bidGhalt', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:2, wipe:true,
+    label:'ghalt/1min after zang · 2ruz' },
+  { id:'bidHoliday', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'tatil != weekday wake · 14ruz + sokut' },
+  { id:'bidZiadKhab', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'bishtar khab (hatta marg) joz 2 chort cheshmbaz · 14ruz' },
+  { id:'twoHourAras', group:'bidari', pane:'bidari', slot:0, kind:'flag',
+    label:'2saat bidar ghabl takhshose' },
+
+  /* openfa */
+  { id:'openfa1h', group:'openfa', pane:'meta', slot:3, kind:'flag',
     label:'openfa2<=30m' },
-  { id:'nchort', group:'openfa', kind:'flag',
+  { id:'nchort', group:'openfa', pane:'meta', slot:3, kind:'flag',
     label:'nchort' },
-  { id:'twoHourAras', group:'openfa', kind:'flag',
-    label:'2saatarasmortakhshoseghableSnapeshose' },
-  { id:'chizayemojazbadeopfa2', group:'openfa', kind:'flag',
-    label:'chizayemojazbadeopfa2(morgh,mahi,gusht,sabzijatemojat,seifijatmoja(joz zorat,sibzamini))' },
-  { id:'afterFastMood', group:'openfa', kind:'accumDur',
-    label:'afterfastmoodtoflow' },
+  { id:'chizayemojazbadeopfa2', group:'openfa', pane:'meta', slot:3, kind:'flag',
+    label:'mojaz bad open2 (morgh,mahi,gusht,sabzi; no zorat/sibzamini)' },
+  { id:'opf1', group:'openfa', pane:'meta', slot:3, kind:'flag', lockDays:5, wipe:true,
+    label:'openfa1/prot ghabl 15 nashod · 5ruz' },
+  { id:'opf2', group:'openfa', pane:'meta', slot:3, kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'openfa2 after 6 nashod · BOZORG · 14ruz' },
+  { id:'protGhabl3', group:'openfa', pane:'meta', slot:0, kind:'flag', lockDays:10, wipe:true,
+    label:'prot powder ghabl 15:00 · 10ruz (cheat=14)' },
+  { id:'cheetProt3', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'cheat: prot ghabl 3 · 14ruz + sokut' },
 
-  { id:'takhghmojaz0', group:'raayat', kind:'flag',
-    label:'takhghmojaz<=0' },
-  { id:'takhmojmotns', group:'raayat', kind:'flag',
+  /* khorak */
+  { id:'noCarb', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'noon/berenj/carb · 14ruz' },
+  { id:'adams', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'adams hata bitam · abadi mamnoo · 14ruz + sokut' },
+  { id:'shirin', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true,
+    label:'shirin masnu (ab/josh/taam) joz prot+collagen · 15ruz' },
+  { id:'cheetShirin', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'cheat: shirin/adams/abtaam · 14ruz + sokut' },
+  { id:'tokhme', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'tokhme/kadu/proshir/bar (joz powder) · 5ruz' },
+  { id:'asalajil', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:7, wipe:true,
+    label:'asal,khorma,gerdu,mive,sohan · 7ruz' },
+  { id:'abtaam', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'ab gazdar taam / joshan · hata ruz shekast · 14ruz' },
+  { id:'foodToxic', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'toxic ba ghazaye gheyr / resolver peek · 14ruz' },
+  { id:'hattaaeradekhordan', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    label:'cut daem · 0 cheat · 0 nok sozan' },
+  { id:'hossUnmojaz', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    label:'dide/hoss digaran dalil nist · ghanun mimune' },
+  { id:'fastingmode', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    label:'fasting (ab,qahve,chaysabz) · dirtyfast nist' },
+  { id:'abkhoshmaze2test', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'ab khoshmaze / doptest shekast · 5ruz' },
+  { id:'noghahveyebiruni', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    label:'no qahve/limunad biruni' },
+
+  /* harf / ejtema */
+  { id:'nagoofb', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'nagoftan F/B (period) · zaban-narm HAZF shod' },
+  { id:'tozihezafe', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'tozih ezafe (snapp/energy/nime amadam) · 5ruz' },
+  { id:'darkhastsharm', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'darkhast ba tondi/sharm/makhfi · 14ruz' },
+  { id:'bazkhod', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'baz kardan khod (group/darman) · 5ruz' },
+  { id:'tondi', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'tondi/sharm/khejalat 0 · 14ruz' },
+  { id:'ajele', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'ajeie · 14ruz' },
+  { id:'moshavere', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'komak/rahnama/moshavere · 1kalame bad takhir · 14ruz' },
+  { id:'tasir', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'tasir/qane kardan (hatta takhassos) · 14ruz' },
+  { id:'bahs', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'bahs/qane · 14ruz + sokut' },
+  { id:'tarifkhanom', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'tarif khanom / bala bordan kasi · 14ruz + sokut' },
+  { id:'enteghad', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'riz enteghad/sarzanesh (madar/…) · 14ruz + sokut' },
+  { id:'multimedia', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'multimedia/video group · 14ruz' },
+  { id:'khshaki', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'khshaki/milad/… sohbat · 5ruz' },
+  { id:'insta', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'insta joz kar-vajib-chat (hatta SHO/SA) · 14ruz' },
+  { id:'khire', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'khire dur / 0kar > 3x20m · 14ruz + part' },
+  { id:'khabjam', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'khab tu jam · 5ruz' },
+  { id:'naghseRaghs', group:'badan', pane:'meta', slot:2, kind:'flag', lockDays:5, wipe:true,
+    label:'raghs/araghs joz control+dush · 5ruz' },
+
+  /* ghermez */
+  { id:'yeklayeamdiezafe', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'1 laye amdi ezafe · 14ruz + sokut' },
+  { id:'esteghrakonjkavi', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'dorugh/konjkav/stalk/hesadat/tahghir · 14ruz' },
+  { id:'mahdoodzehn', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'mahdood zehn (mojarrad nistam/…) · 14ruz' },
+  { id:'fararBiq', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    label:'farar az biqarari (adams/…) · asl=tahamol · 14ruz + sokut' },
+  { id:'mindSlack', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'zehn: shol/cheat/taghir qanun · NA · 14ruz' },
+  { id:'partChange', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    label:'avaz partbandi (hatta marg/lesh) · 14ruz' },
+  { id:'nokarekheir', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'kare kheyr (0.00001%) · 5ruz' },
+  { id:'notarahomm', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'tarahom · 5ruz' },
+
+  /* badan */
+  { id:'shostsoorat', group:'badan', pane:'meta', slot:3, kind:'flag', lockDays:3, wipe:true,
+    label:'shost soorat shab NA · 3ruz' },
+  { id:'mesvak', group:'badan', pane:'meta', slot:3, kind:'flag', lockDays:3, wipe:true,
+    label:'mesvak shab NA · 3ruz' },
+
+  /* ruz / raayat */
+  { id:'takhghmojaz0', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'takhgh mojaz <=0' },
+  { id:'takhmojmotns', group:'ruz', pane:'meta', slot:'all', kind:'flag',
     label:'takhmojmotns' },
-  { id:'budandarjayemojaz100', group:'raayat', kind:'flag',
-    label:'budandarjayemojaz,kharidemojaz,mohtavayemojaz' },
-  { id:'raatayeghavanineakhlaghietayinshode100', group:'raayat', kind:'flag',
-    label:'rayateghavaninetayinshode100%' },
-  { id:'riztarintakhmojaz', group:'raayat', kind:'flag',
-    label:'riztarinchiziaztakhghmojazhatajobrankhadathatayeprintghablewnemishe' },
-  { id:'riztarinpartbandi', group:'raayat', kind:'flag',
-    label:'riztarinchizikpartbandiokharabkonemamnoo(hatayechizzehnirukaghaz,faghataftopfa2,ghableshfaghatmishekeywordzad)' },
-  { id:'noghahveyebiruni', group:'raayat', kind:'flag',
-    label:'noghahveyebiruni,nolimunadbiruni' },
-  { id:'nocopypasteazaighable12pm', group:'raayat', kind:'flag',
-    label:'noaicopybeforeopenfa2' },
-  { id:'prompt15', group:'raayat', kind:'flag',
+  { id:'budandarjayemojaz100', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'jay/kharid/mohtava mojaz' },
+  { id:'raatayeghavanineakhlaghietayinshode100', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'100% qavanin tayinshode' },
+  { id:'riztarintakhmojaz', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'riz takhgh mojaz · print qabl WN na' },
+  { id:'riztarinpartbandi', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    label:'partbandi: qabl open2 faghat keyword' },
+  { id:'nocopypasteazaighable12pm', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    label:'copyAI faghat BAD open2' },
+  { id:'prompt15', group:'ruz', pane:'meta', slot:3, kind:'flag',
     label:'prompt<=15m' },
-  { id:'copyai15', group:'raayat', kind:'flag',
+  { id:'copyai15', group:'ruz', pane:'meta', slot:3, kind:'flag',
     label:'copyai<=15m' },
-  { id:'preplan12', group:'raayat', kind:'flag',
-    label:'preplaned_ta12' },
+  { id:'preplan12', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    label:'1kalame zaruri + preplan ta12' },
+  { id:'yekkalame12', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    label:'1kalame zaruri ta12 zadam' },
+  { id:'snapRoodsar', group:'ruz', pane:'meta', slot:0, kind:'flag', lockDays:5, wipe:true,
+    label:'payin shahrak/rodsar qabl snap/tapsi · 5ruz' },
+  { id:'sarsaatresidan', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'sar saat residan' },
+  { id:'taghiratchaos', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'chaos/taghir · hanuz 100% qanun' },
+  { id:'rutinChaos', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'rutin tu be-ham-rikhtegi hefz' },
+  { id:'checkkardan', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'hey check · nabash tu proses · 5ruz' },
+  { id:'leshPart', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    label:'lesh = avaz part · 5ruz' },
+  { id:'abjayeBiq', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    label:'har biqarari → AB (jaygozin)' },
 
-  { id:'ghanoon', group:'andaze', kind:'accumDur',
-    label:'ghanoonfarayeman' },
-  { id:'ghanoonfarayehattayarade', group:'andaze', kind:'accumDur',
-    label:'ghanoonfarayehattaerademan' },
-  { id:'afzayesheshans', group:'andaze', kind:'accumDur',
-    label:'afzayesheshans' },
-  { id:'taghiratchaos', group:'andaze', kind:'flag',
-    label:'hattataghiratmohembarname,taghirat,taghirmetamindset,hattashadidbehamrikhtegi,inchaos,exceptions,moods,outofroutinesall,hata100bikar,ghavanin100rayat' },
-  { id:'hattaaeradekhordan', group:'andaze', kind:'flag',
-    label:'hattabaeradekhordanhamnemishenaghz' },
-  { id:'sarsaatresidan', group:'andaze', kind:'flag',
-    label:'sarsaatresidanbeja' },
-  { id:'fastingmode', group:'andaze', kind:'flag',
-    label:'fastingmode(ab,qahve,chaysabz)' },
-  { id:'abkhoshmaze2test', group:'andaze', kind:'flag',
-    label:'abkhshmaze?(doptest)' },
-  { id:'layers', group:'andaze', kind:'accumDur',
-    label:'bigharrshadid,zajrshadid,dardshadid,fesharshadi,karesakht,flowshadid,tamarkozshaid,amighshadid,withthinkshadid' },
-  { id:'sokut', group:'andaze', kind:'accumDur', optional:true,
-    label:'roozsokut' },
-  { id:'takhirAvg', group:'andaze', kind:'avgSec',
-    label:'takhirinputoutput3thout<1.5s' },
-
-  { id:'sessionflowamigh', group:'andaze', kind:'flag',
-    label:'sessionflowamigharzeshevala' },
-
-  { id:'bidarshodanharhal', group:'laye2', kind:'flag', sev:'day',
-    label:'sarezamanbidarnashodam(hatayeksaniedir,hatabamarg,hataba10mkhabeshab)' },
-  { id:'opf1', group:'laye2', kind:'flag', sev:'day',
-    label:'openfa1after15(15gsachetprot)nashod' },
-  { id:'opf2', group:'laye2', kind:'flag', sev:'day',
-    label:'openfa2after6pmnashod' },
-  { id:'noCarb', group:'laye2', kind:'flag', sev:'day',
-    label:'noon,berenj,carb,tanagholat,ghandetabiyi,adams,mive,ajilkhordam' },
-  { id:'nokarekheir', group:'laye2', kind:'flag', sev:'day',
-    label:'karekheirkardam(hata0.00001%)' },
-  { id:'notarahomm', group:'laye2', kind:'flag', sev:'day',
-    label:'tarahomkardam(hata0%)' },
-  { id:'nagoofb', group:'laye2', kind:'flag', sev:'day',
-    label:'zabanenaram(dorehayekhas)nashod' },
-
-  { id:'yeklayeamdiezafe', group:'khatghermez', kind:'flag', sev:'lock',
-    label:'yeknanolayeamdiezafetaronvane' },
-  { id:'esteghrakonjkavi', group:'khatghermez', kind:'flag', sev:'lock',
-    label:'layeavalghavanin(dorugh, konjkav,stalk, hesadat, tahghirekhodam, payinavordanearzeshekhodam,...)' }
+  /* layers tab */
+  { id:'moodToFlow', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    label:'moodEhsasToFlow · HAME halat (khastegi,goshne,biq,garmi,badmood,fasting)' },
+  { id:'afterFastMood', group:'layers', pane:'layers', slot:3, kind:'accumDur',
+    label:'afterfast moodToFlow' },
+  { id:'layers', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    label:'biq/zajr/dard/feshar/sakht/flow/tamarkoz/amigh' },
+  { id:'ghanoon', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    label:'ghanoon faraye man' },
+  { id:'ghanoonfarayehattayarade', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    label:'ghanoon faraye hatta erade' },
+  { id:'afzayesheshans', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    label:'afzayesh shans' },
+  { id:'sokut', group:'layers', pane:'layers', slot:'all', kind:'accumDur', optional:true,
+    label:'rooz sokut' },
+  { id:'takhirAvg', group:'layers', pane:'layers', slot:'all', kind:'avgSec',
+    label:'takhir in/out <1.5s' },
+  { id:'sessionflowamigh', group:'layers', pane:'layers', slot:'all', kind:'flag',
+    label:'session flow amigh · arzeshe vala' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
@@ -212,28 +314,18 @@ function migrateFlagBundles(rec) {
   rec.doneJson = JSON.stringify(done);
 }
 
-const META_FIELDS = ['uid','createdAt','dateShamsi',
-  'moodToFlowMin','afterFastMoodMin','ghanoonMin','layersMin',
-  'openfa1h','nchort','saatbidari5','twoHourAras',
-  'chizayemojazbadeopfa2',
-  'bidarshodanharhal','opf1','opf2','ruzshekast',
-  'takhghmojaz0','takhmojmotns',
-  'budandarjayemojaz100',
-  'raatayeghavanineakhlaghietayinshode100',
-  'noCarb','nokarekheir','notarahomm','nagoofb',
-  'riztarintakhmojaz','riztarinpartbandi','sessionflowamigh','noghahveyebiruni',
-  'nocopypasteazaighable12pm','prompt15','copyai15','preplan12',
-  'bidWake','bidDiffMin',
-  'ghanoonFarayeMin','afzayeshShansMin',
-  'taghiratchaos','hattaaeradekhordan','sarsaatresidan','fastingmode','abkhoshmaze2test',
-  'yeklayeamdiezafe','esteghrakonjkavi',
-  'takhirAvg','takhirN','takhirSum','takhirJson','lawsJson','lawsMin','sokut',
-  'doneJson','complete'];
+const META_FIELDS = Array.from(new Set([
+  'uid','createdAt','dateShamsi','ruzshekast',
+  'bidWake','bidDiffMin','saatbidari5',
+  'takhirAvg','takhirN','takhirSum','takhirJson',
+  'lawsJson','lawsMin','doneJson','complete','pishroJson','lockAdd',
+  'moodToFlowMin','afterFastMoodMin','ghanoonMin','ghanoonFarayeMin','afzayeshShansMin','layersMin','sokut'
+].concat(META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id))));
 
 const MIN_REACT_SEC = 2;
 const TAKHIR_SECS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 8, 10, 15];
 const TAKHIR_OK = 1.5;
-const BID_DIFF_OK_MIN = 5;
+const BID_DIFF_OK_MIN = 0;
 
 const META_STORE = {
   moodToFlow: 'moodToFlowMin',
@@ -598,19 +690,33 @@ function redLockCovers(day) {
 function redLockOpenDay() {
   return redLockCovers(fmtJ.apply(null, todayJ())) ? redLockUntilDay() : '';
 }
-function armRedLock(day) {
+function armRedLock(day) { armLock(day, RED_LOCK_DAYS); }
+function armLock(day, days) {
+  const add = Math.max(1, Number(days) || RED_LOCK_DAYS);
   const p = parseJ(day);
-  if (!p[0]) return;
+  if (!p[0]) return add;
+  const today = fmtJ.apply(null, todayJ());
   const from = fmtJ(p[0], p[1], p[2]);
-  const until = fmtJ.apply(null, addDaysJ(p[0], p[1], p[2], RED_LOCK_DAYS));
-  if (until <= (redLockUntilDay() || '')) return;
-  cfgSet('red_lock_from_day', from);
-  cfgSet('red_lock_until_day', until);
+  const curUntil = redLockUntilDay();
+  let base;
+  if (curUntil && curUntil > today) {
+    const u = parseJ(curUntil);
+    base = u[0] ? u : p;
+  } else {
+    base = p;
+    cfgSet('red_lock_from_day', from);
+  }
+  const until = fmtJ.apply(null, addDaysJ(base[0], base[1], base[2], add));
+  if (!curUntil || until > curUntil) cfgSet('red_lock_until_day', until);
+  if (add >= 14) cfgSet('silent_until', until);
+  return add;
 }
-function redLockBlocks(day) {
+function silentUntil() { return cfgGet('silent_until'); }
+function redLockBlocks(day, opts) {
+  if (opts && opts.allowStack) return false;
   const hit = redLockCovers(fmtJ.apply(null, todayJ())) || redLockCovers(day);
   if (!hit) return false;
-  toast('قفل خط قرمز · ' + redLockFromDay() + ' تا ' + redLockUntilDay(), true);
+  toast('قفل · ' + redLockFromDay() + ' تا ' + redLockUntilDay() + ' · +ruz az tick shekast', true);
   vibrate(60);
   return true;
 }
@@ -667,13 +773,13 @@ function takhirIsOk(rec, extra) {
 function isComplete(rec) {
   const d = parseDone(rec);
   return META_ITEMS.every(it => {
-    if (it.optional) return true;
-    if (isNegItem(it)) return !d[it.id];
+    if (it.optional || isNegItem(it)) return true;
     if (it.kind === 'avgSec') {
       const n = Number(rec && rec.takhirN) || 0;
-      return n > 0 && takhirIsOk(rec);
+      return !n || takhirIsOk(rec);
     }
-    return !!d[it.id];
+    if (it.kind === 'accumDur') return true;
+    return !!d[it.id] || !!(rec && rec[it.id]);
   });
 }
 
@@ -775,6 +881,15 @@ let takhirPick = null;
 let lawDraft = [];
 let lastMetaRec = null;
 let bidariDraft = false;
+let metaSlot = 'all';
+let metaPack = 'all';
+const PISHRO_ROWS = [
+  { id:'ITPr', label:'ITPr' },
+  { id:'takhshose', label:'takhshose' },
+  { id:'moshv', label:'moshv' },
+  { id:'arasmor', label:'arasmor' },
+  { id:'openfa2', label:'openfa2' }
+];
 
 function flagOn(rec, id) {
   if (Object.prototype.hasOwnProperty.call(flagDraft, id)) return !!flagDraft[id];
@@ -904,8 +1019,8 @@ async function paintMetaStatus() {
   const work = await sessionWork(day);
   const host = $('metaBlocks');
   if (host) host.classList.toggle('shekast', !!(rec && rec.ruzshekast));
-  paintDayChart($('metaDayChart'), rec, work);
-  paintSummary($('metaChecks'), rec, work);
+  if ($('metaDayChart')) paintDayChart($('metaDayChart'), rec, work);
+  if ($('pishroBlocks')) paintPishro(rec);
   META_ITEMS.forEach(it => {
     const tot = $('tot_' + it.id);
     if (tot) tot.textContent = totalLine(it, rec);
@@ -995,9 +1110,14 @@ function mountMetaItem(host, it) {
     const b = document.createElement('button');
     b.type = 'button';
     b.dir = 'ltr';
-    b.textContent = it.label;
-    if (it.sev) b.classList.add('sev-' + it.sev);
-    b.addEventListener('click', () => toggleFlagDraft(it.id));
+    b.className = 'mchk';
+    if (it.lockDays) b.classList.add(it.lockDays >= 14 ? 'sev-lock' : 'sev-day');
+    b.innerHTML = '<i></i><span>' + it.label + '</span>' +
+      (lockBadge(it) ? '<b>' + lockBadge(it) + '</b>' : '');
+    b.addEventListener('click', () => {
+      if (isNegItem(it)) commitFlag(it);
+      else toggleFlagDraft(it.id);
+    });
     row.appendChild(b);
     it._btn = b;
     return;
@@ -1168,48 +1288,173 @@ function mountLawsPanel(wrap) {
   paintLawList();
 }
 
-function buildMeta() {
-  let paintT = null;
-  mDate = makeDateWheel($('mDate'), () => {
-    clearFlagDraft();
-    lawDraft = [];
-    bidariDraft = false;
-    clearTimeout(paintT);
-    paintT = setTimeout(() => {
-      loadLawDraft().then(() => paintMetaStatus());
-    }, 220);
+function itemInSlot(it, slot) {
+  if (slot === 'all') return true;
+  return it.slot === 'all' || it.slot === slot || String(it.slot) === String(slot);
+}
+function visibleMetaItems(pane) {
+  return META_ITEMS.filter(it => {
+    if ((it.pane || 'meta') !== pane) return false;
+    if (pane === 'meta' && !itemInSlot(it, metaSlot)) return false;
+    if (pane === 'meta' && metaPack !== 'all' && it.group !== metaPack && it.group !== 'laws') return false;
+    return true;
   });
+}
+function lockBadge(it) {
+  const n = Number(it.lockDays) || 0;
+  return n ? ('+' + n) : '';
+}
+function renderMetaFilters() {
+  const slotHost = $('metaSlots');
+  const packHost = $('metaPacks');
+  if (slotHost) {
+    slotHost.innerHTML = META_SLOTS.map(s =>
+      '<button type="button" data-slot="' + s.id + '"' + (String(s.id) === String(metaSlot) ? ' class="on"' : '') + '>' + s.label + '</button>'
+    ).join('');
+    slotHost.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      metaSlot = b.dataset.slot === 'all' ? 'all' : Number(b.dataset.slot);
+      renderMetaFilters();
+      renderMetaList();
+    }));
+  }
+  if (packHost) {
+    const packs = [{ id:'all', title:'hame' }].concat(META_GROUPS.filter(g => g.id !== 'bidari' && g.id !== 'layers'));
+    packHost.innerHTML = packs.map(g =>
+      '<button type="button" data-pack="' + g.id + '"' + (g.id === metaPack ? ' class="on"' : '') + '>' + g.title + '</button>'
+    ).join('');
+    packHost.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      metaPack = b.dataset.pack;
+      renderMetaFilters();
+      renderMetaList();
+    }));
+  }
+}
+function renderMetaList() {
   const host = $('metaBlocks');
+  if (!host) return;
   host.innerHTML = '';
   host.className = 'mgrids';
-  META_GROUPS.forEach(g => {
+  const items = visibleMetaItems('meta');
+  const groups = [];
+  items.forEach(it => { if (!groups.includes(it.group)) groups.push(it.group); });
+  if (metaPack === 'laws' || metaPack === 'all') groups.push('laws');
+  Array.from(new Set(groups)).forEach(gid => {
     const wrap = document.createElement('div');
-    wrap.className = 'mgrp tone-' + g.id + ((g.id === 'andaze' || g.id === 'laws' || g.id === 'laye2' || g.id === 'khatghermez') ? ' span2' : '');
-    const flags = groupFlags(g.id);
-    wrap.innerHTML =
-      (g.title ? `<div class="gtitle">${g.title}</div>` : '') +
-      (flags.length
-        ? `<div class="mall">` +
-          `<button type="button" data-all="1">select all</button>` +
-          `<button type="button" data-all="0">unselect all</button>` +
-          `</div>`
-        : '');
+    wrap.className = 'mgrp tone-' + gid + ' span2';
+    const g = META_GROUPS.find(x => x.id === gid) || { title: gid };
+    wrap.innerHTML = '<div class="gtitle">' + g.title + '</div>';
     host.appendChild(wrap);
-    wrap.querySelectorAll('.mall button').forEach(b => {
-      b.addEventListener('click', () => draftGroupFlags(g.id, b.dataset.all === '1'));
-    });
-    if (g.id === 'laws') mountLawsPanel(wrap);
-    else {
-      META_ITEMS.filter(it => it.group === g.id).forEach(it => mountMetaItem(wrap, it));
-      if (g.id === 'openfa') mountBidWakePanel(wrap);
+    if (gid === 'laws') mountLawsPanel(wrap);
+    else items.filter(it => it.group === gid).forEach(it => mountMetaItem(wrap, it));
+    if (gid !== 'laws') {
+      const putBtn = document.createElement('button');
+      putBtn.type = 'button';
+      putBtn.className = 'gput';
+      putBtn.textContent = 'put ' + gid;
+      putBtn.addEventListener('click', () => putGroup(gid));
+      wrap.appendChild(putBtn);
+    } else {
+      const putBtn = document.createElement('button');
+      putBtn.type = 'button';
+      putBtn.className = 'gput';
+      putBtn.textContent = 'put laws';
+      putBtn.addEventListener('click', () => putGroup('laws'));
+      wrap.appendChild(putBtn);
     }
-    const putBtn = document.createElement('button');
-    putBtn.type = 'button';
-    putBtn.className = 'gput';
-    putBtn.textContent = g.title ? ('put ' + g.title) : 'put';
-    putBtn.addEventListener('click', () => putGroup(g.id));
-    wrap.appendChild(putBtn);
   });
+  paintMetaStatus();
+}
+function buildPaneItems(hostId, pane) {
+  const host = $(hostId);
+  if (!host) return;
+  host.innerHTML = '';
+  host.className = 'mgrids';
+  const wrap = document.createElement('div');
+  wrap.className = 'mgrp tone-' + pane + ' span2';
+  host.appendChild(wrap);
+  META_ITEMS.filter(it => (it.pane || 'meta') === pane).forEach(it => mountMetaItem(wrap, it));
+  if (pane === 'bidari') mountBidWakePanel(wrap);
+  const putBtn = document.createElement('button');
+  putBtn.type = 'button';
+  putBtn.className = 'gput';
+  putBtn.textContent = 'put ' + pane;
+  putBtn.addEventListener('click', () => putPane(pane));
+  wrap.appendChild(putBtn);
+}
+function buildPishro() {
+  const host = $('pishroBlocks');
+  if (!host) return;
+  host.innerHTML = PISHRO_ROWS.map(r =>
+    '<div class="pishrow" data-pid="' + r.id + '">' +
+      '<label class="pishlab"><input type="checkbox" data-pon="' + r.id + '"/> ' + r.id + '</label>' +
+      '<input class="ltr" data-pmin="' + r.id + '" type="number" min="0" placeholder="min"/>' +
+      '<div class="chips qchips" data-pq="' + r.id + '">' +
+        QUALITY_TAGS.map(t => '<button type="button" data-q="' + t + '">' + t + '</button>').join('') +
+      '</div>' +
+    '</div>'
+  ).join('');
+  host.querySelectorAll('[data-pq] button').forEach(b => {
+    b.addEventListener('click', () => b.classList.toggle('on'));
+  });
+  const save = $('pishroSave');
+  if (save) save.addEventListener('click', savePishro);
+}
+function readPishroUi() {
+  const o = {};
+  PISHRO_ROWS.forEach(r => {
+    const on = document.querySelector('[data-pon="' + r.id + '"]');
+    const min = document.querySelector('[data-pmin="' + r.id + '"]');
+    const qs = Array.from(document.querySelectorAll('[data-pq="' + r.id + '"] button.on')).map(b => b.dataset.q);
+    o[r.id] = { on: !!(on && on.checked), min: Number(min && min.value) || 0, q: qs };
+  });
+  return o;
+}
+function paintPishro(rec) {
+  let data = {};
+  try { data = JSON.parse((rec && rec.pishroJson) || '{}'); } catch (e) { data = {}; }
+  PISHRO_ROWS.forEach(r => {
+    const row = data[r.id] || {};
+    const on = document.querySelector('[data-pon="' + r.id + '"]');
+    const min = document.querySelector('[data-pmin="' + r.id + '"]');
+    if (on) on.checked = !!row.on;
+    if (min) min.value = row.min || '';
+    document.querySelectorAll('[data-pq="' + r.id + '"] button').forEach(b => {
+      b.classList.toggle('on', (row.q || []).indexOf(b.dataset.q) >= 0);
+    });
+  });
+}
+async function savePishro() {
+  const day = selectedMetaDay();
+  if (!day) return;
+  const rec = await metaFor(day) || blankMeta(day);
+  rec.pishroJson = JSON.stringify(readPishroUi());
+  rec.synced = 0;
+  await put('meta', rec);
+  lastMetaRec = rec;
+  toast('pishro save');
+  trySync();
+}
+function buildMeta() {
+  let paintT = null;
+  if ($('mDate') && !mDate) {
+    mDate = makeDateWheel($('mDate'), () => {
+      clearFlagDraft();
+      lawDraft = [];
+      bidariDraft = false;
+      clearTimeout(paintT);
+      paintT = setTimeout(() => {
+        loadLawDraft().then(() => {
+          paintMetaStatus();
+          paintPishro(lastMetaRec);
+        });
+      }, 220);
+    });
+  }
+  renderMetaFilters();
+  renderMetaList();
+  buildPaneItems('bidariBlocks', 'bidari');
+  buildPaneItems('layerBlocks', 'layers');
+  buildPishro();
   loadLawDraft().then(() => paintMetaStatus());
 }
 
@@ -1225,9 +1470,61 @@ function toggleFlagDraft(id) {
   vibrate(8);
 }
 
+async function commitFlag(it) {
+  const day = selectedMetaDay();
+  if (!day) return;
+  let rec = await metaFor(day) || blankMeta(day);
+  const on = !rec[it.id];
+  if (!on) {
+    rec[it.id] = '';
+    const done = parseDone(rec);
+    delete done[it.id];
+    rec.done = done;
+    rec.doneJson = JSON.stringify(done);
+    rec.synced = 0;
+    await put('meta', rec);
+    lastMetaRec = rec;
+    toast('off ' + it.id);
+    await paintMetaStatus();
+    trySync();
+    return;
+  }
+  const n = Number(it.lockDays) || 0;
+  if (!confirm(it.label + (n ? ('\n+' + n + ' ruz jam mishe ru ghofl') : '') + (it.wipe ? '\nruz pak' : '') + (it.silent ? '\nsokut ba AI' : '') + ' ?')) return;
+  rec[it.id] = 1;
+  applyFlagBundle(rec, it.id, true);
+  const keep = [it.id];
+  if (it.wipe) {
+    rec.ruzshekast = 1;
+    keep.push('ruzshekast');
+    await wipeDayKeepFlags(day, rec, keep);
+  } else {
+    const done = parseDone(rec);
+    done[it.id] = 1;
+    rec.done = done;
+    rec.doneJson = JSON.stringify(done);
+    rec.synced = 0;
+    rec.complete = isComplete(rec) ? 1 : 0;
+    await put('meta', rec);
+    lastMetaRec = rec;
+  }
+  if (n) armLock(day, n);
+  if (it.silent) cfgSet('silent_until', redLockUntilDay() || silentUntil());
+  vibrate(25);
+  toast((n ? ('+' + n + ' → ' + redLockUntilDay()) : 'set') + (it.silent ? ' · sokut' : ''));
+  await paintMetaStatus();
+  updateLockPill();
+  trySync();
+}
+
+async function putPane(pane) {
+  const gids = Array.from(new Set(META_ITEMS.filter(it => (it.pane || 'meta') === pane).map(it => it.group)));
+  for (const gid of gids) await putGroup(gid);
+}
+
 async function putGroup(gid) {
   const day = selectedMetaDay();
-  if (redLockBlocks(day)) return;
+  if (redLockBlocks(day, { allowStack: negGroup(gid) })) return;
   let rec = await metaFor(day) || blankMeta(day);
   const done = parseDone(rec);
   if (gid === 'laws') {
@@ -1284,13 +1581,17 @@ async function putGroup(gid) {
       else delete done[it.id];
     }
   });
-  if (gid === 'openfa' && mW.bidWake && mW.bidDiff && bidariDraft) {
+  if (gid === 'bidari' && mW.bidWake && mW.bidDiff && bidariDraft) {
     rec.bidWake = mW.bidWake.value();
     rec.bidDiffMin = mW.bidDiff.minutes();
     const diff = Number(rec.bidDiffMin) || 0;
     rec.saatbidari5 = diff <= BID_DIFF_OK_MIN ? 1 : '';
     if (diff <= BID_DIFF_OK_MIN) done.saatbidari5 = 1;
-    else delete done.saatbidari5;
+    else {
+      delete done.saatbidari5;
+      rec.bidarshodanharhal = 1;
+      done.bidarshodanharhal = 1;
+    }
     bidariDraft = false;
   }
   rec.done = done;
@@ -1298,19 +1599,30 @@ async function putGroup(gid) {
   rec.complete = isComplete(rec) ? 1 : 0;
   rec.synced = 0;
   rec.createdAt = rec.createdAt || new Date().toISOString();
-  const red = gid === 'khatghermez' && (rec.yeklayeamdiezafe || rec.esteghrakonjkavi);
-  const broke = negGroup(gid) && groupFlags(gid).some(it => rec[it.id]);
-  if (red || broke) {
-    const keep = groupFlags(gid).map(it => it.id);
-    const ask = red
-      ? 'خط قرمز: کل ثبت این روز از اپ و شیت پاک شود و اپ ' + RED_LOCK_DAYS + ' روز قفل شود؟'
-      : 'لایهٔ دوم: روز شکست. کل ثبت این روز از اپ و شیت پاک شود؟';
+  let addLock = 0, wipe = false, silent = false;
+  groupFlags(gid).forEach(it => {
+    if (!rec[it.id] || !isNegItem(it)) return;
+    addLock += Number(it.lockDays) || 0;
+    if (it.wipe) wipe = true;
+    if (it.silent) silent = true;
+  });
+  if (gid === 'bidari' && Number(rec.bidDiffMin) > 0) {
+    addLock += 15;
+    wipe = true;
+    silent = true;
+  }
+  const broke = addLock > 0 || wipe;
+  if (broke) {
+    const keep = groupFlags(gid).map(it => it.id).concat(['ruzshekast']);
+    const ask = '+' + addLock + ' ruz jam ru ghofl' + (wipe ? ' · ruz pak' : '') + (silent ? ' · sokut' : '') + ' ?';
     if (!confirm(ask)) return;
-    if (broke) rec.ruzshekast = 1;
-    await wipeDayKeepFlags(day, rec, keep.concat(broke ? ['ruzshekast'] : []));
-    if (red) armRedLock(day);
+    rec.ruzshekast = 1;
+    if (wipe) await wipeDayKeepFlags(day, rec, keep);
+    else await put('meta', rec);
+    if (addLock) armLock(day, addLock);
+    if (silent) cfgSet('silent_until', redLockUntilDay() || silentUntil());
     vibrate(25);
-    toast(red ? ('روز پاک شد · قفل تا ' + redLockUntilDay()) : 'روز شکست · روز پاک شد');
+    toast('+' + addLock + ' · ta ' + redLockUntilDay());
     await paintMetaStatus();
     await paintNotebook();
     await refreshData();
@@ -1380,7 +1692,8 @@ function buildParts() {
     paint();
     picked = null;
     fillActivityList();
-    $('nbComposer').classList.add('hide');
+    const comp = $('nbComposer');
+    if (comp) { comp.classList.add('hide'); comp.classList.remove('docked'); }
     vibrate(8);
   }));
   paint();
@@ -1454,6 +1767,7 @@ function openComposer() {
   const c = currentCode();
   const d = c.def || {};
   $('nbComposer').classList.remove('hide');
+  $('nbComposer').classList.add('docked');
   $('compTitle').textContent = c.code;
   const host = $('dynFields');
   WHEELS.forEach(w => { if (!w.el.isConnected) w.destroy(); });
@@ -1644,7 +1958,7 @@ async function paintNotebook() {
 
 /* ═════════════════════════════ 7. TABS / SAVE ══════════════════════════════ */
 
-let activeTab = 'session';
+let activeTab = 'pishro';
 
 function pinHeader() {
   const h = document.querySelector('header');
@@ -1660,27 +1974,30 @@ function ensureSessionUi() {
   fillActivityList();
 }
 
+const TAB_IDS = ['pishro','bidari','meta','layers','session','dash','data'];
 function showTab(name) {
-  if (name !== 'session' && name !== 'meta' && name !== 'data' && name !== 'dash') name = 'session';
+  if (TAB_IDS.indexOf(name) < 0) name = 'pishro';
   activeTab = name;
   cfgSet('tab', name);
-  $('paneSession').classList.toggle('hide', name !== 'session');
-  $('paneMeta').classList.toggle('hide',    name !== 'meta');
-  $('paneData').classList.toggle('hide',    name !== 'data');
-  if ($('paneDash')) $('paneDash').classList.toggle('hide', name !== 'dash');
-  $('tabSession').classList.toggle('active', name === 'session');
-  $('tabMeta').classList.toggle('active',    name === 'meta');
-  $('tabData').classList.toggle('active',    name === 'data');
-  if ($('tabDash')) $('tabDash').classList.toggle('active', name === 'dash');
+  TAB_IDS.forEach(id => {
+    const pane = $('pane' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (pane) pane.classList.toggle('hide', id !== name);
+    const tab = $('tab' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (tab) tab.classList.toggle('active', id === name);
+  });
+  if ($('dayBar')) $('dayBar').classList.toggle('hide', ['pishro','bidari','meta','layers'].indexOf(name) < 0);
   $('btnSave').disabled  = (name !== 'session');
   $('btnSave').textContent = 'این خط را بنویس';
   const bar = document.querySelector('.bar');
   if (bar) bar.classList.toggle('hide', name !== 'session');
-  document.body.style.paddingBottom = name === 'session' ? '168px' : '88px';
+  document.body.style.paddingBottom = name === 'session' ? '168px' : '108px';
   if (name === 'session') ensureSessionUi();
   requestAnimationFrame(pinHeader);
   settleWheels();
-  if (name === 'meta') paintMetaStatus();
+  if (name === 'meta' || name === 'bidari' || name === 'layers' || name === 'pishro') {
+    paintMetaStatus();
+    paintPishro(lastMetaRec);
+  }
   if (name === 'session') { paintNotebook(); paintMetaStatus(); }
   if (name === 'data') refreshData();
   if (name === 'dash') paintDashboard();
@@ -1932,6 +2249,7 @@ function redLockUnlock() {
   if (key.trim().toUpperCase() !== 'BAZKON') { toast('key eshtebah', true); return; }
   cfgSet('red_lock_from_day', '');
   cfgSet('red_lock_until_day', '');
+  cfgSet('silent_until', '');
   toast('ghofl baz shod');
   updateLockPill();
   updateQueueBadge();
@@ -1941,7 +2259,8 @@ function updateLockPill() {
   if (!p) return;
   const until = redLockOpenDay();
   p.hidden = !until;
-  p.textContent = until ? ('قفل تا ' + until + ' · key') : 'قفل';
+  const sil = silentUntil() && until;
+  p.textContent = until ? ('قفل تا ' + until + (sil ? ' · sokut' : '') + ' · key') : 'قفل';
 }
 function updateNetPill() {
   const p = $('netPill');
@@ -2593,10 +2912,10 @@ async function boot() {
   $('cfg_url').value    = cfgGet('url');
   $('cfg_secret').value = cfgGet('secret');
 
-  $('tabSession').addEventListener('click', () => showTab('session'));
-  $('tabMeta').addEventListener('click',    () => showTab('meta'));
-  $('tabData').addEventListener('click',    () => showTab('data'));
-  if ($('tabDash')) $('tabDash').addEventListener('click', () => showTab('dash'));
+  ['pishro','bidari','meta','layers','session','dash','data'].forEach(id => {
+    const el = $('tab' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (el) el.addEventListener('click', () => showTab(id));
+  });
   if ($('dashRange')) {
     $('dashRange').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       dashDays = b.dataset.d === 'fasl' || b.dataset.d === 'since531' ? b.dataset.d : Number(b.dataset.d);
@@ -2684,7 +3003,7 @@ async function boot() {
   window.addEventListener('pageshow', () => {
     settleWheels();
     const last = cfgGet('tab');
-    if (last === 'session' || last === 'data' || last === 'meta' || last === 'dash') {
+    if (TAB_IDS.indexOf(last) >= 0) {
       if (last !== activeTab) showTab(last);
     }
   });
@@ -2712,7 +3031,7 @@ async function boot() {
   checkSheet(false);
   trySync();
   const last = cfgGet('tab');
-  showTab(last === 'session' || last === 'data' || last === 'meta' || last === 'dash' ? last : 'session');
+  showTab(TAB_IDS.indexOf(last) >= 0 ? last : 'pishro');
 
   if (location.search.indexOf('diag=meta') >= 0) {
     setTimeout(() => showTab('meta'), 1200);

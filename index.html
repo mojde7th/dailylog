@@ -149,7 +149,34 @@ textarea{min-height:52px;resize:vertical}
   background:#131922;border-top:1px solid var(--line);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom))
 }
-.dock .tabs{margin:0}
+.dock .tabs{margin:0;flex-wrap:wrap}
+.dock .tabs button{flex:1 1 22%;min-width:52px;font-size:.68rem;padding:6px 2px}
+.mfilter{position:sticky;top:var(--hdr,108px);z-index:16;background:rgba(11,16,22,.96);padding:6px 0 8px;border-bottom:1px solid var(--line)}
+.mfilter .chips{margin:4px 0}
+.flaggrid{display:flex;flex-direction:column;gap:6px}
+button.mchk{
+  display:flex;align-items:flex-start;gap:8px;width:100%;
+  background:#0b1016;border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:8px 10px;font-family:Consolas,monospace;font-size:.78rem;
+  cursor:pointer;direction:ltr;text-align:left
+}
+button.mchk i{flex:none;width:18px;height:18px;margin-top:2px;border:1px solid var(--muted);border-radius:4px}
+button.mchk.on i{background:var(--good);border-color:var(--good)}
+button.mchk.on{border-color:var(--good)}
+button.mchk.sev-day{border-color:#7a5a18}
+button.mchk.sev-lock{border-color:#f07178}
+button.mchk b{margin-inline-start:auto;color:#f0b429;font-size:.7rem}
+#nbComposer.docked{
+  position:sticky;bottom:8px;z-index:9;
+  background:#121820;border:1px solid var(--accent);
+  border-radius:12px;padding:10px;margin-top:8px
+}
+.pishrow{border:1px solid var(--line);border-radius:10px;padding:8px;margin:8px 0;direction:ltr;text-align:left}
+.pishlab{display:flex;align-items:center;gap:8px;font-family:Consolas,monospace}
+.lawsbox{font-size:.78rem;direction:ltr;text-align:left;color:var(--muted);line-height:1.6}
+.tabs button#tabPishro.active{border-color:#7ee0d6;background:#12312a;color:#c8f0d8}
+.tabs button#tabBidari.active{border-color:#f0b429;background:#2a2214;color:#ffe7b3}
+.tabs button#tabLayers.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
 .bar{
   position:relative;bottom:auto;left:auto;right:auto;
   background:transparent;border:0;padding:0 0 8px;z-index:20
@@ -542,16 +569,43 @@ button.gput{
 
 <main>
 
-  <section id="paneMeta">
-    <div class="gate" id="metaGate">meta …</div>
+  <div id="dayBar" class="card">
+    <label class="lb">تاریخ</label>
+    <div id="mDate"></div>
+  </div>
+
+  <section id="panePishro">
     <div class="card">
-      <h2>متای روز</h2>
-      <label class="lb">تاریخ</label>
-      <div id="mDate"></div>
-      <div class="chartbox" id="metaDayChart"></div>
-      <div class="checks" id="metaChecks"></div>
+      <h2>pishro · emruz chi</h2>
+      <p class="hint lawsbox">bidari 0s · prot bad 15:00 · open2 bad 18 · adams/shirin 0 · nagoftan F/B · moodToFlow · 1kalame ta12 · copyAI bad open2 · tahamol biqarari=ab</p>
+      <div id="pishroBlocks"></div>
+      <button type="button" class="primary" id="pishroSave" style="margin-top:10px">save pishro</button>
+    </div>
+  </section>
+
+  <section id="paneBidari" class="hide">
+    <div class="card">
+      <h2>bidari · 1s = 15ruz</h2>
+      <p class="hint">tafavot &gt; 0 min = +15 jam ghofl + sokut. ghalt = +2. tatil = +14.</p>
+    </div>
+    <div id="bidariBlocks"></div>
+  </section>
+
+  <section id="paneMeta" class="hide">
+    <div class="gate" id="metaGate">meta …</div>
+    <div class="mfilter">
+      <div class="chips" id="metaSlots"></div>
+      <div class="chips" id="metaPacks"></div>
     </div>
     <div id="metaBlocks"></div>
+  </section>
+
+  <section id="paneLayers" class="hide">
+    <div class="card">
+      <h2>layers · moodEhsasToFlow</h2>
+      <p class="hint">biqarari / feshar / flow inja. na tu meta-tick.</p>
+    </div>
+    <div id="layerBlocks"></div>
   </section>
 
   <section id="paneSession" class="hide">
@@ -671,14 +725,17 @@ button.gput{
     </div>
   </div>
   <div class="tabs">
-    <button id="tabMeta" class="active" type="button">متای روز</button>
-    <button id="tabSession" type="button">دفتر نوبت</button>
-    <button id="tabDash" type="button">داشبورد</button>
-    <button id="tabData" type="button">داده‌ها</button>
+    <button id="tabPishro" class="active" type="button">پیش‌رو</button>
+    <button id="tabBidari" type="button">بیدار</button>
+    <button id="tabMeta" type="button">متا</button>
+    <button id="tabLayers" type="button">لایه</button>
+    <button id="tabSession" type="button">دفتر</button>
+    <button id="tabDash" type="button">داش</button>
+    <button id="tabData" type="button">داده</button>
   </div>
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=82"></script>
+<script src="app.js?v=83"></script>
 </body>
 </html>
