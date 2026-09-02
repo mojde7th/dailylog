@@ -5,11 +5,11 @@
 
 'use strict';
 
-const APP_VERSION = 'v86 · hushiar';
+const APP_VERSION = 'v87 · mojde';
 const SCRIPT_VERSION = 'v11-meta';
 const APP_FREEZE_FROM = '1405/06/12';
 const APP_FREEZE_UNTIL = '1405/09/12';
-const NIKA_NAME = 'نیکا';
+const NIKA_NAME = 'مژده';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -199,6 +199,9 @@ const META_ITEMS = [
   { id:'foodAllBan', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
     fa:'نه پروتئین‌بار، نه تخمه هندوانه، نه تخمه کدو، نه گردو، نه هیچ میوه، نه تمر هندی، نه لواشک، نه آلوچه، نه قره‌قروت، نه آلبالو، نه گوجه‌سبز، نه توت‌فرنگی، نه آووکادو، نه پروشیر، نه هیچ تخمه، نه هیچ آجیل، نه نوک‌سوزن شیرین مصنوعی، نه آدامس — جز چیزهای تعیین‌شده همه خط قرمز اکید و رابطه سمی',
     label:'all extras mamnoo · toxic · 15ruz' },
+  { id:'abmiveAjilAbadi', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10,
+    fa:'انواع آبمیوه، اسموتی، میوه، آجیل، تخمه، عسل، خرما، انواع قند طبیعی، گردو، کنجد، پروتئین‌بار، کنجدعسلی — برای همیشه ممنوع؛ سی روز می‌شکند',
+    label:'abmive/smoothi/mive/ajil/tokhme/asal/khorma/ghand/gerdu/konjed/bar · abadi · 30ruz' },
   { id:'abtaam', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
     fa:'آب گازدار طعم‌دار یا جوشانده — حتی روز شکست',
     label:'ab gazdar taam / joshan · hata ruz shekast · 14ruz' },
@@ -389,6 +392,9 @@ const META_ITEMS = [
   { id:'snapRoodsar', group:'ruz', pane:'meta', slot:0, kind:'flag', lockDays:5, wipe:true,
     fa:'پایین شهرک یا رودسر قبل اسنپ یا تپسی',
     label:'payin shahrak/rodsar qabl snap/tapsi · 5ruz' },
+  { id:'motorSavarNa', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true, imp:8,
+    fa:'دیگر نمی‌شود سوار موتور شد — باید هماهنگ کنم سر تایم برسم و به موتور نکشم',
+    label:'no motor · hamahang sare time · 5ruz' },
   { id:'sarsaatresidan', group:'ruz', pane:'meta', slot:'all', kind:'flag',
     fa:'سر ساعت رسیدن',
     label:'sar saat residan' },
@@ -448,7 +454,7 @@ const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.i
 const IMP_BY_ID = {
   bidarshodanharhal:10, hushiarSobhDel:10, khastegiNaKhab:10, rutin100Out:10, bidGhalt:9, bidHoliday:8, bidZiadKhab:10, twoHourAras:6,
   openfa1h:5, nchort:5, chizayemojazbadeopfa2:6, opf1:8, opf2:9, protGhabl3:8, cheetProt3:9,
-  noCarb:8, adams:9, shirin:9, cheetShirin:9, chaysaye:8, tokhme:8, asalajil:10, foodAllBan:10,
+  noCarb:8, adams:9, shirin:9, cheetShirin:9, chaysaye:8, tokhme:8, asalajil:10, foodAllBan:10, abmiveAjilAbadi:10,
   abtaam:8, foodToxic:8, hattaaeradekhordan:10, hossUnmojaz:6, fastingmode:5, abkhoshmaze2test:7, noghahveyebiruni:6,
   nagoofb:6, tozihezafe:6, darkhastsharm:7, bazkhod:6, tondi:7, ajele:7, moshavere:7, tasir:7, bahs:7,
   tarifkhanom:7, enteghad:7, multimedia:5, khshaki:5, insta:6, khire:6, khabjam:5, naghseRaghs:5,
@@ -460,7 +466,7 @@ const IMP_BY_ID = {
   shostsoorat:4, mesvak:4,
   takhghmojaz0:6, takhmojmotns:5, budandarjayemojaz100:6, raatayeghavanineakhlaghietayinshode100:8,
   riztarintakhmojaz:6, riztarinpartbandi:6, nocopypasteazaighable12pm:6, prompt15:5, copyai15:5,
-  preplan12:6, yekkalame12:6, snapRoodsar:6, sarsaatresidan:6, taghiratchaos:8, rutinChaos:8,
+  preplan12:6, yekkalame12:6, snapRoodsar:6, motorSavarNa:8, sarsaatresidan:6, taghiratchaos:8, rutinChaos:8,
   checkkardan:6, leshPart:6, abjayeBiq:7, kharejPartNa:9,
   moodToFlow:7, afterFastMood:6, layers:6, ghanoon:8, ghanoonfarayehattayarade:8, afzayesheshans:6,
   roozsokutOn:10, sokut:10, takhirAvg:6, sessionflowamigh:5
