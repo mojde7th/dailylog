@@ -5,7 +5,7 @@
 
 'use strict';
 
-const APP_VERSION = 'v85 · freeze';
+const APP_VERSION = 'v86 · hushiar';
 const SCRIPT_VERSION = 'v11-meta';
 const APP_FREEZE_FROM = '1405/06/12';
 const APP_FREEZE_UNTIL = '1405/09/12';
@@ -129,6 +129,9 @@ const META_ITEMS = [
   { id:'bidarshodanharhal', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
     fa:'در هر صورت بیدار شو و طبق برنامه پاشو — حتی اگر انگیزه نیست، خسته‌ای، صد روز پروژه داری، یا یک میلیون دلیل دیگر. تو جا نمان، حتی یک ثانیه بیشتر. یک ثانیه دیرتر = حرف نمی‌زنم',
     label:'dir1s · even 1s after alarm · no sit · 15ruz + sokut' },
+  { id:'hushiarSobhDel', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:30, wipe:true, silent:true, imp:10,
+    fa:'صبح که بیدار شدم، دقیقاً توی دلم چند بار، نه بلند، می‌گویم مژده: هویتت شَم است و اصلاً ناهوشیاری دلیل نمی‌شود؛ باید حتماً خودم را هوشیار کنم، وگرنه سی روز می‌شکند',
+    label:'sobh tu del · mojde hushiar · nahushiar != dalil · 30ruz' },
   { id:'khastegiNaKhab', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
     fa:'خستگی را با خواب بیشتر درنمی‌کنم — فقط با یک اکتیویتی دیگر؛ خود همان اکتیویتی خستگی را درمی‌آورد',
     label:'khastegi != more sleep · via other activity · 15ruz' },
@@ -284,6 +287,9 @@ const META_ITEMS = [
     label:'raghs/araghs joz control+dush · 5ruz' },
 
   /* ghermez */
+  { id:'adaDaravardan', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:10,
+    fa:'ادای کسی را درآوردن ممنوع — خط قرمز',
+    label:'adaye kasi darovardan · mamnu · khate ghermez · 14ruz' },
   { id:'yeklayeamdiezafe', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10,
     fa:'حتی اگر روز بشکند — یک لایهٔ عمدی دیگر یعنی یک ماه حرف نمی‌زنم',
     label:'1 laye amdi · hatta ruz shekast · 30ruz sokut' },
@@ -440,14 +446,14 @@ const META_ITEMS = [
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
 const IMP_BY_ID = {
-  bidarshodanharhal:10, khastegiNaKhab:10, rutin100Out:10, bidGhalt:9, bidHoliday:8, bidZiadKhab:10, twoHourAras:6,
+  bidarshodanharhal:10, hushiarSobhDel:10, khastegiNaKhab:10, rutin100Out:10, bidGhalt:9, bidHoliday:8, bidZiadKhab:10, twoHourAras:6,
   openfa1h:5, nchort:5, chizayemojazbadeopfa2:6, opf1:8, opf2:9, protGhabl3:8, cheetProt3:9,
   noCarb:8, adams:9, shirin:9, cheetShirin:9, chaysaye:8, tokhme:8, asalajil:10, foodAllBan:10,
   abtaam:8, foodToxic:8, hattaaeradekhordan:10, hossUnmojaz:6, fastingmode:5, abkhoshmaze2test:7, noghahveyebiruni:6,
   nagoofb:6, tozihezafe:6, darkhastsharm:7, bazkhod:6, tondi:7, ajele:7, moshavere:7, tasir:7, bahs:7,
   tarifkhanom:7, enteghad:7, multimedia:5, khshaki:5, insta:6, khire:6, khabjam:5, naghseRaghs:5,
   gilakDirNago:9, moshaverEzafe:9, moshaverTedad:8, snapSalam1:7,
-  yeklayeamdiezafe:10, qanunSabet:10, esteghrakonjkavi:8, mahdoodzehn:8, fararBiq:8, mindSlack:8, partChange:8,
+  adaDaravardan:10, yeklayeamdiezafe:10, qanunSabet:10, esteghrakonjkavi:8, mahdoodzehn:8, fararBiq:8, mindSlack:8, partChange:8,
   nokarekheir:6, notarahomm:6,
   digeRabeteNist:10, rabeteOmid:8, rabeteTafsir:8, rabetePaygiri:8, rabeteKhiyal:7, rabeteKhodara:7,
   selfBalaPayin:8, rabeteNote2way:10,
