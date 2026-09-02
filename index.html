@@ -50,19 +50,45 @@ h1{font-size:1.02rem;margin:0;letter-spacing:.04em}
 .tabs button.active{background:#1e2b3c;border-color:var(--accent);color:var(--ink)}
 main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc(12px + var(--hdr, 108px));overflow-x:hidden}
 #paneMeta,#paneSession,#paneDash,.mgrids,.sumdash,.sumhero,.sumflags,.flaggrid,.flagchips,.dashgrid,.chartbox,.stat{min-width:0;max-width:100%}
-.mgrids{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;direction:ltr}
-.mgrp{border:1px solid var(--line);border-radius:12px;padding:8px;margin:0;background:var(--panel);min-width:0;max-width:100%;overflow:hidden;direction:ltr;text-align:left;unicode-bidi:isolate}
+.freeze{
+  display:flex;align-items:center;gap:12px;margin-top:8px;
+  background:linear-gradient(180deg,#241833,#121820);border:1px solid #6a4a8a;
+  border-radius:14px;padding:8px 10px;direction:rtl;text-align:right
+}
+.freeze[hidden]{display:none}
+.freeze img{
+  flex:none;width:56px;height:56px;border-radius:50%;object-fit:cover;
+  border:2px solid #c9a0ff;background:#0b1016
+}
+.freeze b{display:block;font-size:.88rem;color:#ead9ff}
+.freeze p{margin:2px 0 0;font-size:.78rem;color:#cfdcea;line-height:1.45}
+.freeze span{display:block;margin-top:2px;font-size:.7rem;color:#c9a0ff;font-family:Consolas,monospace}
+.pishplan-title{margin:16px 0 6px;font-size:.88rem;color:#c8f0d8}
+#pishroPlan .empty{
+  color:#93a4b8;padding:12px;background:#0b1016;border:1px dashed var(--line);border-radius:12px
+}
+#pishroComposer{direction:rtl;text-align:right}
+#pishroComposer .wheels,#pishroComposer .chips,#pishroComposer .qchips{
+  direction:ltr;text-align:left
+}
+#pishroQ button{direction:rtl;text-align:right;unicode-bidi:isolate}
+.alist #nbComposer, .alist #pishroComposer{flex:1 0 100%}
+.mgrp.tone-rabete,.sumcard.tone-rabete{background:linear-gradient(180deg,#2a1220,#171d25 42%);border-color:#c06090}
+.mgrp.tone-rabete .gtitle,.sumcard.tone-rabete h4{color:#f0b0d0}
+.mgrp.tone-rabete .flaggrid button.on,.mgrp.tone-rabete button.gput{border-color:#c06090;background:#2a161e;color:#f8d0e4}
+.mgrids{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;direction:rtl}
+.mgrp{border:1px solid var(--line);border-radius:12px;padding:8px;margin:0;background:var(--panel);min-width:0;max-width:100%;overflow:hidden;direction:rtl;text-align:right;unicode-bidi:isolate}
 .mgrp.span2{grid-column:1 / -1}
 @media (min-width:640px){
   .mgrids{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .flaggrid{grid-template-columns:minmax(0,1fr)}
 }
-.mgrp .gtitle{margin:0 0 8px;font-size:.8rem;color:var(--muted);direction:ltr;text-align:left;font-family:Consolas,monospace;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
+.mgrp .gtitle{margin:0 0 8px;font-size:.8rem;color:var(--muted);direction:rtl;text-align:right;font-family:Tahoma,"Segoe UI",sans-serif;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
 .mall{display:flex;gap:5px;margin:0 0 6px;direction:ltr;justify-content:flex-start}
 .mall button{
   flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
   border-radius:9px;padding:6px;font-family:inherit;font-size:.72rem;cursor:pointer;
-  direction:ltr;text-align:left;unicode-bidi:isolate
+  direction:rtl;text-align:right;unicode-bidi:isolate
 }
 .mall button.putg{
   background:#1b3a2e;border-color:var(--good);color:#d7f5e7;font-weight:bold
@@ -71,9 +97,9 @@ main{max-width:880px;width:100%;margin:0 auto;padding:12px 14px;padding-top:calc
 .card{background:transparent;border:0;border-radius:0;padding:8px 0 18px;margin:0;overflow-x:hidden}
 .card h2{margin:0 0 4px;font-size:.98rem}
 .hint{color:var(--muted);font-size:.79rem;margin:0 0 10px}
-.mblock .hint{direction:ltr;unicode-bidi:isolate;text-align:left;font-family:Consolas,monospace}
+.mblock .hint{direction:rtl;unicode-bidi:isolate;text-align:right;font-family:Tahoma,"Segoe UI",sans-serif}
 label.lb{display:block;font-size:.84rem;margin:14px 0 6px;color:#cfdcea;direction:rtl;text-align:right}
-label.lb.ltr,#compTitle{direction:ltr;unicode-bidi:isolate;text-align:left}
+label.lb.ltr,#compTitle,#pishroCompTitle{direction:ltr;unicode-bidi:isolate;text-align:left}
 label.lb .req{color:var(--bad)}
 input,select,textarea{
   width:100%;background:#0b1016;border:1px solid var(--line);color:var(--ink);
@@ -121,6 +147,9 @@ textarea{min-height:52px;resize:vertical}
   padding:7px 12px;font-size:.8rem;font-family:inherit;cursor:pointer;
   direction:ltr;text-align:left;unicode-bidi:isolate
 }
+.chips button.rtl, .qchips button.rtl, .mfilter .chips button{
+  direction:rtl;text-align:right;unicode-bidi:isolate
+}
 .chips a.btnlike{
   display:inline-block;background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:999px;
   padding:7px 12px;font-size:.8rem;text-decoration:none
@@ -152,30 +181,59 @@ textarea{min-height:52px;resize:vertical}
 .dock .tabs{margin:0;flex-wrap:wrap}
 .dock .tabs button{flex:1 1 22%;min-width:52px;font-size:.68rem;padding:6px 2px}
 .mfilter{position:sticky;top:var(--hdr,108px);z-index:16;background:rgba(11,16,22,.96);padding:6px 0 8px;border-bottom:1px solid var(--line)}
+.mfilter .chips{margin:4px 0;direction:rtl;justify-content:flex-start}
 .mfilter .chips{margin:4px 0}
 .flaggrid{display:flex;flex-direction:column;gap:6px}
 button.mchk{
   display:flex;align-items:flex-start;gap:8px;width:100%;
   background:#0b1016;border:1px solid var(--line);color:var(--ink);
-  border-radius:10px;padding:8px 10px;font-family:Consolas,monospace;font-size:.78rem;
-  cursor:pointer;direction:ltr;text-align:left
+  border-radius:10px;padding:8px 10px;font-family:Tahoma,"Segoe UI",sans-serif;font-size:.82rem;
+  cursor:pointer;direction:rtl;text-align:right
 }
-button.mchk i{flex:none;width:18px;height:18px;margin-top:2px;border:1px solid var(--muted);border-radius:4px}
+button.mchk i, .flaggrid button.mchk i{
+  display:inline-block;flex:none;width:18px;height:18px;min-width:18px;min-height:18px;
+  margin-top:2px;border:1.5px solid var(--muted);border-radius:4px;
+  background:transparent;line-height:0;overflow:hidden;box-sizing:border-box
+}
 button.mchk.on i{background:var(--good);border-color:var(--good)}
 button.mchk.on{border-color:var(--good)}
 button.mchk.sev-day{border-color:#7a5a18}
 button.mchk.sev-lock{border-color:#f07178}
 button.mchk b{margin-inline-start:auto;color:#f0b429;font-size:.7rem}
-#nbComposer.docked{
-  position:sticky;bottom:8px;z-index:9;
+#nbComposer.docked, #pishroComposer.docked{
+  position:relative;bottom:auto;z-index:9;flex:1 0 100%;width:100%;max-width:100%;
   background:#121820;border:1px solid var(--accent);
-  border-radius:12px;padding:10px;margin-top:8px
+  border-radius:12px;padding:10px;margin:8px 0 10px
 }
 .pishrow{border:1px solid var(--line);border-radius:10px;padding:8px;margin:8px 0;direction:ltr;text-align:left}
 .pishlab{display:flex;align-items:center;gap:8px;font-family:Consolas,monospace}
 .lawsbox{font-size:.78rem;direction:ltr;text-align:left;color:var(--muted);line-height:1.6}
 .tabs button#tabPishro.active{border-color:#7ee0d6;background:#12312a;color:#c8f0d8}
 .tabs button#tabBidari.active{border-color:#f0b429;background:#2a2214;color:#ffe7b3}
+.tabs button#tabSokut.active{border-color:#f07178;background:#2a1618;color:#f8c9cd}
+.tabs button#tabLaws.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
+.hero-title{font-size:1.22rem;color:#ffe7b3;font-weight:800;line-height:1.45}
+.hero-hint{color:#ffd479;font-size:.88rem;font-weight:700}
+button.mchk .impn, .mblock .impn{
+  flex:none;font-style:normal;font-size:.68rem;border:1px solid var(--line);
+  border-radius:6px;padding:1px 6px;color:#c9a0ff
+}
+button.mchk.imp-10, .mblock.imp-10{font-size:1.08rem;padding:16px 12px;font-weight:800;border-width:2px}
+button.mchk.imp-hero, #paneBidari button.mchk.imp-10{
+  font-size:1.14rem;line-height:1.55;padding:18px 14px;font-weight:800;
+  border:2px solid #f0b429;background:linear-gradient(180deg,#3a2a12,#0b1016);color:#ffe7b3
+}
+#paneBidari button.mchk.imp-10 span{font-size:1.12rem}
+button.mchk.imp-9{font-size:.96rem;padding:13px 11px;font-weight:700}
+button.mchk.imp-8{font-size:.88rem;padding:11px 10px}
+button.mchk.imp-7{font-size:.82rem;padding:9px 10px}
+button.mchk.imp-6{font-size:.78rem;padding:8px 10px}
+button.mchk.imp-5, button.mchk.imp-4, button.mchk.imp-3{
+  font-size:.72rem;padding:6px 8px;opacity:.88
+}
+.mgrp.tone-sokut,.sumcard.tone-sokut{background:linear-gradient(180deg,#3a1218,#171d25 42%);border-color:#f07178}
+.mgrp.tone-sokut .gtitle{color:#f8c9cd}
+#metaImps button.on{border-color:#c9a0ff;color:#ead9ff}
 .tabs button#tabLayers.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
 .bar{
   position:relative;bottom:auto;left:auto;right:auto;
@@ -255,7 +313,7 @@ button.cancel{
 .sum{background:#152033;border:1px solid var(--accent);border-radius:12px;padding:11px;margin-top:10px;font-size:.86rem;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
 .sumdash{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .sumhero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0;direction:ltr}
-.sumflags{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;direction:ltr}
+.sumflags{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;direction:rtl}
 @media (min-width:640px){
   .sumhero.work{grid-template-columns:repeat(5,minmax(0,1fr))}
   .sumhero.durs,.sumhero.cats{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -265,10 +323,10 @@ button.cancel{
   border-radius:14px;padding:10px 12px;border:1px solid var(--line);
   min-width:0;background:#0b1016
 }
-.sumtile b,.flagchips .chip,.mblock h3,.flaggrid button,.alist button,.nbcode,.nbtags,.sumcard h4{
+.sumtile b,.flagchips .chip,.mblock h3,.alist button,.nbcode,.nbtags,.sumcard h4{
   overflow-wrap:anywhere;word-break:break-word;max-width:100%
 }
-.flagchips .chip,.flaggrid button,.mblock h3{
+.flagchips .chip,.mblock h3{
   display:block;width:100%;box-sizing:border-box;white-space:normal;line-height:1.35
 }
 .sumtile .tilab,.sumtile .tival,.sumtile .tinote{display:block;max-width:100%;overflow-wrap:anywhere}
@@ -300,7 +358,7 @@ button.cancel{
 .sumtile.p1 b,.sumtile.tone-nb b,.sumtile.tone-andaze b{color:#d6ebff}
 .sumtile.p2 b,.sumtile.tone-laws b{color:#ead9ff}
 .sumtile.p3 b,.sumtile.tone-raayat b{color:#c8f0d8}
-.flagchips{display:flex;flex-wrap:wrap;gap:6px;min-width:0;max-width:100%;direction:ltr;justify-content:flex-start;text-align:left}
+.flagchips{display:flex;flex-wrap:wrap;gap:6px;min-width:0;max-width:100%;direction:rtl;justify-content:flex-start;text-align:right}
 .flagchips .chip{
   display:block;width:100%;box-sizing:border-box;min-width:0;
   overflow-wrap:anywhere;word-break:break-word;border-radius:8px;
@@ -340,12 +398,13 @@ button.cancel{
   border-radius:8px;padding:4px 8px;font-size:.68rem;
   font-family:Consolas,monospace;direction:ltr
 }
-.flaggrid{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;margin:6px 0;width:100%;max-width:100%;direction:ltr}
-.flaggrid button{
+.flaggrid{display:flex;flex-direction:column;gap:5px;margin:6px 0;width:100%;max-width:100%;direction:rtl}
+.flaggrid button.mchk, .flaggrid button{
+  display:flex;align-items:flex-start;gap:8px;
   background:#0b1016;border:1px solid var(--line);color:var(--ink);border-radius:10px;
-  padding:7px 9px;font-family:Consolas,monospace;font-size:.74rem;line-height:1.3;cursor:pointer;
-  direction:ltr;text-align:left;unicode-bidi:isolate;overflow-wrap:anywhere;word-break:break-word;
-  min-height:34px;width:100%;max-width:100%;min-width:0;box-sizing:border-box
+  padding:8px 10px;font-family:Tahoma,"Segoe UI",sans-serif;font-size:.82rem;line-height:1.4;cursor:pointer;
+  direction:rtl;text-align:right;unicode-bidi:isolate;overflow-wrap:anywhere;word-break:break-word;
+  min-height:34px;width:100%;max-width:100%;min-width:0;box-sizing:border-box;white-space:normal
 }
 .flaggrid button.on{background:#12312a;border-color:var(--good);color:var(--good)}
 .flaggrid button.sev-day{border-left:4px solid #f0b429}
@@ -377,7 +436,7 @@ button.cancel{
 button.gput{
   width:100%;margin-top:10px;background:#1b3a2e;border:1px solid var(--good);color:#d7f5e7;
   border-radius:12px;padding:14px;font-family:inherit;font-weight:bold;cursor:pointer;font-size:.92rem;
-  direction:ltr;text-align:left
+  direction:rtl;text-align:right
 }
 .nb{
   font-family:Consolas,"Cascadia Mono",Tahoma,monospace;direction:ltr;text-align:left;
@@ -565,6 +624,14 @@ button.gput{
       <span class="pill" id="queuePill">صف ۰</span>
       <span class="pill off" id="lockPill" hidden>قفل</span>    </div>
   </div>
+  <aside id="freezeBanner" class="freeze" hidden>
+    <img src="nika.png" width="64" height="64" alt=""/>
+    <div>
+      <b>نیکا</b>
+      <p>از ۱۲ شهریور تا ۱۲ آذر هیچ تغییری در اپ داده نمی‌شود.</p>
+      <span dir="ltr">1405/06/12 — 1405/09/12</span>
+    </div>
+  </aside>
 </header>
 
 <main>
@@ -576,17 +643,17 @@ button.gput{
 
   <section id="panePishro">
     <div class="card">
-      <h2>pishro · emruz chi</h2>
-      <p class="hint lawsbox">bidari 0s · prot bad 15:00 · open2 bad 18 · adams/shirin 0 · nagoftan F/B · moodToFlow · 1kalame ta12 · copyAI bad open2 · tahamol biqarari=ab</p>
+      <h2>پیش‌رو · برنامهٔ کم با کیفیت دلخواه</h2>
+      <p class="hint">مثل نوبت روز: پارت را بزن، کار را بزن، چرخ دقیقاً زیر همان کار می‌آید. کیفیت را انتخاب کن و به برنامه اضافه کن.</p>
       <div id="pishroBlocks"></div>
-      <button type="button" class="primary" id="pishroSave" style="margin-top:10px">save pishro</button>
+      <button type="button" class="primary" id="pishroSave" style="margin-top:10px">ذخیرهٔ برنامه</button>
     </div>
   </section>
 
   <section id="paneBidari" class="hide">
     <div class="card">
-      <h2>bidari · 1s = 15ruz</h2>
-      <p class="hint">tafavot &gt; 0 min = +15 jam ghofl + sokut. ghalt = +2. tatil = +14.</p>
+      <h2 class="hero-title">بیداری — مهم‌ترین متا</h2>
+      <p class="hint hero-hint">در هر صورت پاشو. حتی یک ثانیه دیرتر یعنی حرف نمی‌زنم. خستگی را با خواب بیشتر درنمی‌کنی. صد روز پروژه هم که باشد، سر وقت.</p>
     </div>
     <div id="bidariBlocks"></div>
   </section>
@@ -595,15 +662,32 @@ button.gput{
     <div class="gate" id="metaGate">meta …</div>
     <div class="mfilter">
       <div class="chips" id="metaSlots"></div>
+      <div class="chips" id="metaImps"></div>
       <div class="chips" id="metaPacks"></div>
     </div>
     <div id="metaBlocks"></div>
   </section>
 
+  <section id="paneSokut" class="hide">
+    <div class="card">
+      <h2 class="hero-title">روز سکوت — جدا و فوق‌العاده مهم</h2>
+      <p class="hint hero-hint">این تب مال سکوت است. لایه و متای دیگر قاطی‌اش نیست.</p>
+    </div>
+    <div id="sokutBlocks"></div>
+  </section>
+
+  <section id="paneLaws" class="hide">
+    <div class="card">
+      <h2>قانون مهم</h2>
+      <p class="hint">اینجا جدا است تا دم‌دست باشد. داشبورد حذف شد؛ جمع را از شیت بخوان.</p>
+    </div>
+    <div id="lawsBlocks"></div>
+  </section>
+
   <section id="paneLayers" class="hide">
     <div class="card">
-      <h2>layers · moodEhsasToFlow</h2>
-      <p class="hint">biqarari / feshar / flow inja. na tu meta-tick.</p>
+      <h2>لایه · حال و احساس به فلو</h2>
+      <p class="hint">بی‌قراری، فشار، فلو اینجا. نه توی تیک متا.</p>
     </div>
     <div id="layerBlocks"></div>
   </section>
@@ -621,6 +705,7 @@ button.gput{
       <label class="lb">پارت</label>
       <div class="parts" id="sParts"></div>
       <div id="nbList"></div>
+      <div id="nbComposerHome">
       <div id="nbComposer" class="hide">
         <label class="lb ltr" id="compTitle">—</label>
         <div id="dynFields"></div>
@@ -629,45 +714,6 @@ button.gput{
         <label class="lb">یادداشت اختیاری</label>
         <textarea id="s_note" placeholder="یادداشت اختیاری"></textarea>
       </div>
-    </div>
-  </section>
-
-  <section id="paneDash" class="hide">
-    <div class="card">
-      <h2>داشبورد</h2>
-      <div class="chips qchips" id="dashRange">
-        <button type="button" data-d="since531" class="on" dir="ltr">از ۵/۳۱</button>
-        <button type="button" data-d="7" dir="ltr">۷ روز</button>
-        <button type="button" data-d="14" dir="ltr">۱۴ روز</button>
-        <button type="button" data-d="30" dir="ltr">۳۰ روز</button>
-        <button type="button" data-d="fasl" dir="ltr">۵/۳۱–۶/۳۱</button>
-      </div>
-      <div class="stat" id="dashStat">—</div>
-    </div>
-    <div class="dashgrid">
-      <div class="card span2">
-        <p class="chartlab">دفتر / روز · همهٔ روزهای بازه</p>
-        <div class="chartbox" id="dashBars"></div>
-      </div>
-      <div class="card">
-        <p class="chartlab">مدت متا · قانون · تأخیر</p>
-        <div class="chartbox" id="dashMeta"></div>
-      </div>
-      <div class="card">
-        <p class="chartlab">پارت</p>
-        <div class="chartbox" id="dashParts"></div>
-      </div>
-      <div class="card">
-        <p class="chartlab">دسته</p>
-        <div class="chartbox" id="dashCats"></div>
-      </div>
-      <div class="card">
-        <p class="chartlab">قانون مهم</p>
-        <div class="chartbox" id="dashLaws"></div>
-      </div>
-      <div class="card span2">
-        <p class="chartlab">پرچم</p>
-        <div class="chartbox" id="dashFlags"></div>
       </div>
     </div>
   </section>
@@ -727,15 +773,16 @@ button.gput{
   <div class="tabs">
     <button id="tabPishro" class="active" type="button">پیش‌رو</button>
     <button id="tabBidari" type="button">بیدار</button>
+    <button id="tabSokut" type="button">سکوت</button>
+    <button id="tabLaws" type="button">قانون</button>
     <button id="tabMeta" type="button">متا</button>
     <button id="tabLayers" type="button">لایه</button>
     <button id="tabSession" type="button">دفتر</button>
-    <button id="tabDash" type="button">داش</button>
     <button id="tabData" type="button">داده</button>
   </div>
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=83"></script>
+<script src="app.js?v=85"></script>
 </body>
 </html>

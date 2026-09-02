@@ -5,8 +5,11 @@
 
 'use strict';
 
-const APP_VERSION = 'v83 · tick';
+const APP_VERSION = 'v85 · freeze';
 const SCRIPT_VERSION = 'v11-meta';
+const APP_FREEZE_FROM = '1405/06/12';
+const APP_FREEZE_UNTIL = '1405/09/12';
+const NIKA_NAME = 'نیکا';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
    Later parts inherit earlier ones. Layers and قانون are daily META, not
@@ -32,6 +35,19 @@ const QUALITY_TAGS = [
   'bigharrshadid','zajrshadid','dardshadid','fesharshadi','karesakht',
   'flowshadid','tamarkozshaid','amighshadid','withthinkshadid'
 ];
+const QUALITY_FA = {
+  bigharrshadid: 'بی‌قراری شدید',
+  zajrshadid: 'زجر شدید',
+  dardshadid: 'درد شدید',
+  fesharshadi: 'فشار شدید',
+  karesakht: 'کار سخت',
+  flowshadid: 'فلوی شدید',
+  tamarkozshaid: 'تمرکز شدید',
+  amighshadid: 'عمق شدید',
+  withthinkshadid: 'با فکر شدید'
+};
+const qualityFa = t => QUALITY_FA[t] || t;
+const itemFa = it => (it && (it.fa || it.label)) || '';
 
 const CODES = [
   { cat:'takhsis',  code:'takhkhod', metric:'dur', from:0, def:{h:0,m:30} },
@@ -86,203 +102,375 @@ const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category
                         'minutes','hm','chunk','tags','who','reactSec','count','reps','perRep','kind','note'];
 
 const META_GROUPS = [
-  { id:'bidari', title:'bidari' },
-  { id:'khorak', title:'khorak' },
-  { id:'harf', title:'harf / ejtema' },
-  { id:'ghermez', title:'ghermez' },
-  { id:'badan', title:'badan' },
-  { id:'ruz', title:'ruz / raayat' },
-  { id:'openfa', title:'openfa' },
-  { id:'layers', title:'layers / flow' },
-  { id:'laws', title:'ghanoon mohem' }
+  { id:'bidari', title:'بیداری' },
+  { id:'khorak', title:'خوراک' },
+  { id:'harf', title:'حرف و جمع' },
+  { id:'ghermez', title:'خط قرمز' },
+  { id:'rabete', title:'رابطه — ریزترین ردفلگ' },
+  { id:'badan', title:'بدن' },
+  { id:'ruz', title:'روز و رعایت' },
+  { id:'openfa', title:'اوپن‌فست' },
+  { id:'layers', title:'لایه و فلو' },
+  { id:'sokut', title:'روز سکوت' },
+  { id:'laws', title:'قانون مهم' }
 ];
 const META_SLOTS = [
-  { id:'all', label:'hame' },
-  { id:0, label:'ta 12' },
-  { id:1, label:'12-2' },
-  { id:2, label:'2-6' },
-  { id:3, label:'bad open' }
+  { id:'all', label:'همه' },
+  { id:0, label:'تا ۱۲' },
+  { id:1, label:'۱۲ تا ۲' },
+  { id:2, label:'۲ تا ۶' },
+  { id:3, label:'بعد اوپن' }
 ];
 const isNegItem = it => (Number(it.lockDays) || 0) > 0 || it.wipe;
 const negGroup = gid => META_ITEMS.some(it => it.group === gid && isNegItem(it));
 
 const META_ITEMS = [
   /* bidari — tab joda, 1s = 15ruz */
-  { id:'bidarshodanharhal', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true,
+  { id:'bidarshodanharhal', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
+    fa:'در هر صورت بیدار شو و طبق برنامه پاشو — حتی اگر انگیزه نیست، خسته‌ای، صد روز پروژه داری، یا یک میلیون دلیل دیگر. تو جا نمان، حتی یک ثانیه بیشتر. یک ثانیه دیرتر = حرف نمی‌زنم',
     label:'dir1s · even 1s after alarm · no sit · 15ruz + sokut' },
-  { id:'bidGhalt', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:2, wipe:true,
+  { id:'khastegiNaKhab', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
+    fa:'خستگی را با خواب بیشتر درنمی‌کنم — فقط با یک اکتیویتی دیگر؛ خود همان اکتیویتی خستگی را درمی‌آورد',
+    label:'khastegi != more sleep · via other activity · 15ruz' },
+  { id:'rutin100Out', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:10,
+    fa:'حتی اگر داروهای روان تمام شده و همه‌چیز از کنترل خارج است، باز هم صددرصد توی روتین می‌مانم',
+    label:'even meds out / out-of-order · 100% rutin · 14ruz' },
+  { id:'bidGhalt', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:2, wipe:true, imp:9,
+    fa:'غلت زدن یا یک دقیقه ماندن در رختخواب بعد از زنگ',
     label:'ghalt/1min after zang · 2ruz' },
-  { id:'bidHoliday', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:14, wipe:true, silent:true,
+  { id:'bidHoliday', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:14, wipe:true, silent:true, imp:8,
+    fa:'ساعت بیداری روز تعطیل با روز کاری یکی نبود',
     label:'tatil != weekday wake · 14ruz + sokut' },
-  { id:'bidZiadKhab', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:14, wipe:true,
+  { id:'bidZiadKhab', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:10,
+    fa:'خواب بیشتر از سهم، حتی در بدترین حال — جز دو چرت چشم‌باز',
     label:'bishtar khab (hatta marg) joz 2 chort cheshmbaz · 14ruz' },
-  { id:'twoHourAras', group:'bidari', pane:'bidari', slot:0, kind:'flag',
+  { id:'twoHourAras', group:'bidari', pane:'bidari', slot:0, kind:'flag', imp:6,
+    fa:'دو ساعت بیدار بودن پیش از تخصیص شُسه',
     label:'2saat bidar ghabl takhshose' },
 
   /* openfa */
   { id:'openfa1h', group:'openfa', pane:'meta', slot:3, kind:'flag',
+    fa:'اوپن دوم زیر سی دقیقه',
     label:'openfa2<=30m' },
   { id:'nchort', group:'openfa', pane:'meta', slot:3, kind:'flag',
+    fa:'چرت نزدن',
     label:'nchort' },
   { id:'chizayemojazbadeopfa2', group:'openfa', pane:'meta', slot:3, kind:'flag',
+    fa:'فقط خوراک مجاز بعد از اوپن دوم — مرغ، ماهی، گوشت، سبزی — بدون ذرت و سیب‌زمینی',
     label:'mojaz bad open2 (morgh,mahi,gusht,sabzi; no zorat/sibzamini)' },
   { id:'opf1', group:'openfa', pane:'meta', slot:3, kind:'flag', lockDays:5, wipe:true,
+    fa:'اوپن اول یا پروتئین پیش از ساعت پانزده نشد',
     label:'openfa1/prot ghabl 15 nashod · 5ruz' },
   { id:'opf2', group:'openfa', pane:'meta', slot:3, kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'اوپن دوم بعد از ساعت شش نشد — بزرگ',
     label:'openfa2 after 6 nashod · BOZORG · 14ruz' },
   { id:'protGhabl3', group:'openfa', pane:'meta', slot:0, kind:'flag', lockDays:10, wipe:true,
+    fa:'پودر پروتئین پیش از ساعت پانزده',
     label:'prot powder ghabl 15:00 · 10ruz (cheat=14)' },
   { id:'cheetProt3', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'تقلب: پروتئین پیش از ساعت سه',
     label:'cheat: prot ghabl 3 · 14ruz + sokut' },
 
   /* khorak */
   { id:'noCarb', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'نان، برنج، هر کربوهیدرات',
     label:'noon/berenj/carb · 14ruz' },
   { id:'adams', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'آدامس، حتی بی‌طعم — برای همیشه ممنوع',
     label:'adams hata bitam · abadi mamnoo · 14ruz + sokut' },
   { id:'shirin', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true,
+    fa:'شیرین مصنوعی؛ آب و جوشانده و طعم‌دار — جز پروتئین و کلاژن',
     label:'shirin masnu (ab/josh/taam) joz prot+collagen · 15ruz' },
   { id:'cheetShirin', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'تقلب: شیرین یا آدامس یا آب طعم‌دار',
     label:'cheat: shirin/adams/abtaam · 14ruz + sokut' },
+  { id:'chaysaye', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'چای سایه — ممنوع',
+    label:'chay saye mamnoo · 14ruz' },
   { id:'tokhme', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'تخمه، کدو، شیر پروتئین، بار — جز پودر',
     label:'tokhme/kadu/proshir/bar (joz powder) · 5ruz' },
-  { id:'asalajil', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:7, wipe:true,
-    label:'asal,khorma,gerdu,mive,sohan · 7ruz' },
+  { id:'asalajil', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:10,
+    fa:'عسل حتی یک گرم هم کنسل — خرما، گردو، میوه، سوهان هم نه',
+    label:'asal 1g + khorma/gerdu/mive/sohan · 14ruz' },
+  { id:'foodAllBan', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
+    fa:'نه پروتئین‌بار، نه تخمه هندوانه، نه تخمه کدو، نه گردو، نه هیچ میوه، نه تمر هندی، نه لواشک، نه آلوچه، نه قره‌قروت، نه آلبالو، نه گوجه‌سبز، نه توت‌فرنگی، نه آووکادو، نه پروشیر، نه هیچ تخمه، نه هیچ آجیل، نه نوک‌سوزن شیرین مصنوعی، نه آدامس — جز چیزهای تعیین‌شده همه خط قرمز اکید و رابطه سمی',
+    label:'all extras mamnoo · toxic · 15ruz' },
   { id:'abtaam', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'آب گازدار طعم‌دار یا جوشانده — حتی روز شکست',
     label:'ab gazdar taam / joshan · hata ruz shekast · 14ruz' },
   { id:'foodToxic', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'خوراک سمی با غذای دیگران یا سرک کشیدن',
     label:'toxic ba ghazaye gheyr / resolver peek · 14ruz' },
   { id:'hattaaeradekhordan', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    fa:'قطع دائم — صفر تقلب، حتی به اندازهٔ نوک سوزن',
     label:'cut daem · 0 cheat · 0 nok sozan' },
   { id:'hossUnmojaz', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    fa:'دیدن یا حس دیگران دلیل نیست — قانون سر جایش می‌ماند',
     label:'dide/hoss digaran dalil nist · ghanun mimune' },
   { id:'fastingmode', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    fa:'روزهٔ تمیز — آب، قهوه، چای سبز — روزهٔ کثیف نه',
     label:'fasting (ab,qahve,chaysabz) · dirtyfast nist' },
   { id:'abkhoshmaze2test', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'آب خوش‌مزه یا تست دوباره — شکست',
     label:'ab khoshmaze / doptest shekast · 5ruz' },
   { id:'noghahveyebiruni', group:'khorak', pane:'meta', slot:'all', kind:'flag',
+    fa:'قهوه یا لیموناد بیرونی نه',
     label:'no qahve/limunad biruni' },
 
   /* harf / ejtema */
   { id:'nagoofb', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
-    label:'nagoftan F/B (period) · zaban-narm HAZF shod' },
+    fa:'نگوزیدن و آروغ نزدن جلوی کسی — در همان دوره',
+    label:'nagoozidan F/B (period)' },
   { id:'tozihezafe', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'توضیح اضافه — اسنپ، انرژی، نیمه آمدم',
     label:'tozih ezafe (snapp/energy/nime amadam) · 5ruz' },
   { id:'darkhastsharm', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'درخواست با تندی یا شرم یا مخفی‌کاری',
     label:'darkhast ba tondi/sharm/makhfi · 14ruz' },
   { id:'bazkhod', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'باز کردن خود در گروه یا درمان',
     label:'baz kardan khod (group/darman) · 5ruz' },
   { id:'tondi', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'تندی، شرم، خجالت — صفر',
     label:'tondi/sharm/khejalat 0 · 14ruz' },
   { id:'ajele', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
-    label:'ajeie · 14ruz' },
+    fa:'عجله کردن',
+    label:'ajele' },
   { id:'moshavere', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'کمک یا راهنمایی یا مشاوره خواستن — یک کلمه، بعد از تأخیر',
     label:'komak/rahnama/moshavere · 1kalame bad takhir · 14ruz' },
   { id:'tasir', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'تأثیر گذاشتن یا قانع کردن — حتی در تخصص خودم',
     label:'tasir/qane kardan (hatta takhassos) · 14ruz' },
   { id:'bahs', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'بحث کردن یا قانع کردن',
     label:'bahs/qane · 14ruz + sokut' },
   { id:'tarifkhanom', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'تعریف از خانم یا بالا بردن کسی',
     label:'tarif khanom / bala bordan kasi · 14ruz + sokut' },
   { id:'enteghad', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'ریز انتقاد یا سرزنش — مادر و بقیه',
     label:'riz enteghad/sarzanesh (madar/…) · 14ruz + sokut' },
   { id:'multimedia', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'چندرسانه‌ای یا ویدئو در گروه',
     label:'multimedia/video group · 14ruz' },
   { id:'khshaki', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'صحبت با خشکی، میلاد و مانند این‌ها',
     label:'khshaki/milad/… sohbat · 5ruz' },
   { id:'insta', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
-    label:'insta joz kar-vajib-chat (hatta SHO/SA) · 14ruz' },
+    fa:'اینستاگرام جز کار و واجب و چت',
+    label:'insta joz kar-vajib-chat · 14ruz' },
   { id:'khire', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'خیره شدن به دور یا بی‌کاری بیش از سه بار بیست دقیقه',
     label:'khire dur / 0kar > 3x20m · 14ruz + part' },
   { id:'khabjam', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'خوابیدن توی جمع',
     label:'khab tu jam · 5ruz' },
+  { id:'gilakDirNago', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:9,
+    fa:'به گیلک و غیره‌ نمی‌شود گفت دیر می‌رسی — به کسی ربطی ندارد؛ خودت را هیچ‌وقت پایین نیاور و ارزش کارت را نگه دار',
+    label:'no late-talk to gilak/… · never lower self · 14ruz' },
+  { id:'moshaverEzafe', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:9,
+    fa:'حتی به مشاور هم چیز اضافه نگو — خط قرمز را می‌شکند',
+    label:'no extra to moshaver · 14ruz' },
+  { id:'moshaverTedad', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:8,
+    fa:'حتی به مشاور تعداد قرار را دقیق نگو و حسادت بقیه را برنینگیز — حتی مشاور',
+    label:'no count of dates to moshaver · 14ruz' },
+  { id:'snapSalam1', group:'harf', pane:'meta', slot:0, kind:'flag', lockDays:5, wipe:true, imp:7,
+    fa:'سوار اسنپ یا تپسی شدم — یک سلام کافی است، دو تا نمی‌خواهد',
+    label:'snap/tapsi · 1 salam · 5ruz' },
   { id:'naghseRaghs', group:'badan', pane:'meta', slot:2, kind:'flag', lockDays:5, wipe:true,
+    fa:'رقص یا حرکت — جز کنترل و دوش',
     label:'raghs/araghs joz control+dush · 5ruz' },
 
   /* ghermez */
-  { id:'yeklayeamdiezafe', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
-    label:'1 laye amdi ezafe · 14ruz + sokut' },
+  { id:'yeklayeamdiezafe', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10,
+    fa:'حتی اگر روز بشکند — یک لایهٔ عمدی دیگر یعنی یک ماه حرف نمی‌زنم',
+    label:'1 laye amdi · hatta ruz shekast · 30ruz sokut' },
+  { id:'qanunSabet', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:10,
+    fa:'هر اتفاق بزرگ یا کوچک، هر مود، هر احساس — هیچ‌چیز عوض نمی‌شود؛ قوانین همان‌اند و برنامه و سبک زندگی را تغییر نمی‌دهم',
+    label:'no change for mood/event · qanun sabet · 14ruz' },
   { id:'esteghrakonjkavi', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'دروغ، کنجکاوی، استاک، حسادت، تحقیر',
     label:'dorugh/konjkav/stalk/hesadat/tahghir · 14ruz' },
   { id:'mahdoodzehn', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'محدود کردن ذهن — مجرد نیستم و مانند این',
     label:'mahdood zehn (mojarrad nistam/…) · 14ruz' },
   { id:'fararBiq', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'فرار از بی‌قراری با آدامس و مانند این — اصل تحمل است',
     label:'farar az biqarari (adams/…) · asl=tahamol · 14ruz + sokut' },
   { id:'mindSlack', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'ذهن شل، تقلب، تغییر قانون — نه',
     label:'zehn: shol/cheat/taghir qanun · NA · 14ruz' },
   { id:'partChange', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'عوض کردن پارت‌بندی — حتی در بدترین حال',
     label:'avaz partbandi (hatta marg/lesh) · 14ruz' },
   { id:'nokarekheir', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'کار خیر حتی ذره',
     label:'kare kheyr (0.00001%) · 5ruz' },
   { id:'notarahomm', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'ترحم',
     label:'tarahom · 5ruz' },
+
+  /* rabete — riztarin redflag */
+  { id:'digeRabeteNist', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
+    fa:'دیگه قرار نیست رابطه‌ای باشد — حتی اگر سخت شود',
+    label:'dige rabete nist · hatta sakht · 14ruz' },
+  { id:'rabeteOmid', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'امید بستن به رابطه',
+    label:'omid be rabete · 14ruz' },
+  { id:'rabeteTafsir', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'تفسیر نگاه یا حرف به‌عنوان علاقه',
+    label:'tafsir negah/harf = alaghe · 14ruz' },
+  { id:'rabetePaygiri', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+    fa:'پیگیری، انتظار جواب، دوباره دیدن',
+    label:'paygiri / entezar javab / dobare didan · 14ruz' },
+  { id:'rabeteKhiyal', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:7, wipe:true,
+    fa:'خیال رابطه وسط کار و روز',
+    label:'khiyal rabete tu kar · 7ruz' },
+  { id:'rabeteKhodara', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:7, wipe:true,
+    fa:'خودآرایی یا نمایش برای رابطه',
+    label:'khodarayi / namayesh baraye rabete · 7ruz' },
+  { id:'selfBalaPayin', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:8,
+    fa:'رابطه سمی حذف — خودم را بالا و پایین نمی‌برم',
+    label:'toxic rabete hazf · no self up/down · 14ruz' },
+  { id:'rabeteNote2way', group:'rabete', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true, imp:10,
+    fa:'ریزترین ردفلگ: اگر یادداشتی ببینم که بشود قطع رابطه دوطرفه با طرف، حرف نمی‌زنم — حتی اگر باهاش بروی بیرون',
+    label:'note = 2way cut · sokut hatta birun · 14ruz' },
 
   /* badan */
   { id:'shostsoorat', group:'badan', pane:'meta', slot:3, kind:'flag', lockDays:3, wipe:true,
+    fa:'شست‌وشوی صورت شب نشد',
     label:'shost soorat shab NA · 3ruz' },
   { id:'mesvak', group:'badan', pane:'meta', slot:3, kind:'flag', lockDays:3, wipe:true,
+    fa:'مسواک شب نشد',
     label:'mesvak shab NA · 3ruz' },
 
   /* ruz / raayat */
   { id:'takhghmojaz0', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'تخصیص غیرمجاز صفر یا کمتر',
     label:'takhgh mojaz <=0' },
   { id:'takhmojmotns', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'تخصیص مجاز متنوع',
     label:'takhmojmotns' },
   { id:'budandarjayemojaz100', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'جا، خرید، محتوا همه مجاز',
     label:'jay/kharid/mohtava mojaz' },
   { id:'raatayeghavanineakhlaghietayinshode100', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'صددرصد قوانین تعیین‌شده',
     label:'100% qavanin tayinshode' },
   { id:'riztarintakhmojaz', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'ریزترین تخصیص مجاز — پرینت قبل از وی‌ان نه',
     label:'riz takhgh mojaz · print qabl WN na' },
   { id:'riztarinpartbandi', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    fa:'پارت‌بندی: قبل اوپن دوم فقط کلیدواژه',
     label:'partbandi: qabl open2 faghat keyword' },
   { id:'nocopypasteazaighable12pm', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    fa:'کپی از هوش مصنوعی فقط بعد اوپن دوم',
     label:'copyAI faghat BAD open2' },
   { id:'prompt15', group:'ruz', pane:'meta', slot:3, kind:'flag',
+    fa:'پرامپت حداکثر پانزده دقیقه',
     label:'prompt<=15m' },
   { id:'copyai15', group:'ruz', pane:'meta', slot:3, kind:'flag',
+    fa:'کپی از هوش مصنوعی حداکثر پانزده دقیقه',
     label:'copyai<=15m' },
   { id:'preplan12', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    fa:'یک کلمهٔ ضروری به‌علاوه پیش‌برنامه تا ۱۲',
     label:'1kalame zaruri + preplan ta12' },
   { id:'yekkalame12', group:'ruz', pane:'meta', slot:0, kind:'flag',
+    fa:'یک کلمهٔ ضروری تا ۱۲ زدم',
     label:'1kalame zaruri ta12 zadam' },
   { id:'snapRoodsar', group:'ruz', pane:'meta', slot:0, kind:'flag', lockDays:5, wipe:true,
+    fa:'پایین شهرک یا رودسر قبل اسنپ یا تپسی',
     label:'payin shahrak/rodsar qabl snap/tapsi · 5ruz' },
   { id:'sarsaatresidan', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'سر ساعت رسیدن',
     label:'sar saat residan' },
   { id:'taghiratchaos', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'هرج‌ومرج یا تغییر — هنوز صددرصد قانون',
     label:'chaos/taghir · hanuz 100% qanun' },
   { id:'rutinChaos', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'روتین در به‌هم‌ریختگی حفظ',
     label:'rutin tu be-ham-rikhtegi hefz' },
   { id:'checkkardan', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'هی چک کردن — نباش توی فرایند',
     label:'hey check · nabash tu proses · 5ruz' },
   { id:'leshPart', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+    fa:'لش برابر است با عوض کردن پارت',
     label:'lesh = avaz part · 5ruz' },
   { id:'abjayeBiq', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+    fa:'هر بی‌قراری می‌رود روی آب به‌عنوان جایگزین',
     label:'har biqarari → AB (jaygozin)' },
+  { id:'kharejPartNa', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:9,
+    fa:'حتی اگر کلی از برنامه و روتین عقب مانده باشم، بیرونِ پارت خودش برنامه‌ریزی یا ثبت‌نام نمی‌کنم — بعد از ۱۲ شهریور این روز مهم است',
+    label:'no plan/sabtnam kharej part · 14ruz' },
 
   /* layers tab */
   { id:'moodToFlow', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    fa:'حال و احساس به فلو — همهٔ حالت‌ها',
     label:'moodEhsasToFlow · HAME halat (khastegi,goshne,biq,garmi,badmood,fasting)' },
   { id:'afterFastMood', group:'layers', pane:'layers', slot:3, kind:'accumDur',
+    fa:'بعد از روزه، حال به فلو',
     label:'afterfast moodToFlow' },
   { id:'layers', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    fa:'بی‌قراری، زجر، درد، فشار، سخت، فلو، تمرکز، عمیق',
     label:'biq/zajr/dard/feshar/sakht/flow/tamarkoz/amigh' },
   { id:'ghanoon', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    fa:'قانون فراتر از من',
     label:'ghanoon faraye man' },
   { id:'ghanoonfarayehattayarade', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    fa:'قانون فراتر حتی از اراده',
     label:'ghanoon faraye hatta erade' },
   { id:'afzayesheshans', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
+    fa:'افزایش شانس',
     label:'afzayesh shans' },
-  { id:'sokut', group:'layers', pane:'layers', slot:'all', kind:'accumDur', optional:true,
+  { id:'roozsokutOn', group:'sokut', pane:'sokut', slot:'all', kind:'flag', silent:true, imp:10,
+    fa:'امروز روز سکوت است — با هوش مصنوعی حرف نمی‌زنم',
+    label:'rooz sokut ON' },
+  { id:'sokut', group:'sokut', pane:'sokut', slot:'all', kind:'accumDur', optional:true, imp:10,
+    fa:'مدت روز سکوت',
     label:'rooz sokut' },
   { id:'takhirAvg', group:'layers', pane:'layers', slot:'all', kind:'avgSec',
+    fa:'تأخیر ورود و خروج کمتر از یک و نیم ثانیه',
     label:'takhir in/out <1.5s' },
   { id:'sessionflowamigh', group:'layers', pane:'layers', slot:'all', kind:'flag',
+    fa:'نشست با فلو و عمق — ارزش والا',
     label:'session flow amigh · arzeshe vala' }
 ];
 
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
+const IMP_BY_ID = {
+  bidarshodanharhal:10, khastegiNaKhab:10, rutin100Out:10, bidGhalt:9, bidHoliday:8, bidZiadKhab:10, twoHourAras:6,
+  openfa1h:5, nchort:5, chizayemojazbadeopfa2:6, opf1:8, opf2:9, protGhabl3:8, cheetProt3:9,
+  noCarb:8, adams:9, shirin:9, cheetShirin:9, chaysaye:8, tokhme:8, asalajil:10, foodAllBan:10,
+  abtaam:8, foodToxic:8, hattaaeradekhordan:10, hossUnmojaz:6, fastingmode:5, abkhoshmaze2test:7, noghahveyebiruni:6,
+  nagoofb:6, tozihezafe:6, darkhastsharm:7, bazkhod:6, tondi:7, ajele:7, moshavere:7, tasir:7, bahs:7,
+  tarifkhanom:7, enteghad:7, multimedia:5, khshaki:5, insta:6, khire:6, khabjam:5, naghseRaghs:5,
+  gilakDirNago:9, moshaverEzafe:9, moshaverTedad:8, snapSalam1:7,
+  yeklayeamdiezafe:10, qanunSabet:10, esteghrakonjkavi:8, mahdoodzehn:8, fararBiq:8, mindSlack:8, partChange:8,
+  nokarekheir:6, notarahomm:6,
+  digeRabeteNist:10, rabeteOmid:8, rabeteTafsir:8, rabetePaygiri:8, rabeteKhiyal:7, rabeteKhodara:7,
+  selfBalaPayin:8, rabeteNote2way:10,
+  shostsoorat:4, mesvak:4,
+  takhghmojaz0:6, takhmojmotns:5, budandarjayemojaz100:6, raatayeghavanineakhlaghietayinshode100:8,
+  riztarintakhmojaz:6, riztarinpartbandi:6, nocopypasteazaighable12pm:6, prompt15:5, copyai15:5,
+  preplan12:6, yekkalame12:6, snapRoodsar:6, sarsaatresidan:6, taghiratchaos:8, rutinChaos:8,
+  checkkardan:6, leshPart:6, abjayeBiq:7, kharejPartNa:9,
+  moodToFlow:7, afterFastMood:6, layers:6, ghanoon:8, ghanoonfarayehattayarade:8, afzayesheshans:6,
+  roozsokutOn:10, sokut:10, takhirAvg:6, sessionflowamigh:5
+};
+function itemImp(it) {
+  if (!it) return 5;
+  if (it.imp != null && it.imp !== '') {
+    const n = Number(it.imp);
+    if (Number.isFinite(n)) return Math.max(0, Math.min(10, n));
+  }
+  const n = IMP_BY_ID[it.id];
+  return n != null ? n : 5;
+}
+function sortByImp(a, b) {
+  return itemImp(b) - itemImp(a);
+}
 
 const FLAG_BUNDLES = {
   noghahveyebiruni: ['noghahveyebiruni', 'nolimunadbiruni'],
@@ -857,6 +1045,52 @@ async function metaFor(day) {
   }
   return keep;
 }
+function parkComposer(compId, homeId) {
+  const comp = $(compId);
+  const home = $(homeId);
+  if (comp && home && comp.parentNode !== home) home.appendChild(comp);
+  if (comp) {
+    comp.classList.add('hide');
+    comp.classList.remove('docked');
+  }
+}
+function dockComposerUnder(compId, btn) {
+  const comp = $(compId);
+  if (!comp || !btn) return;
+  btn.insertAdjacentElement('afterend', comp);
+  comp.classList.remove('hide');
+  comp.classList.add('docked');
+  requestAnimationFrame(() => {
+    const hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr')) || 108;
+    const dock = document.querySelector('.dock');
+    const dockH = dock ? dock.offsetHeight : 88;
+    const rect = comp.getBoundingClientRect();
+    if (rect.top < hdr + 8 || rect.bottom > window.innerHeight - dockH - 8) {
+      const y = window.scrollY + rect.top - hdr - 12;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+    settleWheels();
+  });
+}
+function freezeActive() {
+  const [y, m, d] = todayJ();
+  return fmtJ(y, m, d) < APP_FREEZE_UNTIL;
+}
+function paintFreezeBanner() {
+  const el = $('freezeBanner');
+  if (!el) return;
+  const on = freezeActive();
+  el.hidden = !on;
+  el.classList.toggle('hide', !on);
+  el.setAttribute('aria-hidden', on ? 'false' : 'true');
+  const nameEl = el.querySelector('b');
+  if (nameEl) nameEl.textContent = NIKA_NAME;
+  const p = el.querySelector('p');
+  if (p) p.textContent = 'از ۱۲ شهریور تا ۱۲ آذر هیچ تغییری در اپ داده نمی‌شود. ۱۲ شهریور روز مهم است.';
+  const sp = el.querySelector('span');
+  if (sp) sp.textContent = APP_FREEZE_FROM + ' — ' + APP_FREEZE_UNTIL;
+  pinHeader();
+}
 function blankMeta(day) {
   const rec = {
     uid: metaUid(day),
@@ -883,6 +1117,13 @@ let lastMetaRec = null;
 let bidariDraft = false;
 let metaSlot = 'all';
 let metaPack = 'all';
+let metaImpMin = 'all';
+const META_IMP_CHIPS = [
+  { id:'all', label:'همه درجه' },
+  { id:8, label:'۸+' },
+  { id:9, label:'۹+' },
+  { id:10, label:'فقط ۱۰' }
+];
 const PISHRO_ROWS = [
   { id:'ITPr', label:'ITPr' },
   { id:'takhshose', label:'takhshose' },
@@ -890,6 +1131,10 @@ const PISHRO_ROWS = [
   { id:'arasmor', label:'arasmor' },
   { id:'openfa2', label:'openfa2' }
 ];
+let pishroPart = 0;
+let pishroPicked = null;
+let pishroDraftItems = [];
+let pishroDyn = {};
 
 function flagOn(rec, id) {
   if (Object.prototype.hasOwnProperty.call(flagDraft, id)) return !!flagDraft[id];
@@ -998,9 +1243,9 @@ function selectedMetaDay() {
 
 function totalLine(it, rec) {
   if (!rec) return '—';
-  if (rec.ruzshekast) return 'ruz shekast';
-  if (it.kind === 'accumDur') return 'today: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
-  if (it.kind === 'flag') return flagOn(rec, it.id) ? 'SET' : 'not set';
+  if (rec.ruzshekast) return 'روز شکست';
+  if (it.kind === 'accumDur') return 'امروز: ' + fmtChunk(rec[META_STORE[it.id]] || 0);
+  if (it.kind === 'flag') return flagOn(rec, it.id) ? 'ثبت شد' : 'ثبت نشده';
   if (it.kind === 'avgSec') {
     const st = takhirStats(rec);
     let line = st.n
@@ -1109,10 +1354,12 @@ function mountMetaItem(host, it) {
     }
     const b = document.createElement('button');
     b.type = 'button';
-    b.dir = 'ltr';
-    b.className = 'mchk';
+    b.dir = dirOf(itemFa(it));
+    b.className = 'mchk imp-' + itemImp(it);
+    if (itemImp(it) >= 10) b.classList.add('imp-hero');
     if (it.lockDays) b.classList.add(it.lockDays >= 14 ? 'sev-lock' : 'sev-day');
-    b.innerHTML = '<i></i><span>' + it.label + '</span>' +
+    b.innerHTML = '<i></i><span>' + itemFa(it) + '</span>' +
+      '<em class="impn">' + itemImp(it) + '</em>' +
       (lockBadge(it) ? '<b>' + lockBadge(it) + '</b>' : '');
     b.addEventListener('click', () => {
       if (isNegItem(it)) commitFlag(it);
@@ -1123,9 +1370,9 @@ function mountMetaItem(host, it) {
     return;
   }
   const box = document.createElement('div');
-  box.className = 'mblock';
+  box.className = 'mblock imp-' + itemImp(it) + (itemImp(it) >= 10 ? ' imp-hero' : '');
   box.innerHTML =
-    `<h3>${it.label}</h3>` +
+    `<h3 class="${dirOf(itemFa(it))}">${itemFa(it)}</h3>` +
     `<p class="hint" id="tot_${it.id}">—</p>` +
     `<div id="mw_${it.id}"></div>` +
     `<button type="button" class="rst" data-reset="${it.id}">reset</button>`;
@@ -1296,9 +1543,10 @@ function visibleMetaItems(pane) {
   return META_ITEMS.filter(it => {
     if ((it.pane || 'meta') !== pane) return false;
     if (pane === 'meta' && !itemInSlot(it, metaSlot)) return false;
-    if (pane === 'meta' && metaPack !== 'all' && it.group !== metaPack && it.group !== 'laws') return false;
+    if (pane === 'meta' && metaPack !== 'all' && it.group !== metaPack) return false;
+    if (pane === 'meta' && metaImpMin !== 'all' && itemImp(it) < Number(metaImpMin)) return false;
     return true;
-  });
+  }).sort(sortByImp);
 }
 function lockBadge(it) {
   const n = Number(it.lockDays) || 0;
@@ -1307,9 +1555,10 @@ function lockBadge(it) {
 function renderMetaFilters() {
   const slotHost = $('metaSlots');
   const packHost = $('metaPacks');
+  const impHost = $('metaImps');
   if (slotHost) {
     slotHost.innerHTML = META_SLOTS.map(s =>
-      '<button type="button" data-slot="' + s.id + '"' + (String(s.id) === String(metaSlot) ? ' class="on"' : '') + '>' + s.label + '</button>'
+      '<button type="button" data-slot="' + s.id + '" class="' + dirOf(s.label) + (String(s.id) === String(metaSlot) ? ' on' : '') + '">' + s.label + '</button>'
     ).join('');
     slotHost.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       metaSlot = b.dataset.slot === 'all' ? 'all' : Number(b.dataset.slot);
@@ -1318,12 +1567,23 @@ function renderMetaFilters() {
     }));
   }
   if (packHost) {
-    const packs = [{ id:'all', title:'hame' }].concat(META_GROUPS.filter(g => g.id !== 'bidari' && g.id !== 'layers'));
+    const packs = [{ id:'all', title:'همه' }].concat(META_GROUPS.filter(g =>
+      g.id !== 'bidari' && g.id !== 'layers' && g.id !== 'sokut' && g.id !== 'laws'));
     packHost.innerHTML = packs.map(g =>
-      '<button type="button" data-pack="' + g.id + '"' + (g.id === metaPack ? ' class="on"' : '') + '>' + g.title + '</button>'
+      '<button type="button" data-pack="' + g.id + '" class="' + dirOf(g.title) + (g.id === metaPack ? ' on' : '') + '">' + g.title + '</button>'
     ).join('');
     packHost.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       metaPack = b.dataset.pack;
+      renderMetaFilters();
+      renderMetaList();
+    }));
+  }
+  if (impHost) {
+    impHost.innerHTML = META_IMP_CHIPS.map(s =>
+      '<button type="button" data-imp="' + s.id + '" class="rtl' + (String(s.id) === String(metaImpMin) ? ' on' : '') + '">' + s.label + '</button>'
+    ).join('');
+    impHost.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      metaImpMin = b.dataset.imp === 'all' ? 'all' : Number(b.dataset.imp);
       renderMetaFilters();
       renderMetaList();
     }));
@@ -1337,30 +1597,24 @@ function renderMetaList() {
   const items = visibleMetaItems('meta');
   const groups = [];
   items.forEach(it => { if (!groups.includes(it.group)) groups.push(it.group); });
-  if (metaPack === 'laws' || metaPack === 'all') groups.push('laws');
-  Array.from(new Set(groups)).forEach(gid => {
+  groups.sort((a, b) => {
+    const ma = Math.max(0, ...items.filter(it => it.group === a).map(itemImp));
+    const mb = Math.max(0, ...items.filter(it => it.group === b).map(itemImp));
+    return mb - ma;
+  });
+  groups.forEach(gid => {
     const wrap = document.createElement('div');
     wrap.className = 'mgrp tone-' + gid + ' span2';
     const g = META_GROUPS.find(x => x.id === gid) || { title: gid };
-    wrap.innerHTML = '<div class="gtitle">' + g.title + '</div>';
+    wrap.innerHTML = '<div class="gtitle ' + dirOf(g.title) + '">' + g.title + '</div>';
     host.appendChild(wrap);
-    if (gid === 'laws') mountLawsPanel(wrap);
-    else items.filter(it => it.group === gid).forEach(it => mountMetaItem(wrap, it));
-    if (gid !== 'laws') {
-      const putBtn = document.createElement('button');
-      putBtn.type = 'button';
-      putBtn.className = 'gput';
-      putBtn.textContent = 'put ' + gid;
-      putBtn.addEventListener('click', () => putGroup(gid));
-      wrap.appendChild(putBtn);
-    } else {
-      const putBtn = document.createElement('button');
-      putBtn.type = 'button';
-      putBtn.className = 'gput';
-      putBtn.textContent = 'put laws';
-      putBtn.addEventListener('click', () => putGroup('laws'));
-      wrap.appendChild(putBtn);
-    }
+    items.filter(it => it.group === gid).sort(sortByImp).forEach(it => mountMetaItem(wrap, it));
+    const putBtn = document.createElement('button');
+    putBtn.type = 'button';
+    putBtn.className = 'gput';
+    putBtn.textContent = 'ثبت ' + (g.title || gid);
+    putBtn.addEventListener('click', () => putGroup(gid));
+    wrap.appendChild(putBtn);
   });
   paintMetaStatus();
 }
@@ -1372,56 +1626,209 @@ function buildPaneItems(hostId, pane) {
   const wrap = document.createElement('div');
   wrap.className = 'mgrp tone-' + pane + ' span2';
   host.appendChild(wrap);
-  META_ITEMS.filter(it => (it.pane || 'meta') === pane).forEach(it => mountMetaItem(wrap, it));
+  META_ITEMS.filter(it => (it.pane || 'meta') === pane).slice().sort(sortByImp).forEach(it => mountMetaItem(wrap, it));
   if (pane === 'bidari') mountBidWakePanel(wrap);
   const putBtn = document.createElement('button');
   putBtn.type = 'button';
   putBtn.className = 'gput';
-  putBtn.textContent = 'put ' + pane;
+  putBtn.textContent = 'ثبت ' + pane;
   putBtn.addEventListener('click', () => putPane(pane));
   wrap.appendChild(putBtn);
+}
+function buildLawsPane() {
+  const host = $('lawsBlocks');
+  if (!host) return;
+  host.innerHTML = '';
+  host.className = 'mgrids';
+  const wrap = document.createElement('div');
+  wrap.className = 'mgrp tone-laws span2';
+  wrap.innerHTML = '<div class="gtitle rtl">قانون مهم — جدا و دم‌دست</div>';
+  host.appendChild(wrap);
+  mountLawsPanel(wrap);
+  const putBtn = document.createElement('button');
+  putBtn.type = 'button';
+  putBtn.className = 'gput';
+  putBtn.textContent = 'ثبت قانون';
+  putBtn.addEventListener('click', () => putGroup('laws'));
+  wrap.appendChild(putBtn);
+}
+function normalizePishro(data) {
+  if (!data || typeof data !== 'object') return { items: [] };
+  if (Array.isArray(data.items)) {
+    return {
+      items: data.items.filter(x => x && x.code).map(x => ({
+        code: String(x.code),
+        cat: String(x.cat || ''),
+        min: Number(x.min) || 0,
+        q: Array.isArray(x.q) ? x.q.slice() : []
+      }))
+    };
+  }
+  const items = [];
+  PISHRO_ROWS.forEach(r => {
+    const row = data[r.id];
+    if (row && row.on) items.push({ code: r.id, cat: '', min: Number(row.min) || 0, q: row.q || [] });
+  });
+  Object.keys(data).forEach(k => {
+    if (k === 'items' || PISHRO_ROWS.some(r => r.id === k)) return;
+    const row = data[k];
+    if (row && (row.on || row.min || (row.q && row.q.length))) {
+      items.push({ code: k, cat: row.cat || '', min: Number(row.min) || 0, q: row.q || [] });
+    }
+  });
+  return { items };
+}
+function parkPishroComposer() { parkComposer('pishroComposer', 'pishroComposerHome'); }
+function buildPishroParts() {
+  const host = $('pishroParts');
+  if (!host) return;
+  if (!pishroPart && pishroPart !== 0) pishroPart = partFromClock();
+  host.innerHTML = PARTS.map(p =>
+    `<button type="button" data-p="${p.id}" class="p${p.id} ${dirOf(p.label)}">${p.label}</button>`).join('');
+  const paint = () => host.querySelectorAll('button').forEach(b =>
+    b.classList.toggle('on', Number(b.dataset.p) === pishroPart));
+  host.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    pishroPart = Number(b.dataset.p);
+    pishroPicked = null;
+    paint();
+    fillPishroList();
+    vibrate(8);
+  }));
+  paint();
+}
+function fillPishroList() {
+  parkPishroComposer();
+  const host = $('pishroList');
+  if (!host) return;
+  const allowed = codesForPart(pishroPart);
+  const cats = [...new Set(allowed.map(c => c.cat))];
+  host.innerHTML = cats.map(cat => {
+    const items = allowed.filter(c => c.cat === cat);
+    const stick = items.some(c => c.stick);
+    return `<div class="catbox cat-${cat}"><div class="catlab">${cat}</div>` +
+      `<div class="alist${stick ? ' stick' : ''}">` +
+      items.map(c => `<button type="button" data-code="${c.code}">${c.code}</button>`).join('') +
+      `</div></div>`;
+  }).join('');
+  host.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    pishroPicked = CODES.find(c => c.code === b.dataset.code);
+    host.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    openPishroComposer();
+    vibrate(8);
+  }));
+}
+function openPishroComposer() {
+  const c = pishroPicked;
+  const comp = $('pishroComposer');
+  const btn = document.querySelector('#pishroList button.on');
+  if (!c || !comp || !btn) return;
+  dockComposerUnder('pishroComposer', btn);
+  $('pishroCompTitle').textContent = c.code;
+  const host = $('pishroDyn');
+  WHEELS.forEach(w => { if (!w.el.isConnected) w.destroy(); });
+  host.innerHTML = '';
+  pishroDyn = {};
+  const def = c.def || {};
+  pishroDyn.dur = makeDurWheel(addField(host, 'مدت همین تکه'), def.h || 0, def.m || 0);
+  quickChips(host, [5,10,15,20,25,30,40,50,60], m => {
+    const h = Math.floor(pishroDyn.dur.minutes() / 60);
+    pishroDyn.dur.setMinutes(h * 60 + m);
+  });
+  const qh = $('pishroQ');
+  qh.innerHTML = QUALITY_TAGS.map(t =>
+    `<button type="button" data-t="${t}" class="${dirOf(qualityFa(t))}">${qualityFa(t)}</button>`
+  ).join('');
+  qh.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    b.classList.toggle('on');
+    vibrate(8);
+  }));
+  settleWheels();
+}
+function addPishroItem() {
+  if (!pishroPicked) { toast('اول یک کار را بزن', true); return; }
+  const q = Array.from(document.querySelectorAll('#pishroQ button.on')).map(b => b.dataset.t);
+  pishroDraftItems.push({
+    code: pishroPicked.code,
+    cat: pishroPicked.cat,
+    min: pishroDyn.dur ? pishroDyn.dur.minutes() : 0,
+    q: q
+  });
+  paintPishroPlan();
+  parkPishroComposer();
+  pishroPicked = null;
+  document.querySelectorAll('#pishroList button.on').forEach(b => b.classList.remove('on'));
+  vibrate(12);
+  toast('به برنامه اضافه شد');
+}
+function paintPishroPlan() {
+  const host = $('pishroPlan');
+  if (!host) return;
+  if (!pishroDraftItems.length) {
+    host.innerHTML = '<div class="empty">برنامه خالی است — از فهرست بالا بزن</div>';
+    return;
+  }
+  host.innerHTML = pishroDraftItems.map((x, i) =>
+    '<div class="pishrow">' +
+      '<div class="pishlab">' +
+        '<b class="ltr">' + esc(x.code) + '</b>' +
+        '<span class="nbdur">' + esc(fmtChunk(x.min)) + '</span>' +
+        '<button type="button" class="cancel" data-pdel="' + i + '">حذف</button>' +
+      '</div>' +
+      (x.q && x.q.length
+        ? '<div class="chips qchips">' + x.q.map(t =>
+            '<span class="chip ' + dirOf(qualityFa(t)) + '">' + esc(qualityFa(t)) + '</span>'
+          ).join('') + '</div>'
+        : '') +
+    '</div>'
+  ).join('');
+  host.querySelectorAll('[data-pdel]').forEach(b => b.addEventListener('click', () => {
+    pishroDraftItems.splice(Number(b.dataset.pdel), 1);
+    paintPishroPlan();
+    vibrate(8);
+  }));
 }
 function buildPishro() {
   const host = $('pishroBlocks');
   if (!host) return;
-  host.innerHTML = PISHRO_ROWS.map(r =>
-    '<div class="pishrow" data-pid="' + r.id + '">' +
-      '<label class="pishlab"><input type="checkbox" data-pon="' + r.id + '"/> ' + r.id + '</label>' +
-      '<input class="ltr" data-pmin="' + r.id + '" type="number" min="0" placeholder="min"/>' +
-      '<div class="chips qchips" data-pq="' + r.id + '">' +
-        QUALITY_TAGS.map(t => '<button type="button" data-q="' + t + '">' + t + '</button>').join('') +
+  if (host.dataset.ready) {
+    paintPishroPlan();
+    return;
+  }
+  host.dataset.ready = '1';
+  pishroPart = partFromClock();
+  host.innerHTML =
+    '<label class="lb">پارت برنامه</label>' +
+    '<div class="parts" id="pishroParts"></div>' +
+    '<div id="pishroList"></div>' +
+    '<div id="pishroComposerHome">' +
+      '<div id="pishroComposer" class="hide">' +
+        '<label class="lb ltr" id="pishroCompTitle">—</label>' +
+        '<div id="pishroDyn"></div>' +
+        '<div class="chips qchips" id="pishroQ"></div>' +
+        '<button type="button" class="primary" id="pishroAdd">به برنامه اضافه کن</button>' +
       '</div>' +
-    '</div>'
-  ).join('');
-  host.querySelectorAll('[data-pq] button').forEach(b => {
-    b.addEventListener('click', () => b.classList.toggle('on'));
-  });
+    '</div>' +
+    '<h3 class="pishplan-title">برنامهٔ امروز</h3>' +
+    '<div id="pishroPlan"></div>';
+  buildPishroParts();
+  fillPishroList();
+  const add = $('pishroAdd');
+  if (add) add.addEventListener('click', addPishroItem);
   const save = $('pishroSave');
-  if (save) save.addEventListener('click', savePishro);
+  if (save && !save.dataset.bound) {
+    save.dataset.bound = '1';
+    save.addEventListener('click', savePishro);
+  }
+  paintPishroPlan();
 }
 function readPishroUi() {
-  const o = {};
-  PISHRO_ROWS.forEach(r => {
-    const on = document.querySelector('[data-pon="' + r.id + '"]');
-    const min = document.querySelector('[data-pmin="' + r.id + '"]');
-    const qs = Array.from(document.querySelectorAll('[data-pq="' + r.id + '"] button.on')).map(b => b.dataset.q);
-    o[r.id] = { on: !!(on && on.checked), min: Number(min && min.value) || 0, q: qs };
-  });
-  return o;
+  return { items: pishroDraftItems.map(x => ({ code: x.code, cat: x.cat, min: x.min, q: x.q.slice() })) };
 }
 function paintPishro(rec) {
   let data = {};
   try { data = JSON.parse((rec && rec.pishroJson) || '{}'); } catch (e) { data = {}; }
-  PISHRO_ROWS.forEach(r => {
-    const row = data[r.id] || {};
-    const on = document.querySelector('[data-pon="' + r.id + '"]');
-    const min = document.querySelector('[data-pmin="' + r.id + '"]');
-    if (on) on.checked = !!row.on;
-    if (min) min.value = row.min || '';
-    document.querySelectorAll('[data-pq="' + r.id + '"] button').forEach(b => {
-      b.classList.toggle('on', (row.q || []).indexOf(b.dataset.q) >= 0);
-    });
-  });
+  pishroDraftItems = normalizePishro(data).items;
+  paintPishroPlan();
 }
 async function savePishro() {
   const day = selectedMetaDay();
@@ -1431,7 +1838,7 @@ async function savePishro() {
   rec.synced = 0;
   await put('meta', rec);
   lastMetaRec = rec;
-  toast('pishro save');
+  toast('برنامه ذخیره شد');
   trySync();
 }
 function buildMeta() {
@@ -1454,6 +1861,8 @@ function buildMeta() {
   renderMetaList();
   buildPaneItems('bidariBlocks', 'bidari');
   buildPaneItems('layerBlocks', 'layers');
+  buildPaneItems('sokutBlocks', 'sokut');
+  buildLawsPane();
   buildPishro();
   loadLawDraft().then(() => paintMetaStatus());
 }
@@ -1490,7 +1899,7 @@ async function commitFlag(it) {
     return;
   }
   const n = Number(it.lockDays) || 0;
-  if (!confirm(it.label + (n ? ('\n+' + n + ' ruz jam mishe ru ghofl') : '') + (it.wipe ? '\nruz pak' : '') + (it.silent ? '\nsokut ba AI' : '') + ' ?')) return;
+  if (!confirm(itemFa(it) + (n ? ('\n+' + n + ' روز به قفل اضافه می‌شود') : '') + (it.wipe ? '\nروز پاک می‌شود' : '') + (it.silent ? '\nسکوت با هوش مصنوعی' : '') + ' ؟')) return;
   rec[it.id] = 1;
   applyFlagBundle(rec, it.id, true);
   const keep = [it.id];
@@ -1692,14 +2101,13 @@ function buildParts() {
     paint();
     picked = null;
     fillActivityList();
-    const comp = $('nbComposer');
-    if (comp) { comp.classList.add('hide'); comp.classList.remove('docked'); }
     vibrate(8);
   }));
   paint();
 }
 
 function fillActivityList() {
+  parkComposer('nbComposer', 'nbComposerHome');
   const allowed = codesForPart(activePart);
   const cats = [...new Set(allowed.map(c => c.cat))];
   $('nbList').innerHTML = cats.map(cat => {
@@ -1766,8 +2174,12 @@ function selectedWho() {
 function openComposer() {
   const c = currentCode();
   const d = c.def || {};
-  $('nbComposer').classList.remove('hide');
-  $('nbComposer').classList.add('docked');
+  const btn = document.querySelector('#nbList button.on');
+  if (btn) dockComposerUnder('nbComposer', btn);
+  else {
+    $('nbComposer').classList.remove('hide');
+    $('nbComposer').classList.add('docked');
+  }
   $('compTitle').textContent = c.code;
   const host = $('dynFields');
   WHEELS.forEach(w => { if (!w.el.isConnected) w.destroy(); });
@@ -1816,7 +2228,7 @@ function openComposer() {
     qh.className = 'chips qchips';
     $('s_tags').insertAdjacentElement('afterend', qh);
   }
-  qh.innerHTML = QUALITY_TAGS.map(t => `<button type="button" data-t="${t}">${t}</button>`).join('');
+  qh.innerHTML = QUALITY_TAGS.map(t => `<button type="button" data-t="${t}" class="${dirOf(qualityFa(t))}">${qualityFa(t)}</button>`).join('');
   const paintQ = () => {
     const cur = $('s_tags').value.split(',').map(s => s.trim()).filter(Boolean);
     qh.querySelectorAll('button').forEach(b => b.classList.toggle('on', cur.indexOf(b.dataset.t) >= 0));
@@ -1974,7 +2386,7 @@ function ensureSessionUi() {
   fillActivityList();
 }
 
-const TAB_IDS = ['pishro','bidari','meta','layers','session','dash','data'];
+const TAB_IDS = ['pishro','bidari','sokut','laws','meta','layers','session','data'];
 function showTab(name) {
   if (TAB_IDS.indexOf(name) < 0) name = 'pishro';
   activeTab = name;
@@ -1985,7 +2397,7 @@ function showTab(name) {
     const tab = $('tab' + id.charAt(0).toUpperCase() + id.slice(1));
     if (tab) tab.classList.toggle('active', id === name);
   });
-  if ($('dayBar')) $('dayBar').classList.toggle('hide', ['pishro','bidari','meta','layers'].indexOf(name) < 0);
+  if ($('dayBar')) $('dayBar').classList.toggle('hide', ['pishro','bidari','sokut','laws','meta','layers'].indexOf(name) < 0);
   $('btnSave').disabled  = (name !== 'session');
   $('btnSave').textContent = 'این خط را بنویس';
   const bar = document.querySelector('.bar');
@@ -1994,13 +2406,12 @@ function showTab(name) {
   if (name === 'session') ensureSessionUi();
   requestAnimationFrame(pinHeader);
   settleWheels();
-  if (name === 'meta' || name === 'bidari' || name === 'layers' || name === 'pishro') {
+  if (name === 'meta' || name === 'bidari' || name === 'layers' || name === 'pishro' || name === 'sokut' || name === 'laws') {
     paintMetaStatus();
     paintPishro(lastMetaRec);
   }
   if (name === 'session') { paintNotebook(); paintMetaStatus(); }
   if (name === 'data') refreshData();
-  if (name === 'dash') paintDashboard();
 }
 
 async function doSave() {
@@ -2013,6 +2424,9 @@ async function doSave() {
     toast('خط نشست · ' + rec.code + ':' + (rec.chunk || rec.count));
     $('s_note').value = '';
     $('s_tags').value = '';
+    parkComposer('nbComposer', 'nbComposerHome');
+    picked = null;
+    document.querySelectorAll('#nbList button.on').forEach(b => b.classList.remove('on'));
     await paintNotebook();
   }
   updateQueueBadge();
@@ -2308,9 +2722,9 @@ function metaBits(rec) {
     if (it.id === 'saatbidari5') return;
     if (it.kind === 'accumDur') {
       const n = Number(rec[META_STORE[it.id]]) || 0;
-      if (n) bits.push({ id: it.id, text: it.label + '=' + fmtChunk(n) });
+      if (n) bits.push({ id: it.id, text: itemFa(it) + '=' + fmtChunk(n) });
     } else if (it.kind === 'flag' && rec[it.id]) {
-      bits.push({ id: it.id, text: it.label });
+      bits.push({ id: it.id, text: itemFa(it) });
     } else if (it.kind === 'avgSec') {
       const st = takhirStats(rec);
       st.samples.forEach((sec, i) => {
@@ -2334,28 +2748,28 @@ function metaItemView(rec, it) {
     let state = 'miss';
     if (saved) state = 'ok';
     else if (draft && on) state = 'draft';
-    return { id: it.id, group: it.group, kind: it.kind, label: it.label, state, val: '', min: 0 };
+    return { id: it.id, group: it.group, kind: it.kind, label: itemFa(it), state, val: '', min: 0 };
   }
   if (it.kind === 'accumDur') {
     const n = Number(rec && rec[META_STORE[it.id]]) || 0;
     return {
-      id: it.id, group: it.group, kind: it.kind, label: it.label,
+      id: it.id, group: it.group, kind: it.kind, label: itemFa(it),
       state: n > 0 ? 'ok' : 'miss', val: n > 0 ? fmtChunk(n) : '0m', min: n
     };
   }
   if (it.kind === 'avgSec') {
     const st = takhirStats(rec);
     if (!st.n) {
-      return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '—', min: 0 };
+      return { id: it.id, group: it.group, kind: it.kind, label: itemFa(it), state: 'miss', val: '—', min: 0 };
     }
     return {
-      id: it.id, group: it.group, kind: it.kind, label: it.label,
+      id: it.id, group: it.group, kind: it.kind, label: itemFa(it),
       state: st.ok ? 'ok' : 'miss',
       val: Number(st.avg).toFixed(2) + 's n=' + st.n,
       min: 0
     };
   }
-  return { id: it.id, group: it.group, kind: it.kind, label: it.label, state: 'miss', val: '', min: 0 };
+  return { id: it.id, group: it.group, kind: it.kind, label: itemFa(it), state: 'miss', val: '', min: 0 };
 }
 async function sessionWork(day) {
   const byPart = PARTS.map(p => ({ id: p.id, label: p.label, min: 0, n: 0 }));
@@ -2389,7 +2803,7 @@ function tileTitle(it) {
   if (it.id === 'afzayesheshans') return 'afzayeshShans';
   if (it.id === 'sokut') return 'roozsokut';
   if (it.id === 'takhirAvg') return 'takhir';
-  return it.label;
+  return itemFa(it);
 }
 function svgBars(rows) {
   rows = (rows || []).filter(r => r && r.lab);
@@ -2901,6 +3315,7 @@ async function hardReload() {
 async function boot() {
   $('verPill').textContent = APP_VERSION;
   $('verPill').className = 'pill on';
+  paintFreezeBanner();
   if ($('lockPill')) $('lockPill').addEventListener('click', redLockUnlock);
   if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().catch(() => {});
@@ -2912,17 +3327,10 @@ async function boot() {
   $('cfg_url').value    = cfgGet('url');
   $('cfg_secret').value = cfgGet('secret');
 
-  ['pishro','bidari','meta','layers','session','dash','data'].forEach(id => {
+  TAB_IDS.forEach(id => {
     const el = $('tab' + id.charAt(0).toUpperCase() + id.slice(1));
     if (el) el.addEventListener('click', () => showTab(id));
   });
-  if ($('dashRange')) {
-    $('dashRange').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      dashDays = b.dataset.d === 'fasl' || b.dataset.d === 'since531' ? b.dataset.d : Number(b.dataset.d);
-      $('dashRange').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-      paintDashboard();
-    }));
-  }
   $('btnSave').addEventListener('click',  () => doSave());
   $('btnSaveCfg').addEventListener('click', () => {
     cfgSet('url', $('cfg_url').value.trim());
