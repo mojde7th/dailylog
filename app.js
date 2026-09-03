@@ -5,10 +5,10 @@
 
 'use strict';
 
-const APP_VERSION = 'v87 · mojde';
+const APP_VERSION = 'v88 · lock';
 const SCRIPT_VERSION = 'v11-meta';
-const APP_FREEZE_FROM = '1405/06/12';
-const APP_FREEZE_UNTIL = '1405/09/12';
+const APP_FREEZE_FROM = '1405/06/13';
+const APP_FREEZE_UNTIL = '1405/08/13';
 const NIKA_NAME = 'مژده';
 
 /* ═════════════════════════════ 1. PARTS AND ACTIVITIES ═════════════════════
@@ -102,18 +102,23 @@ const SESSION_FIELDS = ['uid','createdAt','dateShamsi','part','partId','category
                         'minutes','hm','chunk','tags','who','reactSec','count','reps','perRep','kind','note'];
 
 const META_GROUPS = [
-  { id:'bidari', title:'بیداری' },
+  { id:'bidari', title:'بیداری · شصت درصد' },
+  { id:'fast3', title:'فست تا سه · سی درصد' },
+  { id:'fast6', title:'فست تا شش · سی درصد' },
+  { id:'mojaz', title:'فقط مجاز · صفر تقلب' },
+  { id:'partbandi', title:'پارت‌بندی · سی درصد' },
+  { id:'toxic', title:'رابطه سمی · سی درصد' },
   { id:'khorak', title:'خوراک' },
-  { id:'harf', title:'حرف و جمع' },
-  { id:'ghermez', title:'خط قرمز' },
+  { id:'harf', title:'حرف و جمع · سی درصد' },
+  { id:'ghermez', title:'خط قرمز · سی درصد' },
   { id:'rabete', title:'رابطه — ریزترین ردفلگ' },
   { id:'badan', title:'بدن' },
   { id:'ruz', title:'روز و رعایت' },
   { id:'openfa', title:'اوپن‌فست' },
   { id:'layers', title:'لایه و فلو' },
-  { id:'sokut', title:'روز سکوت' },
-  { id:'laws', title:'قانون مهم' }
+  { id:'sokut', title:'سکوت' }
 ];
+const PANE_ONLY = { bidari:1, fast3:1, fast6:1, mojaz:1, layers:1, sokut:1 };
 const META_SLOTS = [
   { id:'all', label:'همه' },
   { id:0, label:'تا ۱۲' },
@@ -126,9 +131,9 @@ const negGroup = gid => META_ITEMS.some(it => it.group === gid && isNegItem(it))
 
 const META_ITEMS = [
   /* bidari — tab joda, 1s = 15ruz */
-  { id:'bidarshodanharhal', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10,
-    fa:'در هر صورت بیدار شو و طبق برنامه پاشو — حتی اگر انگیزه نیست، خسته‌ای، صد روز پروژه داری، یا یک میلیون دلیل دیگر. تو جا نمان، حتی یک ثانیه بیشتر. یک ثانیه دیرتر = حرف نمی‌زنم',
-    label:'dir1s · even 1s after alarm · no sit · 15ruz + sokut' },
+  { id:'bidarshodanharhal', group:'bidari', pane:'bidari', slot:'all', kind:'flag', lockDays:15, wipe:true, silent:true, imp:10, share:60,
+    fa:'آخرین زنگ باید همان لحظه بیدار شده باشم — این شصت درصد روز است. یک ثانیه دیرتر حرف نمی‌زنم',
+    label:'zang akhari hamun lahze · 60% ruz · 15ruz' },
   { id:'hushiarSobhDel', group:'bidari', pane:'bidari', slot:0, kind:'flag', lockDays:30, wipe:true, silent:true, imp:10,
     fa:'صبح که بیدار شدم، دقیقاً توی دلم چند بار، نه بلند، می‌گویم مژده: هویتت شَم است و اصلاً ناهوشیاری دلیل نمی‌شود؛ باید حتماً خودم را هوشیار کنم، وگرنه سی روز می‌شکند',
     label:'sobh tu del · mojde hushiar · nahushiar != dalil · 30ruz' },
@@ -150,6 +155,22 @@ const META_ITEMS = [
   { id:'twoHourAras', group:'bidari', pane:'bidari', slot:0, kind:'flag', imp:6,
     fa:'دو ساعت بیدار بودن پیش از تخصیص شُسه',
     label:'2saat bidar ghabl takhshose' },
+
+  { id:'fastTa3', group:'fast3', pane:'fast3', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10, share:30,
+    fa:'فست تا سه رعایت نشد — سی روز حرف نمی‌زنم',
+    label:'fast ta 3 · 30ruz' },
+  { id:'fastTa6', group:'fast6', pane:'fast6', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10, share:30,
+    fa:'فست تا شش رعایت نشد — حتی غذای صددرصد مجاز را هم نمی‌شود زودتر از شش خورد',
+    label:'fast ta 6 · ghaza pish 6 na · 30ruz' },
+  { id:'protAfter3', group:'fast6', pane:'fast6', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10, share:30,
+    fa:'پودر پروتئین فقط بعد از سه — قبل سه شکست است',
+    label:'prot after 3 · 30ruz' },
+  { id:'creamerLabaniat', group:'mojaz', pane:'mojaz', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10,
+    fa:'ریزترین کافی‌کریمر و طعم‌دهندهٔ قهوه ممنوع — پودر خامه‌ای گیاهی و شیر و انواع لبنیات',
+    label:'creamer / taam qahve / shir / labaniat · 30ruz' },
+  { id:'hichCheatMojaz', group:'mojaz', pane:'mojaz', slot:'all', kind:'flag', lockDays:30, wipe:true, silent:true, imp:10, share:30,
+    fa:'کل روز فقط مجاز: مرغ، گوشت، ماهی، سبزی رایج، صیفی رایج جز سیب‌زمینی و ذرت. هرچه در برنامه نیست می‌شکند. تقلب هیچ موردی حتی بعد از دو ماه هم نیست. فست مهم‌ترین است',
+    label:'faghat mojaz · 0 cheat abadi · 30ruz' },
 
   /* openfa */
   { id:'openfa1h', group:'openfa', pane:'meta', slot:3, kind:'flag',
@@ -205,7 +226,7 @@ const META_ITEMS = [
   { id:'abtaam', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
     fa:'آب گازدار طعم‌دار یا جوشانده — حتی روز شکست',
     label:'ab gazdar taam / joshan · hata ruz shekast · 14ruz' },
-  { id:'foodToxic', group:'khorak', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+  { id:'foodToxic', group:'toxic', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:8, share:30,
     fa:'خوراک سمی با غذای دیگران یا سرک کشیدن',
     label:'toxic ba ghazaye gheyr / resolver peek · 14ruz' },
   { id:'hattaaeradekhordan', group:'khorak', pane:'meta', slot:'all', kind:'flag',
@@ -258,19 +279,19 @@ const META_ITEMS = [
   { id:'enteghad', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, silent:true,
     fa:'ریز انتقاد یا سرزنش — مادر و بقیه',
     label:'riz enteghad/sarzanesh (madar/…) · 14ruz + sokut' },
-  { id:'multimedia', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+  { id:'multimedia', group:'toxic', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:8, share:30,
     fa:'چندرسانه‌ای یا ویدئو در گروه',
     label:'multimedia/video group · 14ruz' },
   { id:'khshaki', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
     fa:'صحبت با خشکی، میلاد و مانند این‌ها',
     label:'khshaki/milad/… sohbat · 5ruz' },
-  { id:'insta', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+  { id:'insta', group:'toxic', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:8, share:30,
     fa:'اینستاگرام جز کار و واجب و چت',
     label:'insta joz kar-vajib-chat · 14ruz' },
-  { id:'khire', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+  { id:'khire', group:'toxic', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:8, share:30,
     fa:'خیره شدن به دور یا بی‌کاری بیش از سه بار بیست دقیقه',
     label:'khire dur / 0kar > 3x20m · 14ruz + part' },
-  { id:'khabjam', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+  { id:'khabjam', group:'toxic', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true, imp:8, share:30,
     fa:'خوابیدن توی جمع',
     label:'khab tu jam · 5ruz' },
   { id:'gilakDirNago', group:'harf', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:9,
@@ -311,12 +332,15 @@ const META_ITEMS = [
   { id:'mindSlack', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
     fa:'ذهن شل، تقلب، تغییر قانون — نه',
     label:'zehn: shol/cheat/taghir qanun · NA · 14ruz' },
-  { id:'partChange', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true,
+  { id:'partChange', group:'partbandi', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:8, share:30,
     fa:'عوض کردن پارت‌بندی — حتی در بدترین حال',
     label:'avaz partbandi (hatta marg/lesh) · 14ruz' },
   { id:'nokarekheir', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
     fa:'کار خیر حتی ذره',
     label:'kare kheyr (0.00001%) · 5ruz' },
+  { id:'daavtalabNa', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:20, wipe:true, imp:9,
+    fa:'کار داوطلبانه دیگر نمی‌کنم — خودم و تخصیصی‌هایم مهم‌ترند',
+    label:'daavtalab na · khod+takhssis · 20ruz' },
   { id:'notarahomm', group:'ghermez', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
     fa:'ترحم',
     label:'tarahom · 5ruz' },
@@ -356,13 +380,13 @@ const META_ITEMS = [
     label:'mesvak shab NA · 3ruz' },
 
   /* ruz / raayat */
-  { id:'takhghmojaz0', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+  { id:'takhghmojaz0', group:'toxic', pane:'meta', slot:'all', kind:'flag', imp:8, share:30,
     fa:'تخصیص غیرمجاز صفر یا کمتر',
     label:'takhgh mojaz <=0' },
   { id:'takhmojmotns', group:'ruz', pane:'meta', slot:'all', kind:'flag',
     fa:'تخصیص مجاز متنوع',
     label:'takhmojmotns' },
-  { id:'budandarjayemojaz100', group:'ruz', pane:'meta', slot:'all', kind:'flag',
+  { id:'budandarjayemojaz100', group:'toxic', pane:'meta', slot:'all', kind:'flag', imp:8, share:30,
     fa:'جا، خرید، محتوا همه مجاز',
     label:'jay/kharid/mohtava mojaz' },
   { id:'raatayeghavanineakhlaghietayinshode100', group:'ruz', pane:'meta', slot:'all', kind:'flag',
@@ -371,7 +395,7 @@ const META_ITEMS = [
   { id:'riztarintakhmojaz', group:'ruz', pane:'meta', slot:'all', kind:'flag',
     fa:'ریزترین تخصیص مجاز — پرینت قبل از وی‌ان نه',
     label:'riz takhgh mojaz · print qabl WN na' },
-  { id:'riztarinpartbandi', group:'ruz', pane:'meta', slot:0, kind:'flag',
+  { id:'riztarinpartbandi', group:'partbandi', pane:'meta', slot:0, kind:'flag', imp:8, share:30,
     fa:'پارت‌بندی: قبل اوپن دوم فقط کلیدواژه',
     label:'partbandi: qabl open2 faghat keyword' },
   { id:'nocopypasteazaighable12pm', group:'ruz', pane:'meta', slot:0, kind:'flag',
@@ -407,13 +431,13 @@ const META_ITEMS = [
   { id:'checkkardan', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
     fa:'هی چک کردن — نباش توی فرایند',
     label:'hey check · nabash tu proses · 5ruz' },
-  { id:'leshPart', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true,
+  { id:'leshPart', group:'partbandi', pane:'meta', slot:'all', kind:'flag', lockDays:5, wipe:true, imp:8, share:30,
     fa:'لش برابر است با عوض کردن پارت',
     label:'lesh = avaz part · 5ruz' },
   { id:'abjayeBiq', group:'ruz', pane:'meta', slot:'all', kind:'flag',
     fa:'هر بی‌قراری می‌رود روی آب به‌عنوان جایگزین',
     label:'har biqarari → AB (jaygozin)' },
-  { id:'kharejPartNa', group:'ruz', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:9,
+  { id:'kharejPartNa', group:'partbandi', pane:'meta', slot:'all', kind:'flag', lockDays:14, wipe:true, imp:9, share:30,
     fa:'حتی اگر کلی از برنامه و روتین عقب مانده باشم، بیرونِ پارت خودش برنامه‌ریزی یا ثبت‌نام نمی‌کنم — بعد از ۱۲ شهریور این روز مهم است',
     label:'no plan/sabtnam kharej part · 14ruz' },
 
@@ -436,9 +460,9 @@ const META_ITEMS = [
   { id:'afzayesheshans', group:'layers', pane:'layers', slot:'all', kind:'accumDur',
     fa:'افزایش شانس',
     label:'afzayesh shans' },
-  { id:'roozsokutOn', group:'sokut', pane:'sokut', slot:'all', kind:'flag', silent:true, imp:10,
-    fa:'امروز روز سکوت است — با هوش مصنوعی حرف نمی‌زنم',
-    label:'rooz sokut ON' },
+  { id:'roozsokutOn', group:'sokut', pane:'sokut', slot:'all', kind:'flag', imp:10,
+    fa:'امروز روز سکوت است — هیچ خروجی ندارم',
+    label:'rooz sokut · 0 khoruji' },
   { id:'sokut', group:'sokut', pane:'sokut', slot:'all', kind:'accumDur', optional:true, imp:10,
     fa:'مدت روز سکوت',
     label:'rooz sokut' },
@@ -453,21 +477,22 @@ const META_ITEMS = [
 const META_FLAG_IDS = META_ITEMS.filter(it => it.kind === 'flag').map(it => it.id);
 const IMP_BY_ID = {
   bidarshodanharhal:10, hushiarSobhDel:10, khastegiNaKhab:10, rutin100Out:10, bidGhalt:9, bidHoliday:8, bidZiadKhab:10, twoHourAras:6,
+  fastTa3:10, fastTa6:10, protAfter3:10, creamerLabaniat:10, hichCheatMojaz:10,
   openfa1h:5, nchort:5, chizayemojazbadeopfa2:6, opf1:8, opf2:9, protGhabl3:8, cheetProt3:9,
   noCarb:8, adams:9, shirin:9, cheetShirin:9, chaysaye:8, tokhme:8, asalajil:10, foodAllBan:10, abmiveAjilAbadi:10,
   abtaam:8, foodToxic:8, hattaaeradekhordan:10, hossUnmojaz:6, fastingmode:5, abkhoshmaze2test:7, noghahveyebiruni:6,
   nagoofb:6, tozihezafe:6, darkhastsharm:7, bazkhod:6, tondi:7, ajele:7, moshavere:7, tasir:7, bahs:7,
-  tarifkhanom:7, enteghad:7, multimedia:5, khshaki:5, insta:6, khire:6, khabjam:5, naghseRaghs:5,
+  tarifkhanom:7, enteghad:7, multimedia:8, khshaki:5, insta:8, khire:8, khabjam:8, naghseRaghs:5,
   gilakDirNago:9, moshaverEzafe:9, moshaverTedad:8, snapSalam1:7,
   adaDaravardan:10, yeklayeamdiezafe:10, qanunSabet:10, esteghrakonjkavi:8, mahdoodzehn:8, fararBiq:8, mindSlack:8, partChange:8,
-  nokarekheir:6, notarahomm:6,
+  nokarekheir:6, daavtalabNa:9, notarahomm:6,
   digeRabeteNist:10, rabeteOmid:8, rabeteTafsir:8, rabetePaygiri:8, rabeteKhiyal:7, rabeteKhodara:7,
   selfBalaPayin:8, rabeteNote2way:10,
   shostsoorat:4, mesvak:4,
-  takhghmojaz0:6, takhmojmotns:5, budandarjayemojaz100:6, raatayeghavanineakhlaghietayinshode100:8,
-  riztarintakhmojaz:6, riztarinpartbandi:6, nocopypasteazaighable12pm:6, prompt15:5, copyai15:5,
+  takhghmojaz0:8, takhmojmotns:5, budandarjayemojaz100:8, raatayeghavanineakhlaghietayinshode100:8,
+  riztarintakhmojaz:6, riztarinpartbandi:8, nocopypasteazaighable12pm:6, prompt15:5, copyai15:5,
   preplan12:6, yekkalame12:6, snapRoodsar:6, motorSavarNa:8, sarsaatresidan:6, taghiratchaos:8, rutinChaos:8,
-  checkkardan:6, leshPart:6, abjayeBiq:7, kharejPartNa:9,
+  checkkardan:6, leshPart:8, abjayeBiq:7, kharejPartNa:9,
   moodToFlow:7, afterFastMood:6, layers:6, ghanoon:8, ghanoonfarayehattayarade:8, afzayesheshans:6,
   roozsokutOn:10, sokut:10, takhirAvg:6, sessionflowamigh:5
 };
@@ -486,8 +511,18 @@ function sortByImp(a, b) {
 
 const FLAG_BUNDLES = {
   noghahveyebiruni: ['noghahveyebiruni', 'nolimunadbiruni'],
-  budandarjayemojaz100: ['budandarjayemojaz100', 'kharidemojaz100', 'mohtmoj100']
+  budandarjayemojaz100: ['budandarjayemojaz100', 'kharidemojaz100', 'mohtmoj100'],
+  hichCheatMojaz: ['hichCheatMojaz','foodAllBan','abmiveAjilAbadi','asalajil','tokhme','noCarb','shirin','adams','cheetShirin','chaysaye','abtaam','hattaaeradekhordan','chizayemojazbadeopfa2'],
+  protAfter3: ['protAfter3','protGhabl3','cheetProt3'],
+  daavtalabNa: ['daavtalabNa','nokarekheir']
 };
+const HIDE_EXTRA = ['fastingmode'];
+const HIDE_IDS = new Set(
+  Object.keys(FLAG_BUNDLES).reduce((a, p) => a.concat(FLAG_BUNDLES[p].filter(k => k !== p)), []).concat(HIDE_EXTRA)
+);
+function itemHidden(it) {
+  return !!(it && (it.hide || HIDE_IDS.has(it.id)));
+}
 
 function flagBundleKeys(id) {
   return FLAG_BUNDLES[id] || [id];
@@ -973,7 +1008,7 @@ function takhirIsOk(rec, extra) {
 function isComplete(rec) {
   const d = parseDone(rec);
   return META_ITEMS.every(it => {
-    if (it.optional || isNegItem(it)) return true;
+    if (it.optional || it.hide || itemHidden(it) || isNegItem(it)) return true;
     if (it.kind === 'avgSec') {
       const n = Number(rec && rec.takhirN) || 0;
       return !n || takhirIsOk(rec);
@@ -1098,7 +1133,7 @@ function paintFreezeBanner() {
   const nameEl = el.querySelector('b');
   if (nameEl) nameEl.textContent = NIKA_NAME;
   const p = el.querySelector('p');
-  if (p) p.textContent = 'از ۱۲ شهریور تا ۱۲ آذر هیچ تغییری در اپ داده نمی‌شود. ۱۲ شهریور روز مهم است.';
+  if (p) p.textContent = 'از ۱۳ شهریور تا ۱۳ آبان تغییری تو اپ داده نمی‌شود. ریزترین تغییر هم نه.';
   const sp = el.querySelector('span');
   if (sp) sp.textContent = APP_FREEZE_FROM + ' — ' + APP_FREEZE_UNTIL;
   pinHeader();
@@ -1353,7 +1388,7 @@ function pickBar(host, values, selected, onPick) {
 }
 
 function groupFlags(gid) {
-  return META_ITEMS.filter(it => it.group === gid && it.kind === 'flag');
+  return META_ITEMS.filter(it => it.group === gid && it.kind === 'flag' && !itemHidden(it));
 }
 
 function mountMetaItem(host, it) {
@@ -1371,7 +1406,7 @@ function mountMetaItem(host, it) {
     if (itemImp(it) >= 10) b.classList.add('imp-hero');
     if (it.lockDays) b.classList.add(it.lockDays >= 14 ? 'sev-lock' : 'sev-day');
     b.innerHTML = '<i></i><span>' + itemFa(it) + '</span>' +
-      '<em class="impn">' + itemImp(it) + '</em>' +
+      '<em class="impn">' + (it.share ? (it.share + '٪') : itemImp(it)) + '</em>' +
       (lockBadge(it) ? '<b>' + lockBadge(it) + '</b>' : '');
     b.addEventListener('click', () => {
       if (isNegItem(it)) commitFlag(it);
@@ -1554,6 +1589,7 @@ function itemInSlot(it, slot) {
 function visibleMetaItems(pane) {
   return META_ITEMS.filter(it => {
     if ((it.pane || 'meta') !== pane) return false;
+    if (itemHidden(it)) return false;
     if (pane === 'meta' && !itemInSlot(it, metaSlot)) return false;
     if (pane === 'meta' && metaPack !== 'all' && it.group !== metaPack) return false;
     if (pane === 'meta' && metaImpMin !== 'all' && itemImp(it) < Number(metaImpMin)) return false;
@@ -1579,8 +1615,7 @@ function renderMetaFilters() {
     }));
   }
   if (packHost) {
-    const packs = [{ id:'all', title:'همه' }].concat(META_GROUPS.filter(g =>
-      g.id !== 'bidari' && g.id !== 'layers' && g.id !== 'sokut' && g.id !== 'laws'));
+    const packs = [{ id:'all', title:'همه' }].concat(META_GROUPS.filter(g => !PANE_ONLY[g.id]));
     packHost.innerHTML = packs.map(g =>
       '<button type="button" data-pack="' + g.id + '" class="' + dirOf(g.title) + (g.id === metaPack ? ' on' : '') + '">' + g.title + '</button>'
     ).join('');
@@ -1635,17 +1670,25 @@ function buildPaneItems(hostId, pane) {
   if (!host) return;
   host.innerHTML = '';
   host.className = 'mgrids';
-  const wrap = document.createElement('div');
-  wrap.className = 'mgrp tone-' + pane + ' span2';
-  host.appendChild(wrap);
-  META_ITEMS.filter(it => (it.pane || 'meta') === pane).slice().sort(sortByImp).forEach(it => mountMetaItem(wrap, it));
-  if (pane === 'bidari') mountBidWakePanel(wrap);
-  const putBtn = document.createElement('button');
-  putBtn.type = 'button';
-  putBtn.className = 'gput';
-  putBtn.textContent = 'ثبت ' + pane;
-  putBtn.addEventListener('click', () => putPane(pane));
-  wrap.appendChild(putBtn);
+  const items = META_ITEMS.filter(it => (it.pane || 'meta') === pane && !itemHidden(it)).slice().sort(sortByImp);
+  const groups = [];
+  items.forEach(it => { if (!groups.includes(it.group)) groups.push(it.group); });
+  if (!groups.length) groups.push(pane);
+  groups.forEach(gid => {
+    const wrap = document.createElement('div');
+    wrap.className = 'mgrp tone-' + gid + ' span2';
+    const g = META_GROUPS.find(x => x.id === gid) || { title: gid };
+    wrap.innerHTML = '<div class="gtitle ' + dirOf(g.title) + '">' + g.title + '</div>';
+    host.appendChild(wrap);
+    items.filter(it => it.group === gid).sort(sortByImp).forEach(it => mountMetaItem(wrap, it));
+    if (pane === 'bidari' && gid === 'bidari') mountBidWakePanel(wrap);
+    const putBtn = document.createElement('button');
+    putBtn.type = 'button';
+    putBtn.className = 'gput';
+    putBtn.textContent = 'ثبت ' + (g.title || pane);
+    putBtn.addEventListener('click', () => putPane(pane));
+    wrap.appendChild(putBtn);
+  });
 }
 function buildLawsPane() {
   const host = $('lawsBlocks');
@@ -1872,9 +1915,11 @@ function buildMeta() {
   renderMetaFilters();
   renderMetaList();
   buildPaneItems('bidariBlocks', 'bidari');
+  buildPaneItems('fast3Blocks', 'fast3');
+  buildPaneItems('fast6Blocks', 'fast6');
+  buildPaneItems('mojazBlocks', 'mojaz');
   buildPaneItems('layerBlocks', 'layers');
   buildPaneItems('sokutBlocks', 'sokut');
-  buildLawsPane();
   buildPishro();
   loadLawDraft().then(() => paintMetaStatus());
 }
@@ -1911,7 +1956,7 @@ async function commitFlag(it) {
     return;
   }
   const n = Number(it.lockDays) || 0;
-  if (!confirm(itemFa(it) + (n ? ('\n+' + n + ' روز به قفل اضافه می‌شود') : '') + (it.wipe ? '\nروز پاک می‌شود' : '') + (it.silent ? '\nسکوت با هوش مصنوعی' : '') + ' ؟')) return;
+  if (!confirm(itemFa(it) + (n ? ('\n+' + n + ' روز به قفل اضافه می‌شود') : '') + (it.wipe ? '\nروز پاک می‌شود' : '') + (it.silent ? '\nسکوت' : '') + ' ؟')) return;
   rec[it.id] = 1;
   applyFlagBundle(rec, it.id, true);
   const keep = [it.id];
@@ -2398,7 +2443,7 @@ function ensureSessionUi() {
   fillActivityList();
 }
 
-const TAB_IDS = ['pishro','bidari','sokut','laws','meta','layers','session','data'];
+const TAB_IDS = ['pishro','bidari','fast3','fast6','mojaz','sokut','meta','layers','session','data'];
 function showTab(name) {
   if (TAB_IDS.indexOf(name) < 0) name = 'pishro';
   activeTab = name;
@@ -2409,7 +2454,7 @@ function showTab(name) {
     const tab = $('tab' + id.charAt(0).toUpperCase() + id.slice(1));
     if (tab) tab.classList.toggle('active', id === name);
   });
-  if ($('dayBar')) $('dayBar').classList.toggle('hide', ['pishro','bidari','sokut','laws','meta','layers'].indexOf(name) < 0);
+  if ($('dayBar')) $('dayBar').classList.toggle('hide', ['pishro','bidari','fast3','fast6','mojaz','sokut','meta','layers'].indexOf(name) < 0);
   $('btnSave').disabled  = (name !== 'session');
   $('btnSave').textContent = 'این خط را بنویس';
   const bar = document.querySelector('.bar');
@@ -2418,7 +2463,7 @@ function showTab(name) {
   if (name === 'session') ensureSessionUi();
   requestAnimationFrame(pinHeader);
   settleWheels();
-  if (name === 'meta' || name === 'bidari' || name === 'layers' || name === 'pishro' || name === 'sokut' || name === 'laws') {
+  if (name === 'meta' || name === 'bidari' || name === 'fast3' || name === 'fast6' || name === 'mojaz' || name === 'layers' || name === 'pishro' || name === 'sokut') {
     paintMetaStatus();
     paintPishro(lastMetaRec);
   }

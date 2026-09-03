@@ -211,7 +211,9 @@ button.mchk b{margin-inline-start:auto;color:#f0b429;font-size:.7rem}
 .tabs button#tabPishro.active{border-color:#7ee0d6;background:#12312a;color:#c8f0d8}
 .tabs button#tabBidari.active{border-color:#f0b429;background:#2a2214;color:#ffe7b3}
 .tabs button#tabSokut.active{border-color:#f07178;background:#2a1618;color:#f8c9cd}
-.tabs button#tabLaws.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
+.tabs button#tabFast3.active{border-color:#7ee0d6;background:#12312a;color:#c8f0d8}
+.tabs button#tabFast6.active{border-color:#6db3f2;background:#122033;color:#cde6ff}
+.tabs button#tabMojaz.active{border-color:#3ecf8e;background:#12301f;color:#c8f0d8}
 .hero-title{font-size:1.22rem;color:#ffe7b3;font-weight:800;line-height:1.45}
 .hero-hint{color:#ffd479;font-size:.88rem;font-weight:700}
 button.mchk .impn, .mblock .impn{
@@ -233,6 +235,16 @@ button.mchk.imp-5, button.mchk.imp-4, button.mchk.imp-3{
 }
 .mgrp.tone-sokut,.sumcard.tone-sokut{background:linear-gradient(180deg,#3a1218,#171d25 42%);border-color:#f07178}
 .mgrp.tone-sokut .gtitle{color:#f8c9cd}
+.mgrp.tone-fast3{background:linear-gradient(180deg,#12312a,#121820 50%);border-color:#7ee0d6}
+.mgrp.tone-fast3 .gtitle{color:#c8f0d8}
+.mgrp.tone-fast6{background:linear-gradient(180deg,#122033,#121820 50%);border-color:#6db3f2}
+.mgrp.tone-fast6 .gtitle{color:#cde6ff}
+.mgrp.tone-mojaz{background:linear-gradient(180deg,#12301f,#121820 50%);border-color:#3ecf8e}
+.mgrp.tone-mojaz .gtitle{color:#c8f0d8}
+.mgrp.tone-partbandi{background:linear-gradient(180deg,#2a2214,#171d25 48%);border-color:#f0b429}
+.mgrp.tone-partbandi .gtitle{color:#ffe7b3}
+.mgrp.tone-toxic{background:linear-gradient(180deg,#2a1220,#171d25 42%);border-color:#c06090}
+.mgrp.tone-toxic .gtitle{color:#f0b0d0}
 #metaImps button.on{border-color:#c9a0ff;color:#ead9ff}
 .tabs button#tabLayers.active{border-color:#c9a0ff;background:#241833;color:#ead9ff}
 .bar{
@@ -624,12 +636,12 @@ button.gput{
       <span class="pill" id="queuePill">صف ۰</span>
       <span class="pill off" id="lockPill" hidden>قفل</span>    </div>
   </div>
-  <aside id="freezeBanner" class="freeze" hidden>
+  <aside id="freezeBanner" class="freeze">
     <img src="nika.png" width="64" height="64" alt=""/>
     <div>
       <b>مژده</b>
-      <p>از ۱۲ شهریور تا ۱۲ آذر هیچ تغییری در اپ داده نمی‌شود.</p>
-      <span dir="ltr">1405/06/12 — 1405/09/12</span>
+      <p>از ۱۳ شهریور تا ۱۳ آبان تغییری تو اپ داده نمی‌شود. ریزترین تغییر هم نه.</p>
+      <span dir="ltr">1405/06/13 — 1405/08/13</span>
     </div>
   </aside>
 </header>
@@ -652,8 +664,8 @@ button.gput{
 
   <section id="paneBidari" class="hide">
     <div class="card">
-      <h2 class="hero-title">بیداری — مهم‌ترین متا</h2>
-      <p class="hint hero-hint">در هر صورت پاشو. حتی یک ثانیه دیرتر یعنی حرف نمی‌زنم. خستگی را با خواب بیشتر درنمی‌کنی. صد روز پروژه هم که باشد، سر وقت.</p>
+      <h2 class="hero-title">بیداری — شصت درصد روز</h2>
+      <p class="hint hero-hint">آخرین زنگ، همان لحظه. یک ثانیه دیرتر حرف نمی‌زنم.</p>
     </div>
     <div id="bidariBlocks"></div>
   </section>
@@ -668,20 +680,29 @@ button.gput{
     <div id="metaBlocks"></div>
   </section>
 
-  <section id="paneSokut" class="hide">
+  <section id="paneFast3" class="hide">
     <div class="card">
-      <h2 class="hero-title">روز سکوت — جدا و فوق‌العاده مهم</h2>
-      <p class="hint hero-hint">این تب مال سکوت است. لایه و متای دیگر قاطی‌اش نیست.</p>
+      <h2 class="hero-title">فست تا سه</h2>
     </div>
-    <div id="sokutBlocks"></div>
+    <div id="fast3Blocks"></div>
   </section>
 
-  <section id="paneLaws" class="hide">
+  <section id="paneFast6" class="hide">
     <div class="card">
-      <h2>قانون مهم</h2>
-      <p class="hint">اینجا جدا است تا دم‌دست باشد. داشبورد حذف شد؛ جمع را از شیت بخوان.</p>
+      <h2 class="hero-title">فست تا شش و پودر بعد سه</h2>
     </div>
-    <div id="lawsBlocks"></div>
+    <div id="fast6Blocks"></div>
+  </section>
+
+  <section id="paneMojaz" class="hide">
+    <div class="card">
+      <h2 class="hero-title">فقط مجاز · صفر تقلب</h2>
+    </div>
+    <div id="mojazBlocks"></div>
+  </section>
+
+  <section id="paneSokut" class="hide">
+    <div id="sokutBlocks"></div>
   </section>
 
   <section id="paneLayers" class="hide">
@@ -773,8 +794,10 @@ button.gput{
   <div class="tabs">
     <button id="tabPishro" class="active" type="button">پیش‌رو</button>
     <button id="tabBidari" type="button">بیدار</button>
+    <button id="tabFast3" type="button">فست۳</button>
+    <button id="tabFast6" type="button">فست۶</button>
+    <button id="tabMojaz" type="button">مجاز</button>
     <button id="tabSokut" type="button">سکوت</button>
-    <button id="tabLaws" type="button">قانون</button>
     <button id="tabMeta" type="button">متا</button>
     <button id="tabLayers" type="button">لایه</button>
     <button id="tabSession" type="button">دفتر</button>
@@ -783,6 +806,6 @@ button.gput{
 </div>
 
 <div id="toast"></div>
-<script src="app.js?v=87"></script>
+<script src="app.js?v=88"></script>
 </body>
 </html>
